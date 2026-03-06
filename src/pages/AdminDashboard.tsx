@@ -32,17 +32,13 @@ const AdminDashboard: React.FC = () => {
         // ensure the token is refreshed so role changes are reflected
         await refreshSession({ silent: true });
 
-        const data = await adminService.getAnalytics();
-        const totals = data.data.reduce<Metrics>(
-          (acc, row) => {
-            acc.totalEvents += 1;
-            acc.totalTicketsSold += row.totalTicketsSold ?? 0;
-            acc.totalRevenue += row.totalRevenue ?? 0;
-            return acc;
-          },
-          { totalEvents: 0, totalTicketsSold: 0, totalRevenue: 0 }
-        );
-        setMetrics(totals);
+        const analytics = await adminService.getAnalytics();
+        const totals = analytics.totals ?? { totalRevenue: 0, totalTickets: 0 };
+        setMetrics({
+          totalEvents: analytics.perEventMonthly?.length ?? 0,
+          totalTicketsSold: totals.totalTickets,
+          totalRevenue: totals.totalRevenue,
+        });
       } catch (e) {
         console.error('failed to fetch analytics', e);
       }

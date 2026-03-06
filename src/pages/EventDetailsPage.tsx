@@ -78,6 +78,8 @@ const EventDetailsPage: React.FC = () => {
     );
   }
 
+  const eventStart = event.startTime ?? event.date;
+
   if (purchaseSuccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -122,8 +124,27 @@ const EventDetailsPage: React.FC = () => {
           <div className="container mx-auto px-4 py-8 text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">{event.title}</h1>
             <div className="flex flex-wrap gap-4 text-lg">
-              <span>{new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-              <span>{event.location}</span>
+              <span>
+                {eventStart
+                  ? new Date(eventStart).toLocaleString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  : 'Date TBD'}
+              </span>
+              {event.endTime && (
+                <span>
+                  Ends {new Date(event.endTime).toLocaleString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              )}
+              <span>{event.venue ?? event.location}</span>
               <span className="bg-yellow-500 text-black px-2 py-1 rounded">{event.category}</span>
             </div>
           </div>
@@ -139,8 +160,16 @@ const EventDetailsPage: React.FC = () => {
               <h2 className="text-2xl font-bold mb-6 text-gray-800">About This Event</h2>
               <p className="text-gray-700 leading-relaxed mb-8">{event.description}</p>
 
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">Location</h3>
-              <p className="text-gray-600">{event.location}</p>
+              <h3 className="text-xl font-semibold mb-4 text-gray-800">Location & Schedule</h3>
+              <p className="text-gray-600 mb-2">{event.venue ?? event.location}</p>
+              <p className="text-gray-600">
+                {event.startTime && (
+                  <>Starts: {new Date(event.startTime).toLocaleString()}</>
+                )}
+                {event.endTime && (
+                  <> • Ends: {new Date(event.endTime).toLocaleString()}</>
+                )}
+              </p>
             </div>
 
             {/* Ticket Selection */}

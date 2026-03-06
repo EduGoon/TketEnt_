@@ -15,7 +15,10 @@ const EventManagement: React.FC = () => {
   const [formData, setFormData] = useState<LocalEventForm>({
     title: '',
     date: '',
+    startTime: '',
+    endTime: '',
     location: '',
+    venue: '',
     category: '',
     description: '',
     status: 'DRAFT',
@@ -98,7 +101,10 @@ const EventManagement: React.FC = () => {
     setFormData({
       title: '',
       date: '',
+      startTime: '',
+      endTime: '',
       location: '',
+      venue: '',
       category: '',
       description: '',
       status: 'DRAFT',
@@ -156,7 +162,7 @@ const EventManagement: React.FC = () => {
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <h3 className="text-xl font-semibold mb-6">{editingEvent ? 'Edit Event' : 'Create New Event'}</h3>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input
@@ -175,7 +181,26 @@ const EventManagement: React.FC = () => {
                   name="date"
                   value={formData.date}
                   onChange={handleInputChange}
-                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start time</label>
+                <input
+                  type="datetime-local"
+                  name="startTime"
+                  value={formData.startTime ?? ''}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End time</label>
+                <input
+                  type="datetime-local"
+                  name="endTime"
+                  value={formData.endTime ?? ''}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
@@ -187,6 +212,16 @@ const EventManagement: React.FC = () => {
                   value={formData.location}
                   onChange={handleInputChange}
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+                <input
+                  type="text"
+                  name="venue"
+                  value={formData.venue ?? ''}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
@@ -315,10 +350,13 @@ const EventManagement: React.FC = () => {
                   <div className="text-sm text-gray-500">{event.category}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(event.date).toLocaleDateString()}
+                  {(() => {
+                    const dateString = event.startTime ?? event.date;
+                    return dateString ? new Date(dateString).toLocaleDateString() : 'TBD';
+                  })()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {event.location}
+                  {event.venue ?? event.location}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(event.status)}`}>
