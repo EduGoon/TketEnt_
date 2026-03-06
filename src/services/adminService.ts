@@ -1,5 +1,5 @@
 import { apiFetch } from './api';
-import { User, Event, Analytics } from '../utilities/types';
+import { User, Event, EventAnalytics } from '../utilities/types';
 
 interface ListResponse<T> {
   data: T[];
@@ -23,6 +23,6 @@ export const listAdminEvents = async (): Promise<ListResponse<Event>> => {
   return apiFetch<ListResponse<Event>>('/admin/events');
 };
 
-export const getAnalytics = async (): Promise<Analytics> => {
-  return apiFetch<Analytics>('/admin/analytics');
+export const getAnalytics = async (): Promise<ListResponse<EventAnalytics>> => {
+  return apiFetch<ListResponse<EventAnalytics>>('/admin/analytics');
 };

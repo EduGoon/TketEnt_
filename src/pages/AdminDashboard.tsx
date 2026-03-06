@@ -7,31 +7,48 @@ import Analytics from './admin/Analytics';
 import * as adminService from '../services/adminService';
 
 interface Metrics {
-  totalEvents?: number;
-  totalTicketsSold?: number;
-  totalRevenue?: number;
+  totalEvents: number;
+  totalTicketsSold: number;
+  totalRevenue: number;
 }
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
-  const { user, logout } = useAuth();
-  const [metrics, setMetrics] = useState<Metrics>({});
+  const { user, logout, refreshSession } = useAuth();
+
+  useEffect(() => {
+    // optionally, can log user or token here for debug
+  }, [user]);
+
+  const [metrics, setMetrics] = useState<Metrics>({
+    totalEvents: 0,
+    totalTicketsSold: 0,
+    totalRevenue: 0,
+  });
 
   useEffect(() => {
     const load = async () => {
       try {
+        // ensure the token is refreshed so role changes are reflected
+        await refreshSession({ silent: true });
+
         const data = await adminService.getAnalytics();
-        setMetrics({
-          totalEvents: data.totalEvents,
-          totalTicketsSold: data.totalTicketsSold,
-          totalRevenue: data.totalRevenue,
-        });
+        const totals = data.data.reduce<Metrics>(
+          (acc, row) => {
+            acc.totalEvents += 1;
+            acc.totalTicketsSold += row.totalTicketsSold ?? 0;
+            acc.totalRevenue += row.totalRevenue ?? 0;
+            return acc;
+          },
+          { totalEvents: 0, totalTicketsSold: 0, totalRevenue: 0 }
+        );
+        setMetrics(totals);
       } catch (e) {
         console.error('failed to fetch analytics', e);
       }
     };
     load();
-  }, []);
+  }, [refreshSession]);
 
   // Demo admin data for presentation
   const demoAdmin = {
@@ -56,7 +73,7 @@ const AdminDashboard: React.FC = () => {
         <div className="flex justify-between items-center px-6 py-4">
           <h1 className="text-2xl font-bold text-gray-800">SparkVybzEnt Admin</h1>
           <div className="flex items-center space-x-4">
-            <span className="text-gray-600">Welcome, {currentUser.firstName} {currentUser.lastName}</span>
+            <span className="text-gray-600">Welcome, {currentUser.firstName} {currentUser.lastName} {user && `(${user.role})`}</span>
             <Link to="/" className="text-green-600 hover:text-green-800">← Public Site</Link>
             {user && (
               <button

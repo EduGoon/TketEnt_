@@ -9,6 +9,14 @@ export interface TicketType {
   description?: string;
 }
 
+export interface EventAnalytics {
+  totalTicketsSold: number;
+  totalRevenue: number;
+  // Optional extra fields that backend may include
+  monthlyRevenue?: { month: string; revenue: number }[];
+  topEvents?: { name: string; tickets: number; revenue: number }[];
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -22,6 +30,7 @@ export interface Event {
   createdAt: string;
   updatedAt: string;
   ticketTypes: TicketType[];
+  analytics?: EventAnalytics[];
 }
 
 export interface Ticket {

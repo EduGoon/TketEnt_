@@ -13,6 +13,10 @@ interface AuthContextType {
     lastName: string;
     phone: string;
   }) => Promise<boolean>;
+  /**
+   * Refreshes token + user. If `silent` it will not toggle the global loading state.
+   */
+  refreshSession: (options?: { silent?: boolean }) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -35,7 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const logout = () => {
+  const logout = React.useCallback(() => {
     setUser(null);
     authService.clearToken();
     localStorage.removeItem('sparkvybzent_user');
@@ -43,12 +47,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (window.location.pathname !== '/signin') {
       window.location.href = '/signin';
     }
-  };
+  }, []);
 
   // register logout callback so api layer can clear session on 401
   useEffect(() => {
     registerLogoutCallback(logout);
-  }, []);
+  }, [logout]);
+
+  const refreshSession = React.useCallback(
+    async (options?: { silent?: boolean }): Promise<boolean> => {
+      const shouldShowLoading = !options?.silent;
+      if (shouldShowLoading) setIsLoading(true);
+
+      try {
+        // refresh token in case role or permissions were updated on the backend
+        const refreshResp = await authService.refreshToken();
+        authService.storeToken(refreshResp.token);
+        const me = await authService.getCurrentUser();
+        setUser(me);
+        localStorage.setItem('sparkvybzent_user', JSON.stringify(me));
+
+
+        if (shouldShowLoading) setIsLoading(false);
+        return true;
+      } catch (e) {
+        logout();
+        if (shouldShowLoading) setIsLoading(false);
+        return false;
+      }
+    },
+    [logout]
+  );
 
   useEffect(() => {
     // attempt to restore session if token exists
@@ -56,18 +85,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const token = localStorage.getItem('auth_token');
       if (token) {
         try {
-          const me = await authService.getCurrentUser();
-          setUser(me);
-          localStorage.setItem('sparkvybzent_user', JSON.stringify(me));
-        } catch (e) {
-          // token invalid or expired
+          // refresh token first (role updates reflected in new token)
+          await refreshSession();
+        } catch {
           logout();
         }
       }
       setIsLoading(false);
     };
     init();
-  }, []);
+  }, [refreshSession, logout]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
@@ -77,6 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const me = await authService.getCurrentUser();
       setUser(me);
       localStorage.setItem('sparkvybzent_user', JSON.stringify(me));
+
+
       setIsLoading(false);
       return true;
     } catch (err) {
@@ -111,6 +140,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     login,
     signup,
+    refreshSession,
     logout,
     isLoading,
   };

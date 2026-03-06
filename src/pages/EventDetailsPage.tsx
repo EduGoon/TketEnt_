@@ -28,13 +28,12 @@ const EventDetailsPage: React.FC = () => {
     load();
   }, [id]);
 
-  const ticketTypes =
-    event?.ticketTypes.map(tt => ({
-      id: tt.id,
-      type: tt.name,
-      price: tt.price,
-      available: tt.quantity - tt.sold,
-    })) || [];
+  const ticketTypes = (event?.ticketTypes ?? []).map(tt => ({
+    id: tt.id,
+    type: tt.name,
+    price: tt.price,
+    available: tt.quantity - tt.sold,
+  }));
 
   const handleTicketChange = (id: string, quantity: number) => {
     setSelectedTickets(prev => ({ ...prev, [id]: quantity }));
@@ -151,9 +150,9 @@ const EventDetailsPage: React.FC = () => {
                 <div key={ticket.id} className="mb-4 pb-4 border-b border-gray-200 last:border-b-0">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-medium">{ticket.type}</span>
-                    <span className="text-green-600 font-semibold">KSH {ticket.price.toLocaleString()}</span>
+                    <span className="text-green-600 font-semibold">KSH {(ticket.price ?? 0).toLocaleString()}</span>
                   </div>
-                  <p className="text-sm text-gray-500 mb-2">{ticket.available} tickets available</p>
+                  <p className="text-sm text-gray-500 mb-2">{ticket.available ?? 0} tickets available</p>
                   <div className="flex items-center gap-2">
                     <label className="text-sm">Quantity:</label>
                     <select
@@ -173,7 +172,7 @@ const EventDetailsPage: React.FC = () => {
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-lg font-semibold">Total:</span>
-                    <span className="text-xl font-bold text-green-600">KSH {totalPrice.toLocaleString()}</span>
+                    <span className="text-xl font-bold text-green-600">KSH {(totalPrice ?? 0).toLocaleString()}</span>
                   </div>
                   <button
                     onClick={handlePurchase}

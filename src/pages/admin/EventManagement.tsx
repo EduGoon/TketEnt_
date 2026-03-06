@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Event, TicketType } from '../../utilities/types';
 import * as eventService from '../../services/eventService';
+import * as adminService from '../../services/adminService';
+import { useAuth } from '../../utilities/AuthContext';
 
 interface LocalEventForm extends Omit<Partial<Event>, 'ticketTypes'> {
   ticketTypes?: Array<Partial<TicketType>>;
@@ -19,18 +21,36 @@ const EventManagement: React.FC = () => {
     status: 'DRAFT',
     ticketTypes: [{ name: '', price: 0, quantity: 0, sold: 0 }]
   });
+  const [error, setError] = useState<string | null>(null);
+
+  const { refreshSession } = useAuth();
+  const hasLoadedRef = React.useRef(false);
 
   useEffect(() => {
+    // only run once (avoid loops caused by user object changes)
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
     const load = async () => {
       try {
-        const resp = await eventService.listEvents();
+        // ensure token is refreshed so role changes are reflected
+        await refreshSession({ silent: true });
+
+        // admin endpoint returns all events (including drafts/cancelled)
+        const resp = await adminService.listAdminEvents();
         setEvents(resp.data);
       } catch (err) {
         console.error('Failed to load events', err);
+        const status = (err as any)?.status;
+        if (status === 403) {
+          setError('Admin access required. Please ensure your account has admin privileges.');
+        } else {
+          setError('Failed to load events. Please try again later.');
+        }
       }
     };
     load();
-  }, []);
+  }, [refreshSession]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -124,6 +144,12 @@ const EventManagement: React.FC = () => {
           Create New Event
         </button>
       </div>
+
+      {error && (
+        <div className="mb-4 rounded-md bg-red-50 border border-red-200 p-4">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
 
       {/* Event Form */}
       {showForm && (

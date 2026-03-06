@@ -35,6 +35,12 @@ export const signin = async (data: SigninPayload): Promise<AuthResponse> => {
   });
 };
 
+export const refreshToken = async (): Promise<AuthResponse> => {
+  return apiFetch<AuthResponse>('/auth/refresh', {
+    method: 'POST',
+  });
+};
+
 export const getCurrentUser = async (): Promise<User> => {
   return apiFetch<User>('/auth/me');
 };

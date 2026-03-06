@@ -20,29 +20,54 @@ export const getToken = (): string | null => {
   return localStorage.getItem('auth_token');
 };
 
+export const getTokenPayload = (): any | null => {
+  const token = getToken();
+  if (!token) return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+
+  try {
+    const payload = JSON.parse(atob(parts[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+};
+
 interface RequestOptions extends RequestInit {
   body?: any;
+}
+
+export class ApiError extends Error {
+  status: number;
+  body?: any;
+
+  constructor(message: string, status: number, body?: any) {
+    super(message);
+    this.status = status;
+    this.body = body;
+  }
 }
 
 async function handleResponse(response: Response) {
   if (response.status === 401) {
     // unauthorized, token invalid/expired
     if (logoutCallback) logoutCallback();
-    throw new Error('Unauthorized');
+    throw new ApiError('Unauthorized', 401);
   }
 
   // throw on non-ok status except 204
   if (!response.ok && response.status !== 204) {
     const errorText = await response.text();
     let errMsg = errorText;
+    let body: any;
     try {
-      const json = JSON.parse(errorText);
-      errMsg = json.message || JSON.stringify(json);
-    } catch {}
-    const err = new Error(errMsg || response.statusText);
-    // @ts-ignore
-    err.status = response.status;
-    throw err;
+      body = JSON.parse(errorText);
+      errMsg = body.message || JSON.stringify(body);
+    } catch {
+      body = errorText;
+    }
+    throw new ApiError(errMsg || response.statusText, response.status, body);
   }
 
   if (response.status === 204) {
