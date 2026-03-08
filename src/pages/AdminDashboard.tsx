@@ -12,39 +12,205 @@ interface Metrics {
   totalRevenue: number;
 }
 
+
+// Generic admin section for new endpoints
+const AdminSection: React.FC<{ type: string }> = ({ type }) => {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user, refreshSession } = useAuth();
+  const hasLoadedRef = React.useRef(false);
+  useEffect(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    if (!user || user.role !== 'ADMIN') {
+      setError('Admin access required. Please ensure your account has admin privileges.');
+      setLoading(false);
+      return;
+    }
+    async function fetchData() {
+      console.log(`AdminSection [${type}] fetchData called`);
+      let res;
+      try {
+        await refreshSession({ silent: true });
+        if (cancelled) return;
+        switch (type) {
+          case 'favorites': res = await adminService.getFavorites(); break;
+          case 'reviews': res = await adminService.getReviews(); break;
+          case 'chats': res = await adminService.getChats(); break;
+          case 'newsletter': res = await adminService.getNewsletter(); break;
+          case 'blogs': res = await adminService.getBlogs(); break;
+          case 'users': res = await adminService.listUsers(); break;
+          default: res = [];
+        }
+        if (cancelled) return;
+        console.log(`AdminSection [${type}] response:`, res);
+        if (Array.isArray(res)) {
+          setData(res);
+        } else if (res && Array.isArray(res.data)) {
+          setData(res.data);
+        } else {
+          setData([]);
+        }
+      } catch (err: any) {
+        if (cancelled) return;
+        setError(err?.message || 'Failed to fetch data');
+        setData([]);
+      }
+      setLoading(false);
+    }
+    fetchData();
+    return () => { cancelled = true; };
+  }, [type]);
+
+  if (loading) return <div>Loading {type}...</div>;
+  if (error) return <div className="text-red-600">Error: {error}</div>;
+
+  // Custom rendering for newsletter, blogs, users
+  if (type === 'newsletter') {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Newsletter Signups</h2>
+        {data.length === 0 ? (
+          <div className="text-gray-500">No newsletter signups found.</div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {data.map((entry: any) => (
+              <li key={entry.id} className="py-2 flex justify-between">
+                <span>{entry.email}</span>
+                <span className="text-xs text-gray-500">{new Date(entry.signedUpAt).toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+  if (type === 'blogs') {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Blogs Management</h2>
+        {data.length === 0 ? (
+          <div className="text-gray-500">No blogs found.</div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {data.map((blog: any) => (
+              <li key={blog.id} className="py-2 flex justify-between">
+                <span>{blog.title}</span>
+                <span className="text-xs text-gray-500">{blog.status}</span>
+                <button className="ml-4 px-2 py-1 bg-blue-500 text-white rounded-md" onClick={() => adminService.publishBlog(blog.id)}>Publish</button>
+                <button className="ml-2 px-2 py-1 bg-gray-500 text-white rounded-md" onClick={() => adminService.unpublishBlog(blog.id)}>Unpublish</button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+  if (type === 'users') {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">User Records</h2>
+        {data.length === 0 ? (
+          <div className="text-gray-500">No users found.</div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {data.map((user: any) => (
+              <li key={user.id} className="py-2 flex justify-between">
+                <span>{user.firstName} {user.lastName} ({user.email})</span>
+                <span className="text-xs text-gray-500">Role: {user.role}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
+  // Favorites, reviews, chats: show empty state and avoid raw JSON
+  if (type === 'favorites') {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Favorites</h2>
+        {data.length === 0 ? (
+          <div className="text-gray-500">No favorites found.</div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {data.map((fav: any, idx: number) => (
+              <li key={fav.id || idx} className="py-2 flex justify-between">
+                <span>{fav.title || fav.name || fav.eventId || 'Favorite'}</span>
+                <span className="text-xs text-gray-500">{fav.date ? new Date(fav.date).toLocaleString() : ''}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+  if (type === 'reviews') {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Reviews</h2>
+        {data.length === 0 ? (
+          <div className="text-gray-500">No reviews found.</div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {data.map((rev: any, idx: number) => (
+              <li key={rev.id || idx} className="py-2 flex justify-between">
+                <span>{rev.comment || rev.text || 'Review'}</span>
+                <span className="text-xs text-gray-500">{rev.rating ? `Rating: ${rev.rating}` : ''}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+  if (type === 'chats') {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Chats</h2>
+        {data.length === 0 ? (
+          <div className="text-gray-500">No chats found.</div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {data.map((chat: any, idx: number) => (
+              <li key={chat.id || idx} className="py-2 flex justify-between">
+                <span>{chat.message || chat.text || 'Chat'}</span>
+                <span className="text-xs text-gray-500">{chat.sender || ''}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
+  // Default: show empty state
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">{type.charAt(0).toUpperCase() + type.slice(1)} Records</h2>
+      <div className="text-gray-500">No records found.</div>
+    </div>
+  );
+};
+
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
-  const { user, logout, refreshSession } = useAuth();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     // optionally, can log user or token here for debug
   }, [user]);
 
-  const [metrics, setMetrics] = useState<Metrics>({
+  const [metrics] = useState<Metrics>({
     totalEvents: 0,
     totalTicketsSold: 0,
-    totalRevenue: 0,
+    totalRevenue: 0
   });
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        // ensure the token is refreshed so role changes are reflected
-        await refreshSession({ silent: true });
-
-        const analytics = await adminService.getAnalytics();
-        const totals = analytics.totals ?? { totalRevenue: 0, totalTickets: 0 };
-        setMetrics({
-          totalEvents: analytics.perEventMonthly?.length ?? 0,
-          totalTicketsSold: totals.totalTickets,
-          totalRevenue: totals.totalRevenue,
-        });
-      } catch (e) {
-        console.error('failed to fetch analytics', e);
-      }
-    };
-    load();
-  }, [refreshSession]);
 
   // Demo admin data for presentation
   const demoAdmin = {
@@ -59,6 +225,12 @@ const AdminDashboard: React.FC = () => {
     { path: '/admin/analytics', label: 'Analytics', icon: '📈' },
     { path: '/admin/events', label: 'Events', icon: '🎪' },
     { path: '/admin/sponsors', label: 'Sponsors', icon: '🤝' },
+    { path: '/admin/favorites', label: 'Favorites', icon: '⭐' },
+    { path: '/admin/reviews', label: 'Reviews', icon: '📝' },
+    { path: '/admin/chats', label: 'Chats', icon: '💬' },
+    { path: '/admin/newsletter', label: 'Newsletter', icon: '📧' },
+    { path: '/admin/blogs', label: 'Blogs', icon: '📰' },
+    { path: '/admin/users', label: 'User Records', icon: '👤' },
   ];
 
   return (
@@ -114,6 +286,12 @@ const AdminDashboard: React.FC = () => {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/events" element={<EventManagement />} />
             <Route path="/sponsors" element={<SponsorManagement />} />
+            <Route path="/favorites" element={<AdminSection type="favorites" />} />
+            <Route path="/reviews" element={<AdminSection type="reviews" />} />
+            <Route path="/chats" element={<AdminSection type="chats" />} />
+            <Route path="/newsletter" element={<AdminSection type="newsletter" />} />
+            <Route path="/blogs" element={<AdminSection type="blogs" />} />
+            <Route path="/users" element={<AdminSection type="users" />} />
           </Routes>
         </main>
       </div>

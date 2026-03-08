@@ -13,8 +13,9 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children, locati
       timeout={350}
       classNames="fade"
       unmountOnExit
+      nodeRef={React.useRef<HTMLDivElement>(null)}
     >
-      <div>{children}</div>
+      <div ref={React.useRef<HTMLDivElement>(null)}>{children}</div>
     </CSSTransition>
   </SwitchTransition>
 );

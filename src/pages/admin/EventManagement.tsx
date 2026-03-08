@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Event, TicketType } from '../../utilities/types';
-import * as eventService from '../../services/eventService';
 import * as adminService from '../../services/adminService';
 import { useAuth } from '../../utilities/AuthContext';
 
@@ -146,10 +145,10 @@ const EventManagement: React.FC = () => {
 
     try {
       if (editingEvent) {
-        const updated = await eventService.updateEvent(editingEvent.id, payload);
+        const updated = await adminService.updateAdminEvent(editingEvent.id, payload);
         setEvents(prev => prev.map(ev => (ev.id === editingEvent.id ? updated : ev)));
       } else {
-        const created = await eventService.createEvent(payload);
+        const created = await adminService.createAdminEvent(payload);
         setEvents(prev => [...prev, created]);
       }
       resetForm();
@@ -190,7 +189,7 @@ const EventManagement: React.FC = () => {
 
   const deleteEvent = async (id: string | number) => {
     try {
-      await eventService.deleteEvent(id.toString());
+      await adminService.deleteAdminEvent(id.toString());
       setEvents(prev => prev.filter(ev => ev.id !== id));
     } catch (err) {
       console.error('Failed to delete event', err);

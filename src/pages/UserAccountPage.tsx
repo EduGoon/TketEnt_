@@ -3,6 +3,7 @@ import { useAuth } from '../utilities/AuthContext';
 import * as ticketService from '../services/ticketService';
 import { Ticket } from '../utilities/types';
 import { Link } from 'react-router-dom';
+import { apiFetch } from '../services/api';
 
 const TYPE_COLOR = { ACTIVE: "#22c55e", USED: "#fbbf24", REFUNDED: "#ef4444" };
 
@@ -171,19 +172,48 @@ export default function UserAccountPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("tickets");
+  // ...existing code...
 
   useEffect(() => {
-    ticketService.listUserTickets().then(resp => {
-      setTickets(resp.data);
-      if (resp.data.length > 0) setSelectedId(resp.data[0].id);
-    });
+    async function fetchUserData() {
+      try {
+        const ticketsResp = await ticketService.listUserTickets();
+        setTickets(ticketsResp.data);
+        if (ticketsResp.data.length > 0) setSelectedId(ticketsResp.data[0].id);
+      } catch (err) {
+        setTickets([]);
+      }
+    }
+    fetchUserData();
   }, []);
 
   const tabs = [
     { id: "tickets", label: "My Tickets", icon: "🎟" },
     { id: "profile", label: "Profile", icon: "👤" },
     { id: "preferences", label: "Preferences", icon: "⚙️" },
+    { id: "history", label: "History", icon: "📜" },
   ];
+  const [history, setHistory] = useState<any[]>([]);
+  useEffect(() => {
+    if (activeTab === "history") {
+      async function fetchHistory() {
+        try {
+          const resp = await apiFetch('/history/user');
+          setHistory(Array.isArray(resp.data) ? resp.data : []);
+        } catch {
+          setHistory([]);
+        }
+      }
+      fetchHistory();
+    }
+  }, [activeTab]);
+        {/* History */}
+        {activeTab === "history" && (
+          <div className="fade-in" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: 48, textAlign: "left" }}>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, marginBottom: 18 }}>My History</h2>
+            <pre style={{ background: '#222', color: '#fff', padding: 16, borderRadius: 8 }}>{JSON.stringify(history, null, 2)}</pre>
+          </div>
+        )}
 
   const selectedTicket = tickets.find((t) => t.id === selectedId);
   const accent = selectedTicket && selectedTicket.status ? TYPE_COLOR[selectedTicket.status as keyof typeof TYPE_COLOR] : "#22c55e";

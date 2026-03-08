@@ -1,3 +1,52 @@
+// NewsletterSignupForm component
+function NewsletterSignupForm() {
+  const [email, setEmail] = React.useState('');
+  const [name, setName] = React.useState('');
+  const [submitting, setSubmitting] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      await fetch('http://localhost:4000/api/v1/newsletter/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
+      });
+      setSuccess(true);
+      setEmail('');
+      setName('');
+    } catch (err) {
+      setError('Failed to subscribe');
+    }
+    setSubmitting(false);
+  };
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <input
+        type="text"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        placeholder="Your Name"
+        style={{ borderRadius: 8, border: '1px solid #444', padding: 10, fontSize: 15 }}
+        required
+      />
+      <input
+        type="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        placeholder="Your Email"
+        style={{ borderRadius: 8, border: '1px solid #444', padding: 10, fontSize: 15 }}
+        required
+      />
+      <button type="submit" disabled={submitting} style={{ background:'#22c55e', color:'#0a0d14', border:'none', borderRadius:8, padding:'10px 22px', fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:'DM Sans,sans-serif' }}>Sign Up</button>
+      {success && <div style={{ color: '#22c55e', marginTop: 8 }}>Subscribed successfully!</div>}
+      {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
+    </form>
+  );
+}
 import React from 'react';
 import FeaturedEvents from './FeaturedEvents';
 import { Link } from 'react-router-dom';
@@ -5,6 +54,23 @@ import { useAuth } from '../utilities/AuthContext';
 
 const LandingPage: React.FC = () => {
   const { user, logout } = useAuth();
+  const [loadingTrending, setLoadingTrending] = React.useState(true);
+  const [trendingEvents, setTrendingEvents] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    async function fetchTrending() {
+      setLoadingTrending(true);
+      try {
+        const resp = await fetch('http://localhost:4000/api/v1/events/trending');
+        const data = await resp.json();
+        setTrendingEvents(Array.isArray(data) ? data : []);
+      } catch {
+        setTrendingEvents([]);
+      }
+      setLoadingTrending(false);
+    }
+    fetchTrending();
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
@@ -64,11 +130,69 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* Trending Events Section */}
+      <section style={{ padding: '32px 0', background: '#0a0d14' }}>
+        <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#22c55e', textAlign: 'center', marginBottom: 18, fontFamily: "'Playfair Display', serif" }}>Trending Events</div>
+          {loadingTrending ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <p style={{ color: '#fff', fontSize: 16 }}>Loading trending events...</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
+              {trendingEvents.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                  <p style={{ color: '#fff', fontSize: 16 }}>No trending events found.</p>
+                </div>
+              ) : (
+                trendingEvents.map((event: any) => {
+                  const eventStart = event.startTime ?? event.date;
+                  const venue = event.venue ?? event.location;
+                  return (
+                    <div key={event.id} style={{ background: '#111827', borderRadius: 14, boxShadow: '0 6px 24px rgba(0,0,0,0.45)', overflow: 'hidden' }}>
+                      <img src={event.imageUrl} alt={event.title} style={{ width: '100%', height: 180, objectFit: 'cover', borderBottom: '1px solid #222' }} />
+                      <div style={{ padding: '16px' }}>
+                        <h3 style={{ fontSize: 20, fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#f0c040', marginBottom: 6 }}>{event.title}</h3>
+                        <p style={{ fontSize: 15, color: '#22c55e', marginBottom: 2 }}>{venue}</p>
+                        <p style={{ fontSize: 14, color: '#fff', marginBottom: 8 }}>
+                          {eventStart
+                            ? new Date(eventStart).toLocaleString(undefined, {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : 'Date TBD'}
+                        </p>
+                        <Link
+                          to={`/events/${event.id}`}
+                          style={{ background:'#22c55e', color:'#0a0d14', border:'none', borderRadius:8, padding:'8px 18px', fontSize:14, fontWeight:600, cursor:'pointer', transition:'opacity 0.2s,transform 0.15s', fontFamily:'DM Sans,sans-serif', marginLeft: 8 }}
+                        >
+                          View Details
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </div>
+      </section>
       {/* Featured Events Section */}
       <section style={{ padding: '48px 0', background: '#111827' }}>
         <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 24px' }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, color: '#f0c040', textAlign: 'center', marginBottom: 24, fontFamily: "'Playfair Display', serif" }}>Featured Events</h2>
           <FeaturedEvents />
+        </div>
+      </section>
+      {/* Newsletter Signup */}
+      <section style={{ padding: '32px 0', background: '#111827' }}>
+        <div style={{ maxWidth: 520, margin: '0 auto', padding: '0 24px', background: '#222', borderRadius: 14, boxShadow: '0 6px 24px rgba(0,0,0,0.45)' }}>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#22c55e', textAlign: 'center', marginBottom: 18, fontFamily: "'Playfair Display', serif" }}>Sign Up for Event Updates</h2>
+          <NewsletterSignupForm />
         </div>
       </section>
       {/* Footer */}
@@ -77,6 +201,7 @@ const LandingPage: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} SparkVybzEnt. All rights reserved.</p>
         </div>
       </footer>
+    // ...existing code...
     </div>
   );
 };

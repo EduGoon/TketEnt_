@@ -1,3 +1,9 @@
+// User profile endpoints
+// Remove unused profile endpoints
+
+export const getUserUpcomingEvents = async () => {
+  return apiFetch('/user/upcoming');
+};
 import { apiFetch } from './api';
 import { Ticket } from '../utilities/types';
 
@@ -7,6 +13,14 @@ interface ListResponse<T> {
 
 export const listUserTickets = async (): Promise<ListResponse<Ticket>> => {
   return apiFetch<ListResponse<Ticket>>('/tickets');
+};
+
+export const getTicket = async (id: string): Promise<Ticket> => {
+  return apiFetch<Ticket>(`/tickets/${id}`);
+};
+
+export const listTickets = async (): Promise<ListResponse<Ticket>> => {
+  return apiFetch<ListResponse<Ticket>>('/tickets/');
 };
 
 export const purchaseTickets = async (

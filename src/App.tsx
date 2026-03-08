@@ -8,28 +8,40 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import UserAccountPage from './pages/UserAccountPage';
 import AdminDashboard from './pages/AdminDashboard';
+import BlogPage from './pages/BlogPage';
+import AdminBlogManager from './pages/AdminBlogManager';
+import AdminNewsletterSubscribers from './pages/AdminNewsletterSubscribers';
+import LiveChatWidget from './components/LiveChatWidget';
+import PageTransition from './components/PageTransition';
 
 function App() {
+  const location = useLocation();
   return (
     <AuthProvider>
       <div className="min-h-screen bg-gray-50">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/events" element={<EventsPage />} />
-          <Route path="/events/:id" element={<EventDetailsPage />} />
-          <Route path="/signin" element={<SignInPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/account" element={
-            <PrivateRoute>
-              <UserAccountPage />
-            </PrivateRoute>
-          } />
-          <Route path="/admin/*" element={
-            <PrivateRoute adminOnly>
-              <AdminDashboard />
-            </PrivateRoute>
-          } />
-        </Routes>
+        <PageTransition locationKey={location.key}>
+          <Routes location={location}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/events" element={<EventsPage />} />
+            <Route path="/events/:id" element={<EventDetailsPage />} />
+            <Route path="/signin" element={<SignInPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/account" element={
+              <PrivateRoute>
+                <UserAccountPage />
+              </PrivateRoute>
+            } />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/admin/blog-manager" element={<AdminBlogManager />} />
+            <Route path="/admin/newsletter-subscribers" element={<AdminNewsletterSubscribers />} />
+            <Route path="/admin/*" element={
+              <PrivateRoute adminOnly>
+                <AdminDashboard />
+              </PrivateRoute>
+            } />
+          </Routes>
+        </PageTransition>
+        <LiveChatWidget />
       </div>
     </AuthProvider>
   );

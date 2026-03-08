@@ -99,17 +99,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
+      // Always attempt backend call, regardless of local storage state
       const resp = await authService.signin({ email, password });
+      if (!resp.token) {
+        setIsLoading(false);
+        console.error('Sign-in failed: No token returned');
+        return false;
+      }
       authService.storeToken(resp.token);
       const me = await authService.getCurrentUser();
       setUser(me);
       localStorage.setItem('sparkvybzent_user', JSON.stringify(me));
-
-
       setIsLoading(false);
       return true;
     } catch (err) {
       setIsLoading(false);
+      console.error('Sign-in error:', err);
       return false;
     }
   };

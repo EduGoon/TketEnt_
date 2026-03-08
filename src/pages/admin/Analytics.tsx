@@ -14,21 +14,12 @@ const Analytics: React.FC = () => {
   const [revenueVisible, setRevenueVisible] = useState(false);
   const [avgPriceVisible, setAvgPriceVisible] = useState(false);
 
-  const loadAnalytics = async (opts?: { since?: string }) => {
+  const loadAnalytics = async () => {
     try {
       setError(null);
-      if (opts?.since) {
-        setIsRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
-      const res = await adminService.getAnalytics({
-        sortBy,
-        months: 12,
-        since: opts?.since,
-      });
-
+      setLoading(true);
+      // Use getEventAnalytics for event analytics
+      const res = await adminService.getEventAnalytics();
       setAnalytics(res);
     } catch (err) {
       console.error('Failed to load analytics', err);
@@ -47,7 +38,7 @@ const Analytics: React.FC = () => {
   useEffect(() => {
     loadAnalytics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortBy]);
+  }, []);
 
   const totals = analytics?.totals ?? { totalRevenue: 0, totalTickets: 0 };
   const avgTicketPrice = totals.totalTickets ? Math.round(totals.totalRevenue / totals.totalTickets) : 0;
