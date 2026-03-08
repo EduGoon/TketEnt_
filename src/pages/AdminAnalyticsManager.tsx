@@ -14,26 +14,27 @@ const Analytics: React.FC = () => {
   const [revenueVisible, setRevenueVisible] = useState(false);
   const [avgPriceVisible, setAvgPriceVisible] = useState(false);
 
-  const loadAnalytics = async () => {
-    try {
-      setError(null);
-      setLoading(true);
-      // Use getEventAnalytics for event analytics
-      const res = await adminService.getEventAnalytics();
-      setAnalytics(res);
-    } catch (err) {
-      console.error('Failed to load analytics', err);
-      const status = (err as any)?.status;
-      if (status === 403) {
-        setError('Admin access required. Please ensure your account has admin privileges.');
-      } else {
-        setError('Failed to load analytics. Please try again later.');
-      }
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
+ const loadAnalytics = async () => {
+  try {
+    setError(null);
+    setLoading(true);
+    
+    const res = await adminService.getEventAnalytics();
+    
+    // Simply set the state to the pre-formatted data from backend
+    if (res && res.data) {
+      setAnalytics(res.data);
+    } else {
+      setAnalytics(null);
     }
-  };
+  } catch (err) {
+    setError('Failed to load analytics.');
+  } finally {
+    setLoading(false);
+    setIsRefreshing(false);
+  }
+};
+
 
   useEffect(() => {
     loadAnalytics();

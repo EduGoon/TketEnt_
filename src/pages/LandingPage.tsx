@@ -189,13 +189,6 @@ const LandingPage: React.FC = () => {
           <FeaturedEvents />
         </div>
       </section>
-      {/* Newsletter Signup */}
-      <section style={{ padding: '32px 0', background: '#111827' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', padding: '0 24px', background: '#222', borderRadius: 14, boxShadow: '0 6px 24px rgba(0,0,0,0.45)' }}>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#22c55e', textAlign: 'center', marginBottom: 18, fontFamily: "'Playfair Display', serif" }}>Sign Up for Event Updates</h2>
-          <NewsletterSignupForm />
-        </div>
-      </section>
       {/* Footer */}
       <footer style={{ background: '#0a0d14', color: '#fff', padding: '18px 0', marginTop: 'auto', textAlign: 'center' }}>
         <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 24px' }}>

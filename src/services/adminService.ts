@@ -137,15 +137,16 @@ export const unpublishBlog = async (id: string) => {
   return apiFetch(`/admin/blogs/${id}/unpublish`, { method: 'PUT' });
 };
 
-// Newsletter
-export const getNewsletterSubscribers = async () => {
-  const res = await apiFetch('/admin/features/newsletter');
-  return res?.data || [];
-};
-
 // Chats
 export const getChats = async (userId?: string) => {
   const query = userId ? `?userId=${encodeURIComponent(userId)}` : '';
   const res = await apiFetch(`/admin/features/chats${query}`);
+  return res?.data || [];
+};
+
+// Users management
+export const getUsers = async () => {
+  const res = await apiFetch('/admin/users/');
+  // Returns the data array or an empty list if undefined
   return res?.data || [];
 };

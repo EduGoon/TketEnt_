@@ -3,23 +3,24 @@ import * as adminService from '../services/adminService';
 import { 
   ChatBubbleLeftRightIcon, 
   UserCircleIcon, 
-  ShieldExclamationIcon,
-  PaperAirplaneIcon,
-  ClockIcon
+  ChatBubbleOvalLeftEllipsisIcon,
+  ArrowPathIcon,
+  ClockIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 
 const AdminChatManager: React.FC = () => {
   const [chats, setChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchChats = async () => {
     setLoading(true);
     try {
       const data = await adminService.getChats();
+      // data should be an array of ChatMessage objects
       setChats(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to sync chats');
+    } catch (err) {
+      console.error("Chat sync failed", err);
     } finally {
       setLoading(false);
     }
@@ -29,83 +30,84 @@ const AdminChatManager: React.FC = () => {
     fetchChats();
   }, []);
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64 text-blue-600">
-      <div className="animate-bounce mr-2">●</div>
-      <div className="animate-bounce delay-100 mr-2">●</div>
-      <div className="animate-bounce delay-200">●</div>
+  if (loading && chats.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-20">
+      <ArrowPathIcon className="h-10 w-10 animate-spin text-blue-600 mb-4" />
+      <p className="text-gray-500 font-medium">Syncing conversation logs...</p>
     </div>
   );
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-5xl mx-auto space-y-8">
+      {/* Clean Header */}
+      <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <ChatBubbleLeftRightIcon className="h-7 w-7 text-indigo-600" />
-            Communication Logs
-          </h2>
-          <p className="text-sm text-gray-500">Real-time monitor of user inquiries and support chats.</p>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight">Support Logs</h2>
+          <p className="text-gray-500 text-sm mt-1">Audit trail of all platform communications.</p>
         </div>
         <button 
           onClick={fetchChats}
-          className="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-800 transition-colors"
+          className="text-xs font-black uppercase tracking-widest text-blue-600 hover:text-blue-800 bg-blue-50 px-4 py-2 rounded-xl transition-all"
         >
           Refresh Feed
         </button>
       </div>
 
       {chats.length === 0 ? (
-        <div className="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-gray-100">
-          <PaperAirplaneIcon className="h-12 w-12 mx-auto text-gray-300 -rotate-45" />
-          <p className="mt-4 text-gray-500 font-medium">The airwaves are silent. No chats yet.</p>
+        <div className="bg-white rounded-3xl p-20 text-center border border-gray-100 shadow-sm">
+          <ChatBubbleOvalLeftEllipsisIcon className="h-16 w-16 mx-auto text-gray-200 mb-4" />
+          <p className="text-gray-400 font-bold">No active conversations found.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {chats.map((chat, idx) => (
+        <div className="space-y-4">
+          {chats.map((chat) => (
             <div 
-              key={chat.id || idx} 
-              className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group relative"
+              key={chat.id} 
+              className={`flex items-start gap-4 p-5 rounded-3xl border transition-all ${
+                chat.sender === 'support' 
+                  ? 'bg-blue-50/30 border-blue-100 ml-12' 
+                  : 'bg-white border-gray-100 mr-12'
+              }`}
             >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-inner">
-                    {chat.sender?.charAt(0).toUpperCase() || <UserCircleIcon className="h-6 w-6" />}
+              <div className="flex-shrink-0">
+                {chat.sender === 'support' ? (
+                  <div className="h-10 w-10 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-100">
+                    <ShieldCheckIcon className="h-6 w-6 text-white" />
                   </div>
+                ) : (
+                  <div className="h-10 w-10 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-500">
+                    <UserCircleIcon className="h-7 w-7" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs font-black uppercase tracking-widest ${
+                    chat.sender === 'support' ? 'text-blue-600' : 'text-gray-900'
+                  }`}>
+                    {chat.sender === 'support' ? 'System Support' : (chat.user?.firstName || 'User')}
+                  </span>
+                 <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
+  <ClockIcon className="h-3 w-3" />
+  {new Date(chat.createdAt).toLocaleString('en-KE', { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    day: 'numeric',   // FIXED: Changed from 'short' to 'numeric'
+    month: 'short'    // This one is allowed to be 'short'
+  })}
+</span>
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-bold text-gray-900 truncate">
-                      {chat.sender || 'Anonymous User'}
-                    </span>
-                    <span className="text-[10px] font-medium text-gray-400 flex items-center gap-1">
-                      <ClockIcon className="h-3 w-3" />
-                      {chat.createdAt ? new Date(chat.createdAt).toLocaleTimeString() : 'Recent'}
-                    </span>
-                  </div>
-                  
-                  <div className="bg-gray-50 rounded-2xl rounded-tl-none p-3 border border-gray-100">
-                    <p className="text-sm text-gray-700 leading-relaxed break-words">
-                      {chat.message || chat.text || "Empty message"}
-                    </p>
-                  </div>
-                  
-                  {chat.room && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
-                        #{chat.room}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                  {chat.content}
+                </p>
 
-                {/* Secret Admin Actions visible on hover */}
-                <div className="absolute right-4 bottom-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                  <button title="Flag Chat" className="p-1.5 text-gray-300 hover:text-red-500 transition-colors">
-                    <ShieldExclamationIcon className="h-5 w-5" />
-                  </button>
-                </div>
+                {chat.sender !== 'support' && chat.user?.email && (
+                  <div className="mt-3 pt-3 border-t border-gray-100 text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                    Linked to: {chat.user.email}
+                  </div>
+                )}
               </div>
             </div>
           ))}

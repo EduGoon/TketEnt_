@@ -10,7 +10,6 @@ import UserAccountPage from './pages/UserAccountPage';
 import AdminDashboard from './pages/AdminDashboard';
 import BlogPage from './pages/BlogPage';
 import AdminBlogManager from './pages/AdminBlogManager';
-import AdminNewsletterSubscribers from './pages/AdminNewsletterSubscribers';
 import LiveChatWidget from './components/LiveChatWidget';
 import PageTransition from './components/PageTransition';
 
@@ -33,7 +32,6 @@ function App() {
             } />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/admin/blog-manager" element={<AdminBlogManager />} />
-            <Route path="/admin/newsletter-subscribers" element={<AdminNewsletterSubscribers />} />
             <Route path="/admin/*" element={
               <PrivateRoute adminOnly>
                 <AdminDashboard />
