@@ -41,9 +41,9 @@ const AdminSection: React.FC<{ type: string }> = ({ type }) => {
           case 'favorites': res = await adminService.getFavorites(); break;
           case 'reviews': res = await adminService.getReviews(); break;
           case 'chats': res = await adminService.getChats(); break;
-          case 'newsletter': res = await adminService.getNewsletter(); break;
+          case 'newsletter': res = await adminService.getNewsletterSubscribers(); break;
           case 'blogs': res = await adminService.getBlogs(); break;
-          case 'users': res = await adminService.listUsers(); break;
+          case 'users': res = []; break; // No users endpoint in new features spec
           default: res = [];
         }
         if (cancelled) return;

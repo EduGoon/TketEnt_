@@ -42,7 +42,7 @@ const EventManagement: React.FC = () => {
         await refreshSession({ silent: true });
 
         // admin endpoint returns all events (including drafts/cancelled)
-        const resp = await adminService.listAdminEvents();
+        const resp = await adminService.listEvents();
         setEvents(resp.data);
       } catch (err) {
         console.error('Failed to load events', err);
@@ -145,10 +145,10 @@ const EventManagement: React.FC = () => {
 
     try {
       if (editingEvent) {
-        const updated = await adminService.updateAdminEvent(editingEvent.id, payload);
+        const updated = await adminService.updateEvent(editingEvent.id, payload);
         setEvents(prev => prev.map(ev => (ev.id === editingEvent.id ? updated : ev)));
       } else {
-        const created = await adminService.createAdminEvent(payload);
+        const created = await adminService.createEvent(payload);
         setEvents(prev => [...prev, created]);
       }
       resetForm();
@@ -189,7 +189,7 @@ const EventManagement: React.FC = () => {
 
   const deleteEvent = async (id: string | number) => {
     try {
-      await adminService.deleteAdminEvent(id.toString());
+      await adminService.deleteEvent(id.toString());
       setEvents(prev => prev.filter(ev => ev.id !== id));
     } catch (err) {
       console.error('Failed to delete event', err);
