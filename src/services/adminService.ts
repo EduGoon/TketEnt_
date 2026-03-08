@@ -108,7 +108,7 @@ export const refundTicket = async (id: string) => {
   });
 };
 
-// Blogs
+// Blogs by admins-for blog management in AdminBlogManager
 export const getBlogs = async () => {
   const res = await apiFetch('/admin/blogs/');
   return res?.data || [];

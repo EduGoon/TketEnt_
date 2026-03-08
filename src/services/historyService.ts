@@ -53,3 +53,12 @@ export const createReview = async (reviewData: { eventId: string; rating: number
 export const searchGeoEvents = async (lat: string, lng: string, rad: string) => {
   return apiFetch(`/geo/search?latitude=${lat}&longitude=${lng}&radius=${rad}`);
 };
+
+// Blogs (Public)
+export const getBlogs = async () => {
+  return apiFetch('/api/blogs/');
+};
+
+export const getBlogById = async (id: string) => {
+  return apiFetch(`/api/blogs/${id}`);
+};

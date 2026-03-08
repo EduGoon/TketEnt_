@@ -92,6 +92,7 @@ const LandingPage: React.FC = () => {
           <span style={{ fontSize: 22, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display', serif", letterSpacing: -0.3 }}>✦ SparkVybzEnt</span>
           <nav style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Link to="/events" className="ghost-btn" style={{ padding: '6px 16px', fontSize: '14px', borderRadius: '8px' }}>Events</Link>
+            <Link to="/blog" className="ghost-btn" style={{ padding: '6px 16px', fontSize: '14px', borderRadius: '8px' }}>Blogs</Link>
             {user ? (
               <>
                 <Link to="/account" className="ghost-btn" style={{ padding: '6px 16px', fontSize: '14px', borderRadius: '8px' }}>My Account</Link>
