@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Event } from '../utilities/types';
-import * as eventService from '../services/eventService';
+import * as eventService from '../services/historyService';
 
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -24,7 +24,7 @@ const EventsPage: React.FC = () => {
   const fetchEvents = async (params = {}) => {
     setLoading(true);
     try {
-      const resp = await eventService.listEvents(params);
+      const resp = await eventService.listAllevents(params);
       setEvents(resp.data);
       setFilteredEvents(resp.data);
     } catch (err) {

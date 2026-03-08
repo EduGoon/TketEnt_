@@ -10,7 +10,7 @@ const LiveChatWidget: React.FC = () => {
   useEffect(() => {
     async function loadHistory() {
       try {
-        const data = await apiFetch('/chat/history');
+        const data = await apiFetch('/user/chat/history');
         setMessages(Array.isArray(data) ? data : []);
       } catch (err) {
         setMessages([]);
@@ -28,11 +28,11 @@ const LiveChatWidget: React.FC = () => {
     if (!input.trim()) return;
     setSending(true);
     try {
-      await apiFetch('/chat/send', {
+      await apiFetch('/user/chat/send', {
         method: 'POST',
-        body: { message: input },
+        body: { content: input, sender: 'user' },
       });
-      setMessages([...messages, { sender: 'You', message: input, createdAt: new Date().toISOString() }]);
+      setMessages([...messages, { sender: 'You', content: input, createdAt: new Date().toISOString() }]);
       setInput('');
     } catch {
       // handle error

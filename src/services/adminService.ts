@@ -1,5 +1,6 @@
 import { apiFetch } from './api';
 import { Event } from '../utilities/types';
+import { Sponsor } from '../utilities/types';
 
 interface ListResponse<T> {
   data: T[];
@@ -7,38 +8,66 @@ interface ListResponse<T> {
 
 // Analytics Endpoints
 export const getEventAnalytics = async () => {
-  return apiFetch('/analytics/events');
+  return apiFetch('/admin/analytics/events');
 };
 
 // Features Endpoints
 // Events
 export const listEvents = async (): Promise<ListResponse<Event>> => {
-  return apiFetch<ListResponse<Event>>('/features/events');
+  return apiFetch<ListResponse<Event>>('/admin/events/');
 };
 export const createEvent = async (payload: Partial<Event>) => {
-  return apiFetch<Event>('/features/events', {
+  return apiFetch<Event>('/admin/events/', {
     method: 'POST',
     body: payload,
   });
 };
 export const updateEvent = async (id: string, payload: Partial<Event>) => {
-  return apiFetch<Event>(`/features/events/${id}`, {
+  return apiFetch<Event>(`/admin/events/${id}`, {
     method: 'PUT',
     body: payload,
   });
 };
 export const deleteEvent = async (id: string) => {
-  return apiFetch<void>(`/features/events/${id}`, {
+  return apiFetch<void>(`/admin/events/${id}`, {
     method: 'DELETE',
   });
 };
 
+//sponsors
+export const listSponsors = async (): Promise<Sponsor[]> => {
+  const res = await apiFetch<any>('/admin/features/sponsors');
+  // If backend returns { data: [...] } return res.data, else if it's just [...] return res
+  if (res && Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res)) return res;
+  return [];
+};
+export const createSponsor = async (sponsor: Partial<Sponsor>): Promise<Sponsor> => {
+  return apiFetch<Sponsor>('/admin/features/sponsors', {
+    method: 'POST',
+    body: sponsor,
+  });
+};
+export const updateSponsor = async (id: string, sponsor: Partial<Sponsor>): Promise<Sponsor> => {
+  return apiFetch<Sponsor>(`/admin/features/sponsors/${id}`, {
+    method: 'PUT',
+    body: sponsor,
+  });
+};
+export const deleteSponsor = async (id: string): Promise<void> => {
+  return apiFetch<void>(`/admin/features/sponsors/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+
 // Reviews
 export const getReviews = async () => {
-  return apiFetch('/features/reviews');
+  const res = await apiFetch('/admin/features/reviews');
+  return res?.data || [];
 };
 export const createReview = async (payload: any) => {
-  return apiFetch('/features/reviews', {
+  return apiFetch('/admin/features/reviews', {
     method: 'POST',
     body: payload,
   });
@@ -46,16 +75,17 @@ export const createReview = async (payload: any) => {
 
 // Favorites
 export const getFavorites = async () => {
-  return apiFetch('/features/favorites');
+  const res = await apiFetch('/admin/features/favorites');
+  return res?.data || [];
 };
 export const addFavorite = async (payload: any) => {
-  return apiFetch('/features/favorites/add', {
+  return apiFetch('/admin/features/favorites/add', {
     method: 'POST',
     body: payload,
   });
 };
 export const removeFavorite = async (payload: any) => {
-  return apiFetch('/features/favorites/remove', {
+  return apiFetch('/admin/features/favorites/remove', {
     method: 'POST',
     body: payload,
   });
@@ -63,54 +93,59 @@ export const removeFavorite = async (payload: any) => {
 
 // Tickets
 export const getTickets = async () => {
-  return apiFetch('/features/tickets');
+  const res = await apiFetch('/admin/features/tickets');
+  return res?.data || [];
 };
 export const purchaseTickets = async (payload: any) => {
-  return apiFetch('/features/tickets/purchase', {
+  return apiFetch('/admin/features/tickets/purchase', {
     method: 'POST',
     body: payload,
   });
 };
 export const refundTicket = async (id: string) => {
-  return apiFetch(`/features/tickets/${id}/refund`, {
+  return apiFetch(`/admin/features/tickets/${id}/refund`, {
     method: 'POST',
   });
 };
 
 // Blogs
 export const getBlogs = async () => {
-  return apiFetch('/features/blogs');
+  const res = await apiFetch('/admin/blogs/');
+  return res?.data || [];
 };
 export const createBlog = async (payload: any) => {
-  return apiFetch('/features/blogs', {
+  return apiFetch('/admin/blogs/', {
     method: 'POST',
     body: payload,
   });
 };
 export const updateBlog = async (id: string, payload: any) => {
-  return apiFetch(`/features/blogs/${id}`, {
+  return apiFetch(`/admin/blogs/${id}`, {
     method: 'PUT',
     body: payload,
   });
 };
 export const deleteBlog = async (id: string) => {
-  return apiFetch(`/features/blogs/${id}`, {
+  return apiFetch(`/admin/blogs/${id}`, {
     method: 'DELETE',
   });
 };
 export const publishBlog = async (id: string) => {
-  return apiFetch(`/features/blogs/${id}/publish`, { method: 'PUT' });
+  return apiFetch(`/admin/blogs/${id}/publish`, { method: 'PUT' });
 };
 export const unpublishBlog = async (id: string) => {
-  return apiFetch(`/features/blogs/${id}/unpublish`, { method: 'PUT' });
+  return apiFetch(`/admin/blogs/${id}/unpublish`, { method: 'PUT' });
 };
 
 // Newsletter
 export const getNewsletterSubscribers = async () => {
-  return apiFetch('/features/newsletter');
+  const res = await apiFetch('/admin/features/newsletter');
+  return res?.data || [];
 };
 
 // Chats
-export const getChats = async () => {
-  return apiFetch('/features/chats');
+export const getChats = async (userId?: string) => {
+  const query = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+  const res = await apiFetch(`/admin/features/chats${query}`);
+  return res?.data || [];
 };

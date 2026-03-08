@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import * as adminService from '../../services/adminService';
-import { AdminAnalyticsResponse } from '../../utilities/types';
+import * as adminService from '../services/adminService';
+import { AdminAnalyticsResponse } from '../utilities/types';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const formatNumber = (value: number) => value.toLocaleString();

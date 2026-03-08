@@ -1,95 +1,181 @@
 import React, { useEffect, useState } from 'react';
+import * as adminService from '../services/adminService';
+import { 
+  CheckCircleIcon, 
+  XCircleIcon, 
+  DocumentTextIcon, 
+  ArrowPathIcon,
+  PencilSquareIcon,
+  TrashIcon
+} from '@heroicons/react/24/outline';
 
 const AdminBlogManager: React.FC = () => {
-  const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState<any | null>(null);
-  const [form, setForm] = useState({ title: '', category: '', summary: '', imageUrl: '', content: '' });
+  const [blogs, setBlogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const fetchBlogs = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await adminService.getBlogs();
+      setBlogs(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to fetch blogs');
+      setBlogs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchPosts();
+    fetchBlogs();
   }, []);
 
-  const fetchPosts = () => {
-    setLoading(true);
-    fetch('http://localhost:4000/api/v1/blog/')
-      .then(res => res.json())
-      .then(data => {
-        setPosts(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
-
-  const handleEdit = (post: any) => {
-    setEditing(post);
-    setForm({ ...post });
-  };
-
-  const handleDelete = async (id: string) => {
-    await fetch(`http://localhost:4000/api/v1/blog/${id}`, { method: 'DELETE' });
-    fetchPosts();
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editing) {
-      await fetch(`http://localhost:4000/api/v1/blog/${editing.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-    } else {
-      await fetch('http://localhost:4000/api/v1/blog/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+  const handleTogglePublish = async (blogId: string, currentStatus: string) => {
+    setActionLoading(blogId);
+    try {
+      if (currentStatus === 'PUBLISHED') {
+        await adminService.unpublishBlog(blogId);
+      } else {
+        await adminService.publishBlog(blogId);
+      }
+      await fetchBlogs(); // Refresh list
+    } catch (err) {
+      alert("Action failed. Please try again.");
+    } finally {
+      setActionLoading(null);
     }
-    setEditing(null);
-    setForm({ title: '', category: '', summary: '', imageUrl: '', content: '' });
-    fetchPosts();
   };
+
+  if (loading && blogs.length === 0) {
+    return (
+      <div className="min-h-[400px] flex flex-col items-center justify-center text-gray-500">
+        <ArrowPathIcon className="h-8 w-8 animate-spin mb-2" />
+        <p>Loading blog repository...</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-      <div style={{ maxWidth: 1060, margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontSize: 32, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display', serif", marginBottom: 24 }}>Admin Blog Manager</h1>
-        <form onSubmit={handleSubmit} style={{ background: '#222', borderRadius: 14, padding: 24, marginBottom: 32 }}>
-          <input type="text" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Title" style={{ width: '100%', marginBottom: 12, borderRadius: 8, border: '1px solid #444', padding: 10, fontSize: 15 }} required />
-          <input type="text" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} placeholder="Category" style={{ width: '100%', marginBottom: 12, borderRadius: 8, border: '1px solid #444', padding: 10, fontSize: 15 }} required />
-          <input type="text" value={form.summary} onChange={e => setForm({ ...form, summary: e.target.value })} placeholder="Summary" style={{ width: '100%', marginBottom: 12, borderRadius: 8, border: '1px solid #444', padding: 10, fontSize: 15 }} required />
-          <input type="text" value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} placeholder="Image URL" style={{ width: '100%', marginBottom: 12, borderRadius: 8, border: '1px solid #444', padding: 10, fontSize: 15 }} required />
-          <textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Content" style={{ width: '100%', minHeight: 80, borderRadius: 8, border: '1px solid #444', padding: 10, fontSize: 15, marginBottom: 12 }} required />
-          <button type="submit" style={{ background:'#f0c040', color:'#0a0d14', border:'none', borderRadius:8, padding:'10px 22px', fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:'DM Sans,sans-serif' }}>{editing ? 'Update' : 'Create'} Post</button>
-        </form>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <p style={{ color: '#fff', fontSize: 16 }}>Loading blog posts...</p>
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">Blog Management</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Create, moderate, and publish articles for your audience.
+          </p>
+        </div>
+        <button 
+          onClick={fetchBlogs}
+          className="inline-flex items-center gap-2 bg-white border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+          <div className="flex items-center">
+            <XCircleIcon className="h-5 w-5 text-red-500 mr-2" />
+            <p className="text-sm text-red-700">{error}</p>
           </div>
-        ) : posts.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <p style={{ color: '#fff', fontSize: 16 }}>No blog posts found.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
-            {posts.map(post => (
-              <div key={post.id} style={{ background: '#111827', borderRadius: 14, boxShadow: '0 6px 24px rgba(0,0,0,0.45)', overflow: 'hidden', position: 'relative' }}>
-                <img src={post.imageUrl} alt={post.title} style={{ width: '100%', height: 180, objectFit: 'cover', borderBottom: '1px solid #222' }} />
-                <div style={{ padding: '16px' }}>
-                  <h3 style={{ fontSize: 20, fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#f0c040', marginBottom: 6 }}>{post.title}</h3>
-                  <p style={{ fontSize: 15, color: '#22c55e', marginBottom: 2 }}>{post.category}</p>
-                  <p style={{ fontSize: 14, color: '#fff', marginBottom: 8 }}>{post.summary}</p>
-                  <button onClick={() => handleEdit(post)} style={{ background:'#22c55e', color:'#0a0d14', border:'none', borderRadius:8, padding:'8px 18px', fontSize:14, fontWeight:600, cursor:'pointer', marginRight: 8 }}>Edit</button>
-                  <button onClick={() => handleDelete(post.id)} style={{ background:'#ef4444', color:'#fff', border:'none', borderRadius:8, padding:'8px 18px', fontSize:14, fontWeight:600, cursor:'pointer' }}>Delete</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        </div>
+      )}
+
+      {/* Main Table Card */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                <th className="px-6 py-4">Article Details</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Author / Date</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {blogs.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center text-gray-400">
+                    <DocumentTextIcon className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                    <p>No blog posts found in the system.</p>
+                  </td>
+                </tr>
+              ) : (
+                blogs.map((blog) => (
+                  <tr key={blog.id} className="hover:bg-gray-50 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {blog.title}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate max-w-xs">
+                        {blog.excerpt || 'No description provided...'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        blog.status === 'PUBLISHED' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${blog.status === 'PUBLISHED' ? 'bg-green-600' : 'bg-yellow-600'}`} />
+                        {blog.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">{blog.author?.name || 'Admin'}</div>
+                      <div className="text-xs text-gray-500">
+                        {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleTogglePublish(blog.id, blog.status)}
+                          disabled={actionLoading === blog.id}
+                          className={`p-2 rounded-md transition-colors ${
+                            blog.status === 'PUBLISHED'
+                              ? 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'
+                              : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+                          }`}
+                          title={blog.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
+                        >
+                          {blog.status === 'PUBLISHED' ? (
+                            <XCircleIcon className="h-5 w-5" />
+                          ) : (
+                            <CheckCircleIcon className="h-5 w-5" />
+                          )}
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                          <PencilSquareIcon className="h-5 w-5" />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                          <TrashIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Footer info */}
+        <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
+          <p className="text-xs text-gray-500">
+            Showing {blogs.length} articles. Only published articles are visible to the public.
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
 export default AdminBlogManager;
+

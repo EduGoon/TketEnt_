@@ -1,8 +1,5 @@
-// User profile endpoints
-// Remove unused profile endpoints
-
 export const getUserUpcomingEvents = async () => {
-  return apiFetch('/user/upcoming');
+  return apiFetch('/user/events/');
 };
 import { apiFetch } from './api';
 import { Ticket } from '../utilities/types';
@@ -12,7 +9,7 @@ interface ListResponse<T> {
 }
 
 export const listUserTickets = async (): Promise<ListResponse<Ticket>> => {
-  return apiFetch<ListResponse<Ticket>>('/tickets');
+  return apiFetch<ListResponse<Ticket>>('/user/tickets/');
 };
 
 export const getTicket = async (id: string): Promise<Ticket> => {
@@ -20,7 +17,7 @@ export const getTicket = async (id: string): Promise<Ticket> => {
 };
 
 export const listTickets = async (): Promise<ListResponse<Ticket>> => {
-  return apiFetch<ListResponse<Ticket>>('/tickets/');
+  return apiFetch<ListResponse<Ticket>>('/user/tickets/');
 };
 
 export const purchaseTickets = async (
@@ -28,14 +25,14 @@ export const purchaseTickets = async (
   ticketTypeId: string,
   quantity: number
 ): Promise<ListResponse<Ticket>> => {
-  return apiFetch<ListResponse<Ticket>>('/tickets/purchase', {
+  return apiFetch<ListResponse<Ticket>>('/user/tickets/purchase', {
     method: 'POST',
     body: { eventId, ticketTypeId, quantity },
   });
 };
 
 export const refundTicket = async (id: string): Promise<{ message: string }> => {
-  return apiFetch<{ message: string }>(`/tickets/${id}/refund`, {
+  return apiFetch<{ message: string }>(`/user/tickets/${id}/refund`, {
     method: 'POST',
   });
 };

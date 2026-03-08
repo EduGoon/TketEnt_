@@ -198,7 +198,7 @@ export default function UserAccountPage() {
     if (activeTab === "history") {
       async function fetchHistory() {
         try {
-          const resp = await apiFetch('/history/user');
+          const resp = await apiFetch('/user/history');
           setHistory(Array.isArray(resp.data) ? resp.data : []);
         } catch {
           setHistory([]);

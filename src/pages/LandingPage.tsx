@@ -61,7 +61,7 @@ const LandingPage: React.FC = () => {
     async function fetchTrending() {
       setLoadingTrending(true);
       try {
-        const resp = await fetch('http://localhost:4000/api/v1/events/trending');
+        const resp = await fetch('http://localhost:4000/api/v1/api/events/trending');
         const data = await resp.json();
         setTrendingEvents(Array.isArray(data) ? data : []);
       } catch {

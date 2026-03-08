@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import * as eventService from '../services/eventService';
+import * as eventService from '../services/historyService';
 import { Event } from '../utilities/types';
 
 const FeaturedEvents: React.FC = () => {
@@ -8,7 +8,7 @@ const FeaturedEvents: React.FC = () => {
   React.useEffect(() => {
     const load = async () => {
       try {
-        const resp = await eventService.listEvents();
+        const resp = await eventService.listAllevents();
         setEvents(resp.data.slice(0, 6));
       } catch (err) {
         setEvents([]);

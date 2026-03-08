@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Sponsor } from '../../utilities/types';
-import * as sponsorService from '../../services/sponsorService';
+import { Sponsor } from '../utilities/types';
+import * as adminService from '../services/adminService'
 
 
 const SponsorManagement: React.FC = () => {
@@ -18,13 +18,15 @@ const SponsorManagement: React.FC = () => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   // const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+    useEffect(() => {
     const load = async () => {
       try {
-        const resp = await sponsorService.listSponsors();
-        setSponsors(resp.data);
+        // resp is now the Sponsor[] array, not the wrapper object
+        const resp = await adminService.listSponsors();
+        setSponsors(resp); // REMOVED .data
       } catch (err) {
         console.error('Failed to load sponsors', err);
+        setSponsors([]); // Fallback to empty array on error
       }
     };
     load();
@@ -85,10 +87,10 @@ const SponsorManagement: React.FC = () => {
 
     try {
       if (editingSponsor) {
-        const updated = await sponsorService.updateSponsor(editingSponsor.id, payload);
+        const updated = await adminService.updateSponsor(editingSponsor.id, payload);
         setSponsors(prev => prev.map(s => (s.id === editingSponsor.id ? updated : s)));
       } else {
-        const created = await sponsorService.createSponsor(payload);
+        const created = await adminService.createSponsor(payload);
         setSponsors(prev => [...prev, created]);
       }
       resetForm();
@@ -122,7 +124,7 @@ const SponsorManagement: React.FC = () => {
 
   const deleteSponsor = async (id: string | number) => {
     try {
-      await sponsorService.deleteSponsor(id.toString());
+      await adminService.deleteSponsor(id.toString());
       setSponsors(prev => prev.filter(s => s.id !== id));
     } catch (err) {
       console.error('Failed to delete sponsor', err);

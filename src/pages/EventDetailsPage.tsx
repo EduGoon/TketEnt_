@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
 import * as ticketService from '../services/ticketService';
-import * as eventService from '../services/eventService';
+import * as eventService from '../services/historyService';
 
 function ReviewsSection({ eventId, user }: { eventId: string, user: any }) {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -10,35 +10,36 @@ function ReviewsSection({ eventId, user }: { eventId: string, user: any }) {
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  useEffect(() => {
-    async function fetchReviews() {
-      const resp = await fetch(`http://localhost:4000/api/v1/reviews/event/${eventId}`);
-      const data = await resp.json();
+
+  const fetchReviews = async () => {
+    try {
+      const data = await eventService.getEventReviews(eventId);
       setReviews(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch reviews', err);
     }
+  };
+
+  useEffect(() => {
     fetchReviews();
   }, [eventId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
     try {
-      await fetch('http://localhost:4000/api/v1/reviews/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId, rating, comment }),
-      });
+      await eventService.createReview({ eventId, rating, comment });
       setRating(0);
       setComment('');
-      // Refresh reviews
-      const resp = await fetch(`http://localhost:4000/api/v1/reviews/event/${eventId}`);
-      const data = await resp.json();
-      setReviews(Array.isArray(data) ? data : []);
+      // Refresh reviews using service
+      await fetchReviews();
     } catch (err) {
       setError('Failed to submit review');
     }
     setSubmitting(false);
   };
+
   return (
     <div style={{ margin: '32px 0' }}>
       <div style={{ fontSize: 18, fontWeight: 700, color: '#f0c040', marginBottom: 8 }}>Reviews & Ratings</div>
@@ -100,9 +101,8 @@ const EventDetailsPage: React.FC = () => {
         try {
           const e = await eventService.getEvent(id);
           setEvent(e);
-          // Fetch share metadata
-          const resp = await fetch(`http://localhost:4000/api/v1/events/${id}/share`);
-          const meta = await resp.json();
+          // Fetch share metadata using service
+          const meta = await eventService.getEventShareMeta(id);
           setShareMeta(meta);
         } catch (err) {
           console.error('Failed to load event', err);
