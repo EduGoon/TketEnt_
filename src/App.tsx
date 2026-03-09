@@ -30,7 +30,7 @@ function App() {
                 <UserAccountPage />
               </PrivateRoute>
             } />
-            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/the-hub" element={<BlogPage />} />
             <Route path="/admin/blog-manager" element={<AdminBlogManager />} />
             <Route path="/admin/*" element={
               <PrivateRoute adminOnly>

@@ -3,7 +3,7 @@ import { useAuth } from '../utilities/AuthContext';
 import * as ticketService from '../services/ticketService';
 import { Ticket } from '../utilities/types';
 import { Link } from 'react-router-dom';
-import { apiFetch } from '../services/api';
+import * as historyService from '../services/historyService';
 
 const TYPE_COLOR = { ACTIVE: "#22c55e", USED: "#fbbf24", REFUNDED: "#ef4444" };
 
@@ -194,26 +194,37 @@ export default function UserAccountPage() {
     { id: "history", label: "History", icon: "📜" },
   ];
   const [history, setHistory] = useState<any[]>([]);
-  useEffect(() => {
-    if (activeTab === "history") {
-      async function fetchHistory() {
-        try {
-          const resp = await apiFetch('/user/history');
-          setHistory(Array.isArray(resp.data) ? resp.data : []);
-        } catch {
-          setHistory([]);
-        }
+const [loadingHistory, setLoadingHistory] = useState(false); // New state
+
+useEffect(() => {
+  if (activeTab === "history" && user?.id) {
+    async function fetchHistory() {
+      console.log("Attempting to fetch history for user:", user?.id); // Log 1: Entry
+      setLoadingHistory(true); // Start loading
+      try {
+        const resp = await historyService.getUserHistory(user?.id);
+        console.log("API response received:", resp); // Log 2: Raw Response
+        const d = resp.data;
+
+        // Flatten the object into an array
+        const combined = [
+          ...(d.favorites || []),
+          ...(d.reviews || []),
+          ...(d.chats || [])
+        ];
+        console.log("Combined history data:", combined); // Log 3: Processed Data
+
+        setHistory(combined);
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+        setHistory([]);
+      } finally {
+        setLoadingHistory(false); // End loading
       }
-      fetchHistory();
     }
-  }, [activeTab]);
-        {/* History */}
-        {activeTab === "history" && (
-          <div className="fade-in" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: 48, textAlign: "left" }}>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, marginBottom: 18 }}>My History</h2>
-            <pre style={{ background: '#222', color: '#fff', padding: 16, borderRadius: 8 }}>{JSON.stringify(history, null, 2)}</pre>
-          </div>
-        )}
+    fetchHistory();
+  }
+}, [activeTab, user?.id]);
 
   const selectedTicket = tickets.find((t) => t.id === selectedId);
   const accent = selectedTicket && selectedTicket.status ? TYPE_COLOR[selectedTicket.status as keyof typeof TYPE_COLOR] : "#22c55e";
@@ -535,6 +546,220 @@ export default function UserAccountPage() {
             <button className="ghost-btn">Request Early Access</button>
           </div>
         )}
+
+
+
+        {/* History section */}
+{activeTab === "history" && (
+  <div className="fade-in">
+    <style>{`
+      @keyframes historyIn {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes shimmer {
+        0%   { transform: translateX(-100%); }
+        100% { transform: translateX(200%); }
+      }
+    `}</style>
+
+    {/* Loading */}
+    {loadingHistory && (
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {[1,2,3].map(i => (
+          <div key={i} style={{ height: 90, borderRadius: 14, background: "linear-gradient(160deg,#141927,#0f1521)", border: "1px solid rgba(255,255,255,0.05)", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent)", animation: "shimmer 1.8s infinite" }} />
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Empty */}
+    {!loadingHistory && history.length === 0 && (
+      <div style={{ textAlign: "center", padding: "64px 32px", background: "linear-gradient(160deg,#141927,#0f1521)", border: "1px dashed rgba(255,255,255,0.08)", borderRadius: 18 }}>
+        <div style={{ fontSize: 32, marginBottom: 14, opacity: 0.3 }}>◎</div>
+        <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", color: "rgba(255,255,255,0.28)", fontSize: 15 }}>
+          No activity. Start exploring events and your interactions will appear here.
+        </p>
+      </div>
+    )}
+
+    {!loadingHistory && history.length > 0 && (() => {
+      const reviews   = history.filter(i => "rating" in i);
+      const messages  = history.filter(i => "content" in i && !("rating" in i));
+      const favorites = history.filter(i => !("rating" in i) && !("content" in i) && i.event);
+
+      const Section = ({
+        items,
+        title,
+        accent,
+        accentBg,
+        accentBorder,
+        renderItem,
+      }: {
+        items: any[];
+        title: string;
+        accent: string;
+        accentBg: string;
+        accentBorder: string;
+        renderItem: (item: any, idx: number) => React.ReactNode;
+      }) => items.length === 0 ? null : (
+        <div style={{ marginBottom: 52 }}>
+          {/* Section label */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
+            <div style={{ width: 3, height: 22, borderRadius: 2, background: accent, flexShrink: 0 }} />
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: "#fff" }}>
+              {title}
+            </h3>
+            <span style={{ fontSize: 10, fontFamily: "'DM Mono', monospace", color: accent, background: accentBg, border: `1px solid ${accentBorder}`, borderRadius: 20, padding: "2px 10px" }}>
+              {items.length}
+            </span>
+          </div>
+
+          {/* Cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+            {items.map((item, idx) => renderItem(item, idx))}
+          </div>
+        </div>
+      );
+
+      return (
+        <div>
+          {/* ── Favorited Events ── */}
+          <Section
+            items={favorites}
+            title="Favorited Events"
+            accent="#f472b6"
+            accentBg="rgba(244,114,182,0.07)"
+            accentBorder="rgba(244,114,182,0.2)"
+            renderItem={(item, idx) => {
+              const event = item.event;
+              const date  = new Date(item.createdAt);
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    background: "linear-gradient(160deg,#141927,#0f1521)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: 16, overflow: "hidden",
+                    transition: "border-color 0.25s, transform 0.25s, box-shadow 0.25s",
+                    animation: `historyIn 0.4s ease ${idx * 0.06}s both`,
+                    cursor: "default",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(244,114,182,0.3)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.4)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
+                >
+                  {event?.imageUrl && (
+                    <div style={{ height: 130, overflow: "hidden" }}>
+                      <img src={event.imageUrl} alt={event.title} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.72)" }} />
+                    </div>
+                  )}
+                  <div style={{ padding: "16px 18px" }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", marginBottom: 6, lineHeight: 1.3 }}>
+                      {event?.title ?? "Event"}
+                    </p>
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", fontFamily: "'DM Mono', monospace" }}>
+                      ♥ Saved · {date.toLocaleDateString("default", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                </div>
+              );
+            }}
+          />
+
+          {/* ── Reviews ── */}
+          <Section
+            items={reviews}
+            title="Reviews Left"
+            accent="#f0c040"
+            accentBg="rgba(240,192,64,0.07)"
+            accentBorder="rgba(240,192,64,0.2)"
+            renderItem={(item, idx) => {
+              const event = item.event;
+              const date  = new Date(item.createdAt);
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    background: "linear-gradient(160deg,#141927,#0f1521)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: 16, padding: "22px 22px",
+                    transition: "border-color 0.25s, transform 0.25s, box-shadow 0.25s",
+                    animation: `historyIn 0.4s ease ${idx * 0.06}s both`,
+                    cursor: "default",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(240,192,64,0.25)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.4)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
+                >
+                  {/* Stars */}
+                  <div style={{ display: "flex", gap: 3, marginBottom: 12 }}>
+                    {[1,2,3,4,5].map(s => (
+                      <span key={s} style={{ fontSize: 16, color: s <= item.rating ? "#f0c040" : "rgba(255,255,255,0.1)" }}>★</span>
+                    ))}
+                  </div>
+                  {/* Comment */}
+                  {item.comment && (
+                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.65, fontStyle: "italic", marginBottom: 14 }}>
+                      "{item.comment}"
+                    </p>
+                  )}
+                  {/* Footer */}
+                  <div style={{ paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>
+                      {event?.title ?? "Event"}
+                    </p>
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.22)", fontFamily: "'DM Mono', monospace" }}>
+                      {date.toLocaleDateString("default", { day: "numeric", month: "short" })}
+                    </p>
+                  </div>
+                </div>
+              );
+            }}
+          />
+
+          {/* ── Messages ── */}
+          <Section
+            items={messages}
+            title="Chat Messages"
+            accent="#60c8f0"
+            accentBg="rgba(96,200,240,0.07)"
+            accentBorder="rgba(96,200,240,0.2)"
+            renderItem={(item, idx) => {
+              const date = new Date(item.createdAt);
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    background: "linear-gradient(160deg,#141927,#0f1521)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: 16, padding: "20px 22px",
+                    transition: "border-color 0.25s, transform 0.25s, box-shadow 0.25s",
+                    animation: `historyIn 0.4s ease ${idx * 0.06}s both`,
+                    cursor: "default",
+                    position: "relative",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(96,200,240,0.25)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.4)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
+                >
+                  {/* Quote mark decoration */}
+                  <div style={{ fontSize: 40, lineHeight: 1, color: "rgba(96,200,240,0.1)", fontFamily: "Georgia, serif", position: "absolute", top: 12, right: 18, userSelect: "none" }}>"</div>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.65, marginBottom: 14, paddingRight: 20 }}>
+                    {item.content}
+                  </p>
+                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.22)", fontFamily: "'DM Mono', monospace" }}>
+                    {date.toLocaleDateString("default", { day: "numeric", month: "short", year: "numeric" })}
+                    {" · "}
+                    {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              );
+            }}
+          />
+        </div>
+      );
+    })()}
+  </div>
+)}
       </main>
     </div>
   );

@@ -170,50 +170,66 @@ const Analytics: React.FC = () => {
         </div>
       </div>
 
-      {/* Charts Placeholder */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Monthly Revenue Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Revenue</h3>
-          <div className="h-64 flex items-end justify-between space-x-2">
-            {monthlyRevenue.length > 0 ? (
-              monthlyRevenue.map((data) => (
-                <div key={data.month} className="flex-1 flex flex-col items-center">
-                  <div
-                    className="bg-green-500 w-full rounded-t"
-                    style={{ height: `${Math.min(200, ((data.revenue ?? 0) / maxRevenue) * 200)}px` }}
-                  ></div>
-                  <span className="text-xs text-gray-500 mt-2">{data.month}</span>
-                  <span className="text-xs text-gray-700">KSH {(data.revenue ?? 0).toLocaleString()}</span>
-                </div>
-              ))
-            ) : (
-              <div className="text-gray-500">No monthly revenue data available.</div>
-            )}
+      {/* Charts Container */}
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+  {/* Monthly Revenue Chart */}
+  <div className="bg-white rounded-lg shadow-md p-6">
+    <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Revenue</h3>
+    <div className="h-64 flex items-end justify-between space-x-2 border-b border-gray-100">
+      {monthlyRevenue.length > 0 ? (
+        monthlyRevenue.map((data) => (
+          <div key={data.month} className="flex-1 flex flex-col items-center h-full justify-end">
+            <div
+              className="bg-green-500 w-full rounded-t transition-all duration-500"
+              style={{ 
+                // Using percentage instead of px to prevent overflow
+                height: `${maxRevenue > 0 ? (data.revenue / maxRevenue) * 100 : 0}%`,
+                minHeight: data.revenue > 0 ? '4px' : '0px' 
+              }}
+            ></div>
+            <div className="w-full text-center mt-2">
+              <span className="block text-[10px] text-gray-500 font-bold uppercase">{data.month}</span>
+              <span className="block text-[10px] text-gray-700 truncate">
+                KSH {formatNumber(data.revenue ?? 0)}
+              </span>
+            </div>
           </div>
-        </div>
+        ))
+      ) : (
+        <div className="w-full text-center pb-24 text-gray-400 text-sm italic">No monthly revenue data available.</div>
+      )}
+    </div>
+  </div>
 
-        {/* Monthly Tickets Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Tickets Sold</h3>
-          <div className="h-64 flex items-end justify-between space-x-2">
-            {monthlyTickets.length > 0 ? (
-              monthlyTickets.map((data) => (
-                <div key={data.month} className="flex-1 flex flex-col items-center">
-                  <div
-                    className="bg-blue-500 w-full rounded-t"
-                    style={{ height: `${Math.min(200, ((data.ticketsSold ?? 0) / maxTickets) * 200)}px` }}
-                  ></div>
-                  <span className="text-xs text-gray-500 mt-2">{data.month}</span>
-                  <span className="text-xs text-gray-700">{formatNumber(data.ticketsSold ?? 0)}</span>
-                </div>
-              ))
-            ) : (
-              <div className="text-gray-500">No ticket sales data available.</div>
-            )}
+  {/* Monthly Tickets Chart */}
+  <div className="bg-white rounded-lg shadow-md p-6">
+    <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Tickets Sold</h3>
+    <div className="h-64 flex items-end justify-between space-x-2 border-b border-gray-100">
+      {monthlyTickets.length > 0 ? (
+        monthlyTickets.map((data) => (
+          <div key={data.month} className="flex-1 flex flex-col items-center h-full justify-end">
+            <div
+              className="bg-blue-500 w-full rounded-t transition-all duration-500"
+              style={{ 
+                // Using percentage to keep bars inside the h-64 container
+                height: `${maxTickets > 0 ? (data.ticketsSold / maxTickets) * 100 : 0}%`,
+                minHeight: data.ticketsSold > 0 ? '4px' : '0px'
+              }}
+            ></div>
+            <div className="w-full text-center mt-2">
+              <span className="block text-[10px] text-gray-500 font-bold uppercase">{data.month}</span>
+              <span className="block text-[10px] text-gray-700 font-medium">
+                {formatNumber(data.ticketsSold ?? 0)}
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
+        ))
+      ) : (
+        <div className="w-full text-center pb-24 text-gray-400 text-sm italic">No ticket sales data available.</div>
+      )}
+    </div>
+  </div>
+</div>
 
       {/* Top Events Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">

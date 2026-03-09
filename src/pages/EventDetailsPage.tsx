@@ -4,12 +4,14 @@ import { useAuth } from '../utilities/AuthContext';
 import * as ticketService from '../services/ticketService';
 import * as eventService from '../services/historyService';
 
-function ReviewsSection({ eventId, user }: { eventId: string, user: any }) {
+/* ── Reviews Section ────────────────────────────────────────────────────── */
+function ReviewsSection({ eventId, user }: { eventId: string; user: any }) {
   const [reviews, setReviews] = useState<any[]>([]);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [hoverRating, setHoverRating] = useState(0);
 
   const fetchReviews = async () => {
     try {
@@ -20,9 +22,7 @@ function ReviewsSection({ eventId, user }: { eventId: string, user: any }) {
     }
   };
 
-  useEffect(() => {
-    fetchReviews();
-  }, [eventId]);
+  useEffect(() => { fetchReviews(); }, [eventId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +32,6 @@ function ReviewsSection({ eventId, user }: { eventId: string, user: any }) {
       await eventService.createReview({ eventId, rating, comment });
       setRating(0);
       setComment('');
-      // Refresh reviews using service
       await fetchReviews();
     } catch (err) {
       setError('Failed to submit review');
@@ -40,52 +39,142 @@ function ReviewsSection({ eventId, user }: { eventId: string, user: any }) {
     setSubmitting(false);
   };
 
+  const avgRating = reviews.length
+    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
+
   return (
-    <div style={{ margin: '32px 0' }}>
-      <div style={{ fontSize: 18, fontWeight: 700, color: '#f0c040', marginBottom: 8 }}>Reviews & Ratings</div>
-      <div style={{ marginBottom: 18 }}>
-        {reviews.length === 0 ? (
-          <div style={{ color: '#fff', fontSize: 15 }}>No reviews yet.</div>
-        ) : (
-          reviews.map((r, idx) => (
-            <div key={idx} style={{ background: '#111827', borderRadius: 8, padding: '12px 18px', marginBottom: 10 }}>
-              <div style={{ fontWeight: 600, color: '#22c55e', fontSize: 15 }}>{r.userName ?? 'User'}</div>
-              <div style={{ color: '#f0c040', fontSize: 16 }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</div>
-              <div style={{ color: '#fff', fontSize: 14 }}>{r.comment}</div>
-              <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>{new Date(r.createdAt).toLocaleString()}</div>
-            </div>
-          ))
+    <div style={{ marginTop: 48 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+        <div style={{ width: 3, height: 28, background: '#f0c040', borderRadius: 2, flexShrink: 0 }} />
+        <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: '#fff' }}>
+          Reviews
+        </h3>
+        {avgRating && (
+          <div style={{
+            marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(240,192,64,0.1)', border: '1px solid rgba(240,192,64,0.2)',
+            borderRadius: 10, padding: '6px 14px',
+          }}>
+            <span style={{ color: '#f0c040', fontSize: 18 }}>★</span>
+            <span style={{ fontSize: 18, fontWeight: 700, color: '#f0c040', fontFamily: "'DM Mono', monospace" }}>{avgRating}</span>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono', monospace" }}>/ 5</span>
+          </div>
         )}
       </div>
-      {user && (
-        <form onSubmit={handleSubmit} style={{ background: '#222', borderRadius: 8, padding: '16px 18px', marginBottom: 12 }}>
-          <div style={{ fontWeight: 600, color: '#22c55e', fontSize: 15, marginBottom: 8 }}>Leave a Review</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <span style={{ color: '#f0c040', fontSize: 18 }}>Rating:</span>
-            {[1,2,3,4,5].map(star => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setRating(star)}
-                style={{ background: 'none', border: 'none', color: star <= rating ? '#f0c040' : '#888', fontSize: 22, cursor: 'pointer' }}
-              >★</button>
-            ))}
+
+      {/* Review list */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+        {reviews.length === 0 ? (
+          <div style={{
+            textAlign: 'center', padding: '36px 24px',
+            background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 14,
+          }}>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', color: 'rgba(255,255,255,0.35)', fontSize: 15 }}>
+              No reviews yet — be the first.
+            </p>
           </div>
-          <textarea
-            value={comment}
-            onChange={e => setComment(e.target.value)}
-            placeholder="Write your review..."
-            style={{ width: '100%', minHeight: 60, borderRadius: 8, border: '1px solid #444', padding: 8, fontSize: 15, marginBottom: 8 }}
-            required
-          />
-          <button type="submit" disabled={submitting || rating === 0} style={{ background:'#22c55e', color:'#0a0d14', border:'none', borderRadius:8, padding:'10px 22px', fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:'DM Sans,sans-serif' }}>Submit Review</button>
-          {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
-        </form>
+        ) : reviews.map((r, idx) => (
+          <div key={idx} style={{
+            background: 'linear-gradient(160deg,#141927,#0f1521)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 14, padding: '18px 22px',
+            animation: `fadeUp 0.4s ease ${idx * 0.05}s both`,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+              <div>
+                <p style={{ fontWeight: 600, color: '#fff', fontSize: 14, marginBottom: 4 }}>
+                  {r.userName ?? 'Anonymous'}
+                </p>
+                <div style={{ display: 'flex', gap: 2 }}>
+                  {[1,2,3,4,5].map(s => (
+                    <span key={s} style={{ color: s <= r.rating ? '#f0c040' : 'rgba(255,255,255,0.15)', fontSize: 14 }}>★</span>
+                  ))}
+                </div>
+              </div>
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.5 }}>
+                {new Date(r.createdAt).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65 }}>{r.comment}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Submit form */}
+      {user && (
+        <div style={{
+          background: 'linear-gradient(160deg,#141927,#0f1521)',
+          border: '1px solid rgba(240,192,64,0.15)',
+          borderRadius: 14, padding: '24px 26px',
+        }}>
+          <p style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 14 }}>
+            Leave a Review
+          </p>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+              {[1,2,3,4,5].map(star => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px',
+                    fontSize: 26,
+                    color: star <= (hoverRating || rating) ? '#f0c040' : 'rgba(255,255,255,0.15)',
+                    transition: 'color 0.15s, transform 0.15s',
+                    transform: star <= (hoverRating || rating) ? 'scale(1.15)' : 'scale(1)',
+                  }}
+                >★</button>
+              ))}
+            </div>
+            <textarea
+              value={comment}
+              onChange={e => setComment(e.target.value)}
+              placeholder="Share your experience…"
+              required
+              style={{
+                width: '100%', minHeight: 90,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 10, padding: '12px 14px',
+                fontSize: 13, color: '#fff',
+                fontFamily: "'DM Sans', sans-serif",
+                resize: 'vertical', outline: 'none',
+                marginBottom: 14, lineHeight: 1.6,
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={e => (e.target.style.borderColor = 'rgba(240,192,64,0.45)')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
+            />
+            <button
+              type="submit"
+              disabled={submitting || rating === 0}
+              style={{
+                background: rating > 0 ? '#f0c040' : 'rgba(255,255,255,0.08)',
+                color: rating > 0 ? '#0a0d14' : 'rgba(255,255,255,0.35)',
+                border: 'none', borderRadius: 9,
+                padding: '10px 24px', fontSize: 13, fontWeight: 700,
+                cursor: rating > 0 ? 'pointer' : 'not-allowed',
+                fontFamily: "'DM Sans', sans-serif",
+                transition: 'all 0.25s',
+              }}
+            >
+              {submitting ? 'Submitting…' : 'Submit Review'}
+            </button>
+            {error && <p style={{ color: '#f87171', fontSize: 12, marginTop: 10 }}>{error}</p>}
+          </form>
+        </div>
       )}
     </div>
   );
 }
 
+/* ── Main Page ──────────────────────────────────────────────────────────── */
 const EventDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -101,7 +190,6 @@ const EventDetailsPage: React.FC = () => {
         try {
           const e = await eventService.getEvent(id);
           setEvent(e);
-          // Fetch share metadata using service
           const meta = await eventService.getEventShareMeta(id);
           setShareMeta(meta);
         } catch (err) {
@@ -130,9 +218,7 @@ const EventDetailsPage: React.FC = () => {
   }, 0);
 
   const handlePurchase = async () => {
-    if (!user || !event) {
-      return;
-    }
+    if (!user || !event) return;
     try {
       const requests = Object.entries(selectedTickets).map(([ticketTypeId, qty]) =>
         ticketService.purchaseTickets(event.id, ticketTypeId, qty)
@@ -146,204 +232,410 @@ const EventDetailsPage: React.FC = () => {
     }
   };
 
+  /* ── Shared styles ──────────────────────────────────────────────────── */
+  const sharedStyles = `
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes headerIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  `;
+
+  /* ── Loading ────────────────────────────────────────────────────────── */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading event...</div>
+      <div style={{ minHeight: '100vh', background: '#0a0d14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{sharedStyles}</style>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 36, marginBottom: 14, color: '#f0c040' }}>✦</div>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', color: 'rgba(255,255,255,0.35)', fontSize: 16 }}>
+            Loading event…
+          </p>
+        </div>
       </div>
     );
   }
 
+  /* ── Not found ──────────────────────────────────────────────────────── */
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Event not found.</div>
+      <div style={{ minHeight: '100vh', background: '#0a0d14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{sharedStyles}</style>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 36, marginBottom: 14, color: 'rgba(255,255,255,0.2)' }}>✦</div>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', color: 'rgba(255,255,255,0.35)', fontSize: 16 }}>
+            Event not found.
+          </p>
+          <Link to="/events" style={{ display: 'inline-block', marginTop: 20, fontSize: 12, color: '#f0c040', fontFamily: "'DM Mono', monospace", letterSpacing: 1 }}>
+            ← Back to Events
+          </Link>
+        </div>
       </div>
     );
   }
 
+  /* ── Purchase success ───────────────────────────────────────────────── */
   if (purchaseSuccess) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
-          * { box-sizing: border-box; }
-          .gold { color: #f0c040; }
-          .green { color: #22c55e; }
-          .success-icon { font-size: 38px; color: #22c55e; margin-bottom: 12px; }
-          .success-title { font-size: 22px; font-family: 'Playfair Display', serif; font-weight: 700; color: #f0c040; margin-bottom: 8px; }
-          .success-btn { background:#f0c040; color:#0a0d14; border:none; border-radius:8px; padding:10px 22px; font-size:15px; font-weight:600; cursor:pointer; transition:opacity 0.2s,transform 0.15s; font-family:'DM Sans',sans-serif; margin-bottom: 8px; }
-          .success-btn:hover { opacity:0.85; transform:translateY(-1px); }
-        `}</style>
-        <div style={{ maxWidth: 420, margin: '0 auto', background: '#111827', borderRadius: 14, boxShadow: '0 6px 24px rgba(0,0,0,0.45)', padding: 32, textAlign: 'center' }}>
-          <div className="success-icon">✓</div>
-          <h2 className="success-title">Purchase Successful!</h2>
-          <p style={{ color: '#fff', marginBottom: 18 }}>Your tickets have been added to your account.</p>
-          <div>
-            <Link to="/account" className="success-btn" style={{ display: 'block', marginBottom: 8 }}>View My Tickets</Link>
-            <Link to="/events" className="ghost-btn" style={{ display: 'block' }}>Browse More Events</Link>
+      <div style={{ minHeight: '100vh', background: '#0a0d14', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <style>{sharedStyles}</style>
+        <div style={{
+          width: '100%', maxWidth: 440,
+          background: 'linear-gradient(160deg,#141927,#0f1521)',
+          border: '1px solid rgba(240,192,64,0.2)',
+          borderRadius: 20, padding: '48px 40px', textAlign: 'center',
+          animation: 'fadeUp 0.5s ease forwards',
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'rgba(126,217,154,0.12)', border: '1px solid rgba(126,217,154,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 28, margin: '0 auto 20px',
+          }}>✓</div>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: '#fff', marginBottom: 10 }}>
+            Purchase Successful!
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, marginBottom: 32, lineHeight: 1.6 }}>
+            Your tickets have been added to your account.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Link to="/account" style={{
+              background: '#f0c040', color: '#0a0d14', borderRadius: 10,
+              padding: '12px 24px', fontWeight: 700, fontSize: 14,
+              textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+              transition: 'opacity 0.2s',
+            }}>View My Tickets</Link>
+            <Link to="/events" style={{
+              background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)',
+              border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10,
+              padding: '12px 24px', fontWeight: 500, fontSize: 14,
+              textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+            }}>Browse More Events</Link>
           </div>
         </div>
       </div>
     );
   }
 
+  /* ── Main render ────────────────────────────────────────────────────── */
   return (
     <div style={{ minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-      <header style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(10,13,20,0.96)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 24px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <nav>
-            <Link to="/events" className="ghost-btn">&larr; Back to Events</Link>
-          </nav>
+      <style>{`
+        ${sharedStyles}
+
+        .ghost-btn {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: rgba(255,255,255,0.6); border-radius: 8px;
+          padding: 7px 16px; font-size: 13px; cursor: pointer;
+          font-family: 'DM Sans', sans-serif; text-decoration: none;
+          transition: all 0.2s; display: inline-block;
+        }
+        .ghost-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+        .ticket-row {
+          background: linear-gradient(160deg, #141927, #0f1521);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 14px; padding: 18px 20px;
+          margin-bottom: 12px; transition: border-color 0.25s;
+        }
+        .ticket-row:hover { border-color: rgba(240,192,64,0.25); }
+
+        .qty-select {
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 8px; padding: 7px 12px;
+          font-size: 13px; color: #fff;
+          font-family: 'DM Mono', monospace;
+          outline: none; cursor: pointer;
+          transition: border-color 0.2s;
+        }
+        .qty-select:focus { border-color: rgba(240,192,64,0.5); }
+        .qty-select option { background: #141927; }
+
+        .share-link {
+          display: inline-flex; align-items: center; gap: 6px;
+          border-radius: 8px; padding: 8px 16px;
+          font-size: 12px; font-weight: 600; text-decoration: none;
+          font-family: 'DM Mono', monospace; letter-spacing: 0.5px;
+          transition: opacity 0.2s, transform 0.15s;
+        }
+        .share-link:hover { opacity: 0.82; transform: translateY(-1px); }
+      `}</style>
+
+      {/* ── Sticky Nav ────────────────────────────────────────────────── */}
+      <header style={{
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: 'rgba(10,13,20,0.96)', backdropFilter: 'blur(14px)',
+        position: 'sticky', top: 0, zIndex: 100,
+        animation: 'headerIn 0.4s ease forwards',
+      }}>
+        <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 17, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display', serif", letterSpacing: -0.3 }}>
+            ✦ Venue
+          </span>
+          <Link to="/events" className="ghost-btn">← Back to Events</Link>
         </div>
       </header>
-      <section className="event-banner-wrap" style={{ position: 'relative', marginBottom: 0 }}>
+
+      {/* ── Hero Banner ───────────────────────────────────────────────── */}
+      <div style={{ position: 'relative', height: 420, overflow: 'hidden' }}>
         <img
           src={event?.imageUrl ?? ''}
           alt={event?.title ?? 'Event'}
-          className="event-banner"
-          style={{
-            width: '100%',
-            height: '340px',
-            objectFit: 'cover',
-            borderBottom: '1px solid #222',
-            borderRadius: '0 0 24px 24px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-          }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.55)' }}
         />
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '100%',
-            height: '340px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-start',
-            padding: '32px 36px',
-            background: 'linear-gradient(180deg, rgba(10,13,20,0.12) 0%, rgba(10,13,20,0.55) 80%)',
-            zIndex: 2,
-          }}
-        >
-          <h1
-            style={{
-              fontSize: '2.2rem',
-              fontFamily: 'Playfair Display, serif',
-              fontWeight: 700,
-              color: '#fff',
-              marginBottom: '8px',
-              textShadow: '0 2px 12px rgba(0,0,0,0.45)',
-            }}
-          >
+        {/* Gradient overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to bottom, rgba(10,13,20,0.2) 0%, rgba(10,13,20,0.85) 100%)',
+        }} />
+        {/* Text overlay */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          maxWidth: 1060, margin: '0 auto', padding: '0 24px 36px',
+        }}>
+          {event.category && (
+            <div style={{
+              display: 'inline-block',
+              background: '#f0c040', color: '#0a0d14',
+              padding: '4px 12px', borderRadius: 6, marginBottom: 14,
+              fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase',
+              fontFamily: "'DM Mono', monospace",
+            }}>
+              {event.category}
+            </div>
+          )}
+          <h1 style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 700,
+            color: '#fff', lineHeight: 1.15,
+            textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+          }}>
             {event.title}
           </h1>
-          <span
-            style={{
-              background: '#22c55e',
-              color: '#0a0d14',
-              borderRadius: '8px',
-              padding: '6px 18px',
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              boxShadow: '0 2px 8px rgba(34,197,94,0.15)',
-              marginBottom: '16px',
-              letterSpacing: '0.02em',
-            }}
-          >
-            {event.category}
-          </span>
         </div>
-      </section>
-      <section className="event-details">
-        <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32 }}>
-            <div>
-              <h2 className="event-section-title">About This Event</h2>
-              <p className="event-desc">{event.description}</p>
-              {shareMeta && (
-                <div style={{ margin: '18px 0' }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: '#22c55e', marginBottom: 8 }}>Share this event:</div>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <a
-                      href={`https://wa.me/?text=${encodeURIComponent(shareMeta.title + ' ' + shareMeta.url)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ background: '#22c55e', color: '#fff', borderRadius: 8, padding: '8px 16px', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}
-                    >WhatsApp</a>
-                    <a
-                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMeta.title)}&url=${encodeURIComponent(shareMeta.url)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ background: '#1da1f2', color: '#fff', borderRadius: 8, padding: '8px 16px', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}
-                    >Twitter</a>
-                    <a
-                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareMeta.url)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ background: '#1877f2', color: '#fff', borderRadius: 8, padding: '8px 16px', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}
-                    >Facebook</a>
-                  </div>
-                </div>
-              )}
-              <h3 className="event-section-title">Location & Schedule</h3>
-              <p className="event-location">{event.venue ?? event.location}</p>
-              <p className="event-schedule">
-                {event.startTime && (
-                  <>Starts: {new Date(event.startTime).toLocaleString()}</>
-                )}
-                {event.endTime && (
-                  <> • Ends: {new Date(event.endTime).toLocaleString()}</>
-                )}
-              </p>
-              <ReviewsSection eventId={event.id} user={user} />
-            </div>
-            <div>
-              <h3 className="event-section-title">Get Tickets</h3>
-              {ticketTypes.map((ticket: any) => (
-                <div key={ticket.id} className="ticket-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span className="ticket-type">{ticket.type}</span>
-                    <span className="ticket-price">KSH {(ticket.price ?? 0).toLocaleString()}</span>
-                  </div>
-                  <p className="ticket-available">{ticket.available ?? 0} tickets available</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <label style={{ fontSize: 13 }}>Quantity:</label>
-                    <select
-                      value={selectedTickets[ticket.id] || 0}
-                      onChange={(e) => handleTicketChange(ticket.id, parseInt(e.target.value))}
-                      className="ticket-select"
-                    >
-                      {[...Array(11).keys()].map(num => (
-                        <option key={num} value={num}>{num}</option>
-                      ))}
-                    </select>
-                  </div>
+      </div>
+
+      {/* ── Body ──────────────────────────────────────────────────────── */}
+      <div style={{ maxWidth: 1060, margin: '0 auto', padding: '48px 24px 100px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 48, alignItems: 'start' }}>
+
+          {/* LEFT: Details */}
+          <div style={{ animation: 'fadeUp 0.5s ease 0.05s both' }}>
+
+            {/* Quick meta row */}
+            <div style={{
+              display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 40,
+              paddingBottom: 32, borderBottom: '1px solid rgba(255,255,255,0.07)',
+            }}>
+              {[
+                { icon: '🗓', label: 'Starts', value: event.startTime ? new Date(event.startTime).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'TBD' },
+                { icon: '🏁', label: 'Ends', value: event.endTime ? new Date(event.endTime).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'TBD' },
+                { icon: '📍', label: 'Venue', value: event.venue ?? event.location ?? '—' },
+              ].map(m => (
+                <div key={m.label}>
+                  <p style={{ fontSize: 9, letterSpacing: 2.5, color: 'rgba(240,192,64,0.55)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 5 }}>
+                    {m.icon} {m.label}
+                  </p>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontFamily: "'DM Mono', monospace" }}>{m.value}</p>
                 </div>
               ))}
-              {totalPrice > 0 && (
-                <div style={{ marginTop: 18, borderTop: '1px solid #222', paddingTop: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <span style={{ fontSize: 15, fontWeight: 600 }}>Total:</span>
-                    <span style={{ fontSize: 17, fontWeight: 700, color: '#22c55e' }}>KSH {(totalPrice ?? 0).toLocaleString()}</span>
-                  </div>
-                  <button
-                    onClick={handlePurchase}
-                    disabled={!user}
-                    className="buy-btn"
+            </div>
+
+            {/* About */}
+            <div style={{ marginBottom: 40 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
+                <div style={{ width: 3, height: 24, background: '#f0c040', borderRadius: 2 }} />
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700 }}>About This Event</h2>
+              </div>
+              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.85, letterSpacing: 0.15 }}>
+                {event.description}
+              </p>
+            </div>
+
+            {/* Share */}
+            {shareMeta && (
+              <div style={{ marginBottom: 40 }}>
+                <p style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 14 }}>
+                  Share this event
+                </p>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(shareMeta.title + ' ' + shareMeta.url)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="share-link"
+                    style={{ background: 'rgba(37,211,102,0.15)', color: '#25d366', border: '1px solid rgba(37,211,102,0.25)' }}
                   >
-                    {user ? 'Buy Tickets' : 'Sign In to Buy Tickets'}
-                  </button>
-                  {!user && (
-                    <p style={{ fontSize: 13, color: '#fff', marginTop: 6 }}>Please sign in to purchase tickets.</p>
-                  )}
+                    WhatsApp
+                  </a>
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMeta.title)}&url=${encodeURIComponent(shareMeta.url)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="share-link"
+                    style={{ background: 'rgba(29,161,242,0.12)', color: '#1da1f2', border: '1px solid rgba(29,161,242,0.25)' }}
+                  >
+                    Twitter / X
+                  </a>
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareMeta.url)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="share-link"
+                    style={{ background: 'rgba(24,119,242,0.12)', color: '#1877f2', border: '1px solid rgba(24,119,242,0.25)' }}
+                  >
+                    Facebook
+                  </a>
                 </div>
+              </div>
+            )}
+
+            {/* Reviews */}
+            <ReviewsSection eventId={event.id} user={user} />
+          </div>
+
+          {/* RIGHT: Ticket panel */}
+<div style={{ position: 'sticky', top: 76, animation: 'fadeUp 0.5s ease 0.12s both' }}>
+  <div style={{
+    background: 'linear-gradient(160deg,#141927,#0f1521)',
+    border: '1px solid rgba(240,192,64,0.18)',
+    borderRadius: 18, overflow: 'hidden',
+  }}>
+    {/* Panel header */}
+    <div style={{ padding: '20px 22px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+      <p style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 4 }}>
+        🎟 Get Tickets
+      </p>
+      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono', monospace" }}>
+        Select type & quantity
+      </p>
+    </div>
+
+    <div style={{ padding: '20px 22px' }}>
+      {ticketTypes.map((ticket: any) => {
+        const soldOut = (ticket.available ?? 0) === 0;
+        const lowStock = !soldOut && (ticket.available ?? 0) <= 5;
+        const maxQty = Math.min(10, ticket.available ?? 0);
+
+        return (
+          <div
+            key={ticket.id}
+            className="ticket-row"
+            style={{ opacity: soldOut ? 0.5 : 1, transition: 'opacity 0.2s' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3 }}>{ticket.type}</p>
+                <p style={{
+                  fontSize: 10, fontFamily: "'DM Mono', monospace",
+                  color: soldOut ? '#f87171' : lowStock ? '#fb923c' : 'rgba(255,255,255,0.3)',
+                }}>
+                  {soldOut
+                    ? 'Sold out'
+                    : `${ticket.available} left${lowStock ? ' — hurry!' : ''}`}
+                </p>
+              </div>
+              <p style={{ fontSize: 16, fontWeight: 700, color: soldOut ? 'rgba(255,255,255,0.2)' : '#f0c040', fontFamily: "'DM Mono', monospace" }}>
+                KSH {(ticket.price ?? 0).toLocaleString()}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: 1, textTransform: 'uppercase', fontFamily: "'DM Mono', monospace" }}>
+                Qty
+              </p>
+              <select
+                value={selectedTickets[ticket.id] || 0}
+                onChange={e => handleTicketChange(ticket.id, parseInt(e.target.value))}
+                disabled={soldOut}
+                className="qty-select"
+                style={{ opacity: soldOut ? 0.4 : 1, cursor: soldOut ? 'not-allowed' : 'pointer' }}
+              >
+                {[...Array(maxQty + 1).keys()].map(num => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
+              </select>
+
+              {soldOut && (
+                <span style={{
+                  fontSize: 9, letterSpacing: 1.5, fontFamily: "'DM Mono', monospace",
+                  color: '#f87171', background: 'rgba(248,113,113,0.1)',
+                  border: '1px solid rgba(248,113,113,0.2)',
+                  borderRadius: 5, padding: '3px 8px', textTransform: 'uppercase',
+                }}>
+                  Sold Out
+                </span>
               )}
             </div>
           </div>
+        );
+      })}
+
+      {/* Total + CTA */}
+      {(() => {
+        const allSoldOut = ticketTypes.every((t: any) => (t.available ?? 0) === 0);
+
+        return (
+          <div style={{ marginTop: 8, paddingTop: 18, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            {totalPrice > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono', monospace", letterSpacing: 1 }}>TOTAL</p>
+                <p style={{ fontSize: 22, fontWeight: 700, color: '#f0c040', fontFamily: "'DM Mono', monospace" }}>
+                  KSH {(totalPrice ?? 0).toLocaleString()}
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={handlePurchase}
+              disabled={!user || allSoldOut || totalPrice === 0}
+              style={{
+                width: '100%',
+                background: allSoldOut
+                  ? 'rgba(255,255,255,0.04)'
+                  : !user || totalPrice === 0
+                  ? 'rgba(255,255,255,0.06)'
+                  : '#f0c040',
+                color: allSoldOut || !user || totalPrice === 0 ? 'rgba(255,255,255,0.25)' : '#0a0d14',
+                border: allSoldOut
+                  ? '1px solid rgba(248,113,113,0.2)'
+                  : '1px solid transparent',
+                borderRadius: 11, padding: '14px 24px',
+                fontSize: 14, fontWeight: 700,
+                cursor: (!user || allSoldOut || totalPrice === 0) ? 'not-allowed' : 'pointer',
+                fontFamily: "'DM Sans', sans-serif",
+                letterSpacing: 0.3,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { if (user && !allSoldOut && totalPrice > 0) e.currentTarget.style.opacity = '0.85'; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+            >
+              {allSoldOut
+                ? 'No Tickets Available'
+                : !user
+                ? 'Sign In to Buy'
+                : totalPrice === 0
+                ? 'Select Tickets Above'
+                : 'Buy Tickets'}
+            </button>
+
+            {!user && !allSoldOut && (
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', textAlign: 'center', marginTop: 10, fontFamily: "'DM Mono', monospace" }}>
+                Sign in to complete your purchase
+              </p>
+            )}
+          </div>
+        );
+      })()}
+    </div>
+  </div>
+</div>
         </div>
-      </section>
+      </div>
     </div>
   );
 };
