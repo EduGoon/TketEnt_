@@ -2,8 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import * as adminService from '../services/adminService';
 import { 
   StarIcon, TrashIcon, UserCircleIcon, CalendarIcon,
-  ArrowPathIcon, MagnifyingGlassIcon, HeartIcon,
-  ChatBubbleBottomCenterTextIcon, HandThumbUpIcon
+  ArrowPathIcon, MagnifyingGlassIcon,
+  ChatBubbleBottomCenterTextIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 

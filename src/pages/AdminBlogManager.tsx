@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import * as adminService from '../services/adminService';
 import { 
   PlusIcon, PencilIcon, TrashIcon, 
-  EyeIcon, EyeSlashIcon, XMarkIcon, ArrowPathIcon 
+  EyeIcon, EyeSlashIcon, XMarkIcon 
 } from '@heroicons/react/24/outline';
 
 const AdminBlogManager: React.FC = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<any>(null);
 

@@ -5,7 +5,7 @@ import { useAuth } from '../utilities/AuthContext';
 
 const LandingPage: React.FC = () => {
   const { user, logout } = useAuth();
-  const [loadingTrending, setLoadingTrending] = React.useState(true);
+  const [_loadingTrending, setLoadingTrending] = React.useState(true);
   const [trendingEvents, setTrendingEvents] = React.useState<any[]>([]);
   const [blogs, setBlogs] = React.useState<any[]>([]);
   const [loadingBlogs, setLoadingBlogs] = React.useState(true);

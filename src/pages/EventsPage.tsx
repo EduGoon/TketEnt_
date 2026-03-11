@@ -11,11 +11,6 @@ const EventsPage: React.FC = () => {
   const [keyword, setKeyword] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [favorites, setFavorites] = useState<{ [eventId: string]: boolean }>({});
-  const [geoEvents, setGeoEvents] = useState<Event[]>([]);
-  const [geoLoading, setGeoLoading] = useState(false);
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
-  const [radius, setRadius] = useState('');
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -106,15 +101,6 @@ setFilteredEvents(filtered);
       keyword,
       category: categoryFilter !== 'All' ? categoryFilter : undefined,
       date: date || undefined,
-    });
-  };
-
-  const handleKeywordSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchEvents({
-      keyword: keyword.trim() || undefined,
-      category: categoryFilter !== 'All' ? categoryFilter : undefined,
-      date: dateFilter || undefined,
     });
   };
 
