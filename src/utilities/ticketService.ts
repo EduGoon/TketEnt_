@@ -1,15 +1,20 @@
 import { useAuth } from './AuthContext';
 
 export interface Ticket {
-  id: number;
-  eventId: number;
-  eventTitle: string;
-  eventDate: string;
-  ticketType: string;
-  quantity: number;
-  totalPrice: number;
+  id: string;
+  eventId: string;
+  userId: string;
+  eventName?: string;
+  eventImageUrl?: string;
+  eventVenue?: string;
+  eventStartTime?: string;
+  eventEndTime?: string;
+  ticketTypeName?: string;
+  ticketPrice?: number;
+  ticketNote?: string;
+  qrCode?: string;
+  status: 'ACTIVE' | 'USED' | 'REFUNDED';
   purchaseDate: string;
-  status: 'confirmed' | 'pending' | 'used';
 }
 
 export const useTickets = () => {
@@ -29,7 +34,7 @@ export const useTickets = () => {
     const tickets = getUserTickets();
     const newTicket: Ticket = {
       ...ticket,
-      id: Date.now(),
+      id: Date.now().toString(),
       purchaseDate: new Date().toISOString(),
     };
     tickets.push(newTicket);

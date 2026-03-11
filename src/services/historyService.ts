@@ -63,3 +63,25 @@ export const getBlogById = async (id: string) => {
 export const getUserHistory = async (id: string | undefined) => {
   return apiFetch(`/user/history/${id}`);
 };
+
+//preferences
+export interface UserPreferences {
+  emailTicketConfirmation: boolean;
+  emailReminders:          boolean;
+  emailNewEvents:          boolean;
+  emailBlogs:              boolean;
+  emailPromotions:         boolean;
+}
+
+export async function getUserPreferences(): Promise<UserPreferences> {
+  const data = await apiFetch('/user/preferences/');
+  return data?.data ?? data;
+}
+
+export async function updateUserPreferences(prefs: Partial<UserPreferences>): Promise<UserPreferences> {
+  const data = await apiFetch('/user/preferences/update', {
+    method: 'PATCH',
+    body: prefs,
+  });
+  return data?.data ?? data;
+}
