@@ -331,7 +331,7 @@ setFilteredEvents(filtered);
   fetchEvents(params);
 }}
             className="field-input" 
-            placeholder="Event name, artist…" 
+            placeholder="Event name" 
           />
         </div>
         <div className="field-wrap">

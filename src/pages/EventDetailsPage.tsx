@@ -14,13 +14,13 @@ function ReviewsSection({ eventId, user }: { eventId: string; user: any }) {
   const [hoverRating, setHoverRating] = useState(0);
 
   const fetchReviews = async () => {
-    try {
-      const data = await eventService.getEventReviews(eventId);
-      setReviews(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Failed to fetch reviews', err);
-    }
-  };
+  try {
+    const data = await eventService.getEventReviews(eventId);
+    setReviews(Array.isArray(data) ? data : data?.data ?? []);
+  } catch (err) {
+    console.error('Failed to fetch reviews', err);
+  }
+};
 
   useEffect(() => { fetchReviews(); }, [eventId]);
 
@@ -86,8 +86,7 @@ function ReviewsSection({ eventId, user }: { eventId: string; user: any }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
               <div>
                 <p style={{ fontWeight: 600, color: '#fff', fontSize: 14, marginBottom: 4 }}>
-                  {r.userName ?? 'Anonymous'}
-                </p>
+{r.user?.firstName ?? r.user?.name ?? r.userName ?? 'Anonymous'}                </p>
                 <div style={{ display: 'flex', gap: 2 }}>
                   {[1,2,3,4,5].map(s => (
                     <span key={s} style={{ color: s <= r.rating ? '#f0c040' : 'rgba(255,255,255,0.15)', fontSize: 14 }}>★</span>
@@ -191,7 +190,7 @@ const EventDetailsPage: React.FC = () => {
           const e = await eventService.getEvent(id);
           setEvent(e);
           const meta = await eventService.getEventShareMeta(id);
-          setShareMeta(meta);
+setShareMeta(meta?.data ?? meta);
         } catch (err) {
           console.error('Failed to load event', err);
         }
