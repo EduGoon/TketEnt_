@@ -4,15 +4,15 @@ import * as ticketService from '../services/ticketService';
 import { Ticket } from '../utilities/types';
 import { Link } from 'react-router-dom';
 import * as historyService from '../services/historyService';
-
+ 
 const TYPE_COLOR = { ACTIVE: "#22c55e", USED: "#fbbf24", REFUNDED: "#ef4444" };
-
+ 
 interface TicketCardProps {
   ticket: Ticket;
   selected: boolean;
   onClick: () => void;
 }
-
+ 
 function TicketCard({ ticket, selected, onClick }: TicketCardProps) {
   const accent = TYPE_COLOR[(ticket.status as keyof typeof TYPE_COLOR)] ?? "#22c55e";
   const d = new Date(ticket.eventStartTime ?? ticket.startTime ?? ticket.purchaseDate);
@@ -20,7 +20,7 @@ function TicketCard({ ticket, selected, onClick }: TicketCardProps) {
   const day = d.getDate();
   const year = d.getFullYear();
   const timeStr = d.toLocaleTimeString("default", { hour: "2-digit", minute: "2-digit" });
-
+ 
   return (
     <div
       onClick={onClick}
@@ -77,7 +77,7 @@ function TicketCard({ ticket, selected, onClick }: TicketCardProps) {
     </div>
   );
 }
-
+ 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number | number[]) {
   const [tl, tr, br, bl] = Array.isArray(r) ? r : [r, r, r, r];
   ctx.beginPath();
@@ -88,7 +88,7 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.lineTo(x, y + tl); ctx.arcTo(x, y, x + tl, y, tl);
   ctx.closePath();
 }
-
+ 
 async function downloadTicketAsPng(ticket: Ticket) {
   const accent = TYPE_COLOR[(ticket.status as keyof typeof TYPE_COLOR)] ?? "#22c55e";
   const d = new Date(ticket.eventStartTime ?? ticket.startTime ?? ticket.purchaseDate);
@@ -96,34 +96,34 @@ async function downloadTicketAsPng(ticket: Ticket) {
   const day = String(d.getDate());
   const year = String(d.getFullYear());
   const timeStr = d.toLocaleTimeString("default", { hour: "2-digit", minute: "2-digit" });
-
+ 
   const W = 800, H = 240, DPR = 2;
   const canvas = document.createElement("canvas");
   canvas.width = W * DPR;
   canvas.height = H * DPR;
   const ctx = canvas.getContext("2d")!;
   ctx.scale(DPR, DPR);
-
+ 
   const bg = ctx.createLinearGradient(0, 0, W, H);
   bg.addColorStop(0, "#1a1f2e");
   bg.addColorStop(1, "#111827");
   ctx.fillStyle = bg;
   roundRect(ctx, 0, 0, W, H, 14);
   ctx.fill();
-
+ 
   ctx.fillStyle = accent;
   roundRect(ctx, 0, 0, 7, H, [14, 0, 0, 14]);
   ctx.fill();
-
+ 
   ctx.fillStyle = "rgba(255,255,255,0.03)";
   ctx.fillRect(7, 0, 90, H);
-
+ 
   ctx.setLineDash([4, 4]);
   ctx.strokeStyle = "rgba(255,255,255,0.1)";
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(97, 0); ctx.lineTo(97, H); ctx.stroke();
   ctx.setLineDash([]);
-
+ 
   ctx.textAlign = "center";
   ctx.fillStyle = accent;
   ctx.font = "600 10px monospace";
@@ -136,38 +136,38 @@ async function downloadTicketAsPng(ticket: Ticket) {
   ctx.fillText(year, 52, 140);
   ctx.fillStyle = "rgba(255,255,255,0.45)";
   ctx.fillText(timeStr, 52, 158);
-
+ 
   ctx.textAlign = "left";
   const mx = 116;
-
+ 
   ctx.fillStyle = accent;
   ctx.font = "600 9px monospace";
   ctx.fillText(`${(ticket.ticketTypeName ?? 'General').toUpperCase()} TICKET`, mx, 54);
-
+ 
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 20px Georgia, serif";
-const title = (ticket.eventName ?? '').length > 36 
-  ? (ticket.eventName ?? '').substring(0, 36) + '...' 
-  : (ticket.eventName ?? 'Event');
-ctx.fillText(title, mx, 82);  ctx.fillText(title, mx, 82);
-
+  const title = (ticket.eventName ?? '').length > 36
+    ? (ticket.eventName ?? '').substring(0, 36) + '...'
+    : (ticket.eventName ?? 'Event');
+  ctx.fillText(title, mx, 82);
+ 
   ctx.fillStyle = "rgba(255,255,255,0.5)";
   ctx.font = "12px monospace";
   ctx.fillText("Venue: " + (ticket.eventVenue ?? ticket.venue ?? 'Venue TBD'), mx, 108);
-
+ 
   ctx.fillStyle = "rgba(255,255,255,0.4)";
   ctx.fillText("Seat: " + (ticket.ticketNote ?? 'General Admission'), mx, 128);
-
+ 
   ctx.setLineDash([3, 3]);
   ctx.strokeStyle = "rgba(255,255,255,0.09)";
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(mx, 144); ctx.lineTo(W - 90, 144); ctx.stroke();
   ctx.setLineDash([]);
-
+ 
   ctx.fillStyle = "rgba(255,255,255,0.2)";
   ctx.font = "9px monospace";
   ctx.fillText("ID: " + ticket.id, mx, 164);
-
+ 
   ctx.textAlign = "right";
   ctx.fillStyle = "rgba(255,255,255,0.3)";
   ctx.font = "9px monospace";
@@ -175,7 +175,7 @@ ctx.fillText(title, mx, 82);  ctx.fillText(title, mx, 82);
   ctx.fillStyle = accent;
   ctx.font = "bold 24px monospace";
   ctx.fillText("KSH " + (ticket.ticketPrice !== undefined ? ticket.ticketPrice.toLocaleString() : '—'), W - 90, 190);
-
+ 
   const dotX = W - 76;
   for (let i = 0; i < 12; i++) {
     ctx.beginPath();
@@ -183,10 +183,10 @@ ctx.fillText(title, mx, 82);  ctx.fillText(title, mx, 82);
     ctx.fillStyle = "#0d1017";
     ctx.fill();
   }
-
+ 
   ctx.fillStyle = "rgba(255,255,255,0.025)";
   ctx.fillRect(W - 66, 0, 66, H);
-
+ 
   ctx.save();
   ctx.translate(W - 36, H / 2 + 30);
   ctx.rotate(-Math.PI / 2);
@@ -195,30 +195,30 @@ ctx.fillText(title, mx, 82);  ctx.fillText(title, mx, 82);
   ctx.font = "bold 9px monospace";
   ctx.fillText("ADMIT ONE", 0, 0);
   ctx.restore();
-
+ 
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(240,192,64,0.2)";
   ctx.font = "bold 11px Georgia, serif";
   ctx.fillText("SparkVybzEnt", W / 2, H - 12);
-
+ 
   const link = document.createElement("a");
   link.download = "ticket-" + ticket.eventName?.replace(/\s+/g, '-').toLowerCase() + ".png";
   link.href = canvas.toDataURL("image/png");
   link.click();
 }
-
+ 
 async function shareTicket(ticket: Ticket): Promise<string | undefined> {
   const d = new Date(ticket.eventStartTime ?? ticket.startTime ?? ticket.purchaseDate);
   const dateStr = d.toLocaleDateString("default", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const text = "I'm going to " + ticket.eventName + "!\nVenue: " + (ticket.eventVenue ?? 'TBD') + "\nDate: " + dateStr + "\n\nBooked via SparkVybzEnt";
-
+ 
   if (navigator.share) {
     try { await navigator.share({ title: ticket.eventName, text }); return; } catch {}
   }
   await navigator.clipboard.writeText(text);
   return "copied";
 }
-
+ 
 export default function UserAccountPage() {
   const { user, logout } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -229,6 +229,7 @@ export default function UserAccountPage() {
   const [shareMsg, setShareMsg] = useState("");
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showDetailPanel, setShowDetailPanel] = useState(false);
   const [prefs, setPrefs] = useState({
     emailNewEvents: true,
     emailBlogs: false,
@@ -239,7 +240,7 @@ export default function UserAccountPage() {
   const [prefsSaved, setPrefsSaved] = useState(false);
   const [loadingPrefs, setLoadingPrefs] = useState(false);
   const [prefError, setPrefError] = useState("");
-
+ 
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -250,7 +251,7 @@ export default function UserAccountPage() {
     }
     fetchUserData();
   }, []);
-
+ 
   useEffect(() => {
     if (activeTab === "history" && user?.id) {
       async function fetchHistory() {
@@ -265,24 +266,24 @@ export default function UserAccountPage() {
       fetchHistory();
     }
   }, [activeTab, user?.id]);
-
+ 
   const selectedTicket = tickets.find((t) => t.id === selectedId);
   const accent = selectedTicket?.status ? TYPE_COLOR[selectedTicket.status as keyof typeof TYPE_COLOR] : "#22c55e";
-
+ 
   const tabs = [
-    { id: "tickets",     label: "My Tickets",  icon: "🎟" },
+    { id: "tickets",     label: "Tickets",     icon: "🎟" },
     { id: "profile",     label: "Profile",     icon: "👤" },
-    { id: "preferences", label: "Preferences", icon: "⚙️" },
+    { id: "preferences", label: "Prefs",       icon: "⚙️" },
     { id: "history",     label: "History",     icon: "📜" },
   ];
-
+ 
   const handleDownload = async () => {
     if (!selectedTicket) return;
     setDownloading(true);
     await downloadTicketAsPng(selectedTicket);
     setTimeout(() => setDownloading(false), 1200);
   };
-
+ 
   const handleShare = async () => {
     if (!selectedTicket) return;
     setSharing(true);
@@ -293,7 +294,7 @@ export default function UserAccountPage() {
     }
     setSharing(false);
   };
-
+ 
   useEffect(() => {
     if (activeTab === "preferences") {
       async function fetchPrefs() {
@@ -317,7 +318,7 @@ export default function UserAccountPage() {
       fetchPrefs();
     }
   }, [activeTab]);
-
+ 
   const handlePrefSave = async () => {
     setLoadingPrefs(true);
     setPrefError("");
@@ -332,32 +333,37 @@ export default function UserAccountPage() {
       setLoadingPrefs(false);
     }
   };
-
+ 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0d14", color: "#fff", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0d14", color: "#fff", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
         * { box-sizing: border-box; }
-        .tab-btn { background:none; border:none; cursor:pointer; padding:9px 18px; border-radius:8px;
+ 
+        .tab-btn { background:none; border:none; cursor:pointer; padding:9px 14px; border-radius:8px;
           font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:rgba(255,255,255,0.4);
-          transition:all 0.2s; display:flex; align-items:center; gap:7px; white-space:nowrap; }
+          transition:all 0.2s; display:flex; align-items:center; gap:6px; white-space:nowrap; }
         .tab-btn:hover { color:rgba(255,255,255,0.8); background:rgba(255,255,255,0.06); }
         .tab-btn.active { color:#f0c040; background:rgba(240,192,64,0.1); }
+ 
         .action-btn { background:#f0c040; color:#0a0d14; border:none; border-radius:8px;
           padding:10px 22px; font-size:13px; font-weight:600; cursor:pointer;
           transition:opacity 0.2s,transform 0.15s; font-family:'DM Sans',sans-serif; letter-spacing:0.3px;
           display:flex; align-items:center; gap:7px; }
         .action-btn:hover:not(:disabled) { opacity:0.85; transform:translateY(-1px); }
         .action-btn:disabled { opacity:0.5; cursor:not-allowed; }
+ 
         .ghost-btn { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7);
           border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px 22px;
           font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s;
           font-family:'DM Sans',sans-serif; display:flex; align-items:center; gap:7px; }
         .ghost-btn:hover { background:rgba(255,255,255,0.1); color:#fff; }
+ 
         @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         .fade-in { animation: fadeUp 0.4s ease forwards; }
         @keyframes historyIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+ 
         .toggle-track { width:44px; height:24px; border-radius:12px; position:relative;
           cursor:pointer; transition:background 0.25s; flex-shrink:0; border:none; padding:0; }
         .toggle-thumb { position:absolute; top:3px; width:18px; height:18px;
@@ -370,28 +376,61 @@ export default function UserAccountPage() {
           align-items:center; margin-bottom:10px; }
         .stat-pill { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
           border-radius:12px; padding:16px 20px; text-align:center; flex:1; }
+ 
+        /* ── Tickets grid: 2-col desktop, 1-col mobile ── */
+        .tickets-grid { display: grid; grid-template-columns: auto 1fr; gap: 36px; align-items: start; }
+        .ticket-detail-panel { position: sticky; top: 76px; }
+ 
+        /* ── Mobile detail panel overlay ── */
+        .mobile-detail-overlay {
+          display: none;
+          position: fixed; inset: 0; z-index: 300;
+          background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+        }
+        .mobile-detail-sheet {
+          position: fixed; bottom: 0; left: 0; right: 0;
+          background: #0f1521;
+          border-top: 1px solid rgba(240,192,64,0.2);
+          border-radius: 20px 20px 0 0;
+          padding: 24px 20px 40px;
+          max-height: 85vh; overflow-y: auto;
+          z-index: 301;
+        }
+ 
+        @media (max-width: 768px) {
+          .tickets-grid { grid-template-columns: 1fr !important; }
+          .ticket-detail-panel { display: none; }
+          .mobile-detail-overlay { display: block; }
+          .tabs-row { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+          .tabs-row::-webkit-scrollbar { display: none; }
+          .hero-section { flex-direction: column; align-items: flex-start !important; gap: 20px; }
+          .stats-row { width: 100%; }
+          .stat-pill { padding: 12px 14px; }
+          .main-padding { padding: 24px 16px 80px !important; }
+        }
       `}</style>
-
+ 
       {/* Nav */}
       <header style={{ borderBottom:"1px solid rgba(255,255,255,0.07)", background:"rgba(10,13,20,0.96)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:100 }}>
-        <div style={{ maxWidth:1060, margin:"0 auto", padding:"0 24px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ maxWidth:1060, margin:"0 auto", padding:"0 16px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <Link to="/" style={{ fontSize:17, fontWeight:700, color:"#f0c040", fontFamily:"'Playfair Display', serif", letterSpacing:-0.3, textDecoration:"none" }}>
             ✦ SparkVybzEnt
           </Link>
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <button className="ghost-btn" onClick={logout}>Sign Out</button>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <button className="ghost-btn" style={{ padding:"8px 14px" }} onClick={logout}>Sign Out</button>
             {user && (
-              <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#22c55e,#fbbf24)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#0a0d14" }}>
+              <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#22c55e,#fbbf24)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#0a0d14", flexShrink:0 }}>
                 {user.firstName[0]}{user.lastName[0]}
               </div>
             )}
           </div>
         </div>
       </header>
-
-      <main style={{ maxWidth:1060, margin:"0 auto", padding:"36px 24px 80px" }}>
+ 
+      <main className="main-padding" style={{ maxWidth:1060, margin:"0 auto", padding:"36px 24px 80px" }}>
+ 
         {/* Hero */}
-        <div className="fade-in" style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:36, flexWrap:"wrap", gap:16 }}>
+        <div className="fade-in hero-section" style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:36, flexWrap:"wrap", gap:16 }}>
           <div>
             <p style={{ fontSize:10, letterSpacing:3, color:"#f0c040", textTransform:"uppercase", marginBottom:6 }}>My Account</p>
             <h1 style={{ fontSize:34, fontWeight:700, fontFamily:"'Playfair Display', serif", lineHeight:1.1 }}>
@@ -399,7 +438,7 @@ export default function UserAccountPage() {
             </h1>
             <p style={{ color:"rgba(255,255,255,0.38)", marginTop:5, fontSize:13 }}>{user?.email ?? ''}</p>
           </div>
-          <div style={{ display:"flex", gap:10 }}>
+          <div className="stats-row" style={{ display:"flex", gap:10 }}>
             {[
               { val: tickets.length, label: "Tickets" },
               { val: tickets.filter(t => t.status === "ACTIVE").length, label: "Active" },
@@ -412,77 +451,58 @@ export default function UserAccountPage() {
             ))}
           </div>
         </div>
-
-        {/* Tabs */}
-        <div style={{ display:"flex", gap:3, marginBottom:30, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:11, padding:5, width:"fit-content" }}>
-          {tabs.map(tab => (
-            <button key={tab.id} className={`tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>
-              <span>{tab.icon}</span> {tab.label}
-            </button>
-          ))}
+ 
+        {/* Tabs — scrollable on mobile */}
+        <div className="tabs-row" style={{ marginBottom:30 }}>
+          <div style={{ display:"flex", gap:3, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:11, padding:5, width:"fit-content", minWidth:"min-content" }}>
+            {tabs.map(tab => (
+              <button key={tab.id} className={`tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>
+                <span>{tab.icon}</span> {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
-
+ 
         {/* ── TICKETS ── */}
         {activeTab === "tickets" && (
-          <div className="fade-in" style={{ display:"grid", gridTemplateColumns:"auto 1fr", gap:36, alignItems:"start" }}>
+          <div className="fade-in tickets-grid">
+            {/* Ticket list */}
             <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
               {tickets.length === 0 && (
-                <div style={{ padding:"48px 32px", background:"linear-gradient(160deg,#141927,#0f1521)", border:"1px dashed rgba(255,255,255,0.08)", borderRadius:16, textAlign:"center", minWidth:340 }}>
+                <div style={{ padding:"48px 32px", background:"linear-gradient(160deg,#141927,#0f1521)", border:"1px dashed rgba(255,255,255,0.08)", borderRadius:16, textAlign:"center", minWidth:280 }}>
                   <div style={{ fontSize:32, marginBottom:12, opacity:0.3 }}>🎟</div>
                   <p style={{ fontFamily:"'Playfair Display', serif", fontStyle:"italic", color:"rgba(255,255,255,0.3)", fontSize:15 }}>No tickets yet — go explore events.</p>
                   <Link to="/events" style={{ display:"inline-block", marginTop:16, fontSize:12, color:"#f0c040", textDecoration:"none", fontFamily:"'DM Mono', monospace", letterSpacing:1.5 }}>Browse Events →</Link>
                 </div>
               )}
               {tickets.map(t => (
-                <TicketCard key={t.id} ticket={t} selected={selectedId === t.id} onClick={() => setSelectedId(t.id)} />
+                <div key={t.id} onClick={() => { setSelectedId(t.id); setShowDetailPanel(true); }}>
+                  <TicketCard ticket={t} selected={selectedId === t.id} onClick={() => {}} />
+                </div>
               ))}
             </div>
-
+ 
+            {/* Desktop detail panel */}
             {selectedTicket && (
-              <div style={{ background:"linear-gradient(160deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))", border:`1px solid ${accent}44`, borderRadius:14, padding:26, position:"sticky", top:76 }}>
-                <p style={{ fontSize:9, letterSpacing:3, color:accent, textTransform:"uppercase", marginBottom:8 }}>Ticket Details</p>
-                <h3 style={{ fontSize:20, fontFamily:"'Playfair Display', serif", marginBottom:20, lineHeight:1.25 }}>{selectedTicket.eventName}</h3>
-
-                {[
-                  { label:"Date",        value: new Date(selectedTicket.eventStartTime ?? selectedTicket.startTime ?? selectedTicket.purchaseDate).toLocaleDateString("default", { weekday:"long", day:"numeric", month:"long", year:"numeric" }) },
-                  { label:"Time",        value: new Date(selectedTicket.eventStartTime ?? selectedTicket.startTime ?? selectedTicket.purchaseDate).toLocaleTimeString("default", { hour:"2-digit", minute:"2-digit" }) },
-                  { label:"Venue",       value: selectedTicket.eventVenue ?? selectedTicket.venue ?? 'Venue TBD' },
-                  { label:"Seat",        value: selectedTicket.ticketNote ?? 'General Admission' },
-                  { label:"Ticket Type", value: selectedTicket.ticketTypeName ?? 'General' },
-                  { label:"Price Paid",  value: `KSH ${selectedTicket.ticketPrice !== undefined ? selectedTicket.ticketPrice.toLocaleString() : '—'}` },
-                  { label:"Status",      value: selectedTicket.status ?? 'ACTIVE' },
-                ].map(row => (
-                  <div key={row.label} style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", padding:"9px 0", borderBottom:"1px solid rgba(255,255,255,0.06)", fontSize:12, gap:16 }}>
-                    <span style={{ color:"rgba(255,255,255,0.38)", flexShrink:0 }}>{row.label}</span>
-                    <span style={{ color: row.label === "Status" ? accent : "#fff", fontWeight:500, textAlign:"right", fontFamily: row.label === "Status" ? "'DM Mono', monospace" : "inherit" }}>{row.value}</span>
-                  </div>
-                ))}
-
-                <div style={{ display:"flex", gap:10, marginTop:22, flexWrap:"wrap" }}>
-                  <button className="action-btn" disabled={downloading} onClick={handleDownload}>
-                    {downloading ? "⏳ Saving…" : "↓ Download"}
-                  </button>
-                  <button className="ghost-btn" onClick={handleShare}>
-                    {sharing ? "⏳" : "↗ Share"}
-                  </button>
-                </div>
-
-                {shareMsg && (
-                  <p style={{ fontSize:11, color:"#22c55e", marginTop:10, fontFamily:"'DM Mono', monospace", letterSpacing:1 }}>✓ {shareMsg}</p>
-                )}
-
-                <p style={{ fontSize:10, color:"rgba(255,255,255,0.2)", marginTop:14, lineHeight:1.6, fontFamily:"'DM Mono', monospace" }}>
-                  Download saves the ticket as an image. Share sends event details as text you can paste anywhere.
-                </p>
+              <div className="ticket-detail-panel">
+                <TicketDetailContent
+                  ticket={selectedTicket}
+                  accent={accent}
+                  downloading={downloading}
+                  sharing={sharing}
+                  shareMsg={shareMsg}
+                  onDownload={handleDownload}
+                  onShare={handleShare}
+                />
               </div>
             )}
           </div>
         )}
-
+ 
         {/* ── PROFILE ── */}
         {activeTab === "profile" && (
           <div className="fade-in" style={{ maxWidth:640 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:20, marginBottom:36, padding:"24px 28px", background:"linear-gradient(160deg,#141927,#0f1521)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:20, marginBottom:36, padding:"24px 28px", background:"linear-gradient(160deg,#141927,#0f1521)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, flexWrap:"wrap" }}>
               <div style={{ width:72, height:72, borderRadius:"50%", background:"linear-gradient(135deg,#f0c040,#c8920a)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, fontWeight:700, color:"#0a0d14", flexShrink:0 }}>
                 {user?.firstName[0]}{user?.lastName[0]}
               </div>
@@ -491,7 +511,7 @@ export default function UserAccountPage() {
                   {user ? `${user.firstName} ${user.lastName}` : 'Guest'}
                 </h2>
                 <p style={{ fontSize:12, color:"rgba(255,255,255,0.38)", fontFamily:"'DM Mono', monospace" }}>{user?.email}</p>
-                <div style={{ display:"flex", gap:6, marginTop:10 }}>
+                <div style={{ display:"flex", gap:6, marginTop:10, flexWrap:"wrap" }}>
                   <span style={{ fontSize:9, letterSpacing:1.5, padding:"3px 10px", borderRadius:20, background:"rgba(240,192,64,0.1)", border:"1px solid rgba(240,192,64,0.2)", color:"#f0c040", fontFamily:"'DM Mono', monospace", textTransform:"uppercase" }}>
                     {user?.role ?? 'Member'}
                   </span>
@@ -501,7 +521,7 @@ export default function UserAccountPage() {
                 </div>
               </div>
             </div>
-
+ 
             <p style={{ fontSize:9, letterSpacing:3, color:"rgba(240,192,64,0.6)", textTransform:"uppercase", fontFamily:"'DM Mono', monospace", marginBottom:14 }}>Account Details</p>
             {[
               { label:"First Name",   value: user?.firstName ?? "—" },
@@ -515,9 +535,9 @@ export default function UserAccountPage() {
                 <span style={{ fontSize:13, fontWeight:500, color: row.value === "Not added" ? "rgba(255,255,255,0.2)" : "#fff" }}>{row.value}</span>
               </div>
             ))}
-
+ 
             <p style={{ fontSize:9, letterSpacing:3, color:"rgba(240,192,64,0.6)", textTransform:"uppercase", fontFamily:"'DM Mono', monospace", marginTop:28, marginBottom:14 }}>Your Activity</p>
-            <div style={{ display:"flex", gap:10 }}>
+            <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
               {[
                 { val: tickets.length, label:"Tickets Bought" },
                 { val: tickets.filter(t => t.status === "ACTIVE").length, label:"Upcoming" },
@@ -529,13 +549,13 @@ export default function UserAccountPage() {
                 </div>
               ))}
             </div>
-
+ 
             <p style={{ fontSize:12, color:"rgba(255,255,255,0.25)", marginTop:24, lineHeight:1.7 }}>
               To update your name, email, or phone number, reach out via the live chat widget at the bottom of the screen.
             </p>
           </div>
         )}
-
+ 
         {/* ── PREFERENCES ── */}
         {activeTab === "preferences" && (
           <div className="fade-in" style={{ maxWidth:580 }}>
@@ -543,7 +563,7 @@ export default function UserAccountPage() {
             <h2 style={{ fontFamily:"'Playfair Display', serif", fontSize:22, fontWeight:700, marginBottom:28, lineHeight:1.2 }}>
               Email Preferences<span style={{ color:"#f0c040" }}>.</span>
             </h2>
-
+ 
             <div style={{ background:"linear-gradient(160deg,#141927,#0f1521)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:16, padding:"8px 24px 16px" }}>
               {([
                 { key:"emailTicketConfirmation", label:"Ticket Confirmations", desc:"Receive a confirmation email every time you successfully purchase a ticket." },
@@ -569,8 +589,8 @@ export default function UserAccountPage() {
                 </div>
               ))}
             </div>
-
-            <div style={{ display:"flex", alignItems:"center", gap:14, marginTop:24 }}>
+ 
+            <div style={{ display:"flex", alignItems:"center", gap:14, marginTop:24, flexWrap:"wrap" }}>
               <button className="action-btn" onClick={handlePrefSave} disabled={loadingPrefs} style={{ opacity: loadingPrefs ? 0.5 : 1 }}>
                 {loadingPrefs ? "Saving…" : prefsSaved ? "✓ Saved" : "Save Preferences"}
               </button>
@@ -581,13 +601,13 @@ export default function UserAccountPage() {
                 <span style={{ fontSize:12, color:"#ef4444", fontFamily:"'DM Mono', monospace" }}>{prefError}</span>
               )}
             </div>
-
+ 
             <p style={{ fontSize:12, color:"rgba(255,255,255,0.22)", marginTop:20, lineHeight:1.7 }}>
               We respect your inbox. You can change these at any time. Ticket confirmations are always sent regardless of this setting.
             </p>
           </div>
         )}
-
+ 
         {/* ── HISTORY ── */}
         {activeTab === "history" && (
           <div className="fade-in">
@@ -600,7 +620,7 @@ export default function UserAccountPage() {
                 ))}
               </div>
             )}
-
+ 
             {!loadingHistory && history.length === 0 && (
               <div style={{ textAlign:"center", padding:"64px 32px", background:"linear-gradient(160deg,#141927,#0f1521)", border:"1px dashed rgba(255,255,255,0.08)", borderRadius:18 }}>
                 <div style={{ fontSize:32, marginBottom:14, opacity:0.3 }}>◎</div>
@@ -609,12 +629,12 @@ export default function UserAccountPage() {
                 </p>
               </div>
             )}
-
+ 
             {!loadingHistory && history.length > 0 && (() => {
               const reviews   = history.filter(i => "rating" in i);
               const messages  = history.filter(i => "content" in i && !("rating" in i));
               const favorites = history.filter(i => !("rating" in i) && !("content" in i) && i.event);
-
+ 
               const Section = ({ items, title, accent, accentBg, accentBorder, renderItem }: { items: any[]; title: string; accent: string; accentBg: string; accentBorder: string; renderItem: (item: any, idx: number) => React.ReactNode; }) =>
                 items.length === 0 ? null : (
                   <div style={{ marginBottom:52 }}>
@@ -628,7 +648,7 @@ export default function UserAccountPage() {
                     </div>
                   </div>
                 );
-
+ 
               return (
                 <div>
                   <Section items={favorites} title="Favorited Events" accent="#f472b6" accentBg="rgba(244,114,182,0.07)" accentBorder="rgba(244,114,182,0.2)"
@@ -688,6 +708,67 @@ export default function UserAccountPage() {
           </div>
         )}
       </main>
+ 
+      {/* ── Mobile ticket detail bottom sheet ── */}
+      {showDetailPanel && selectedTicket && (
+        <div className="mobile-detail-overlay" onClick={() => setShowDetailPanel(false)}>
+          <div className="mobile-detail-sheet" onClick={e => e.stopPropagation()}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+              <p style={{ fontSize:9, letterSpacing:3, color:accent, textTransform:"uppercase", fontFamily:"'DM Mono', monospace" }}>Ticket Details</p>
+              <button onClick={() => setShowDetailPanel(false)} style={{ background:"rgba(255,255,255,0.07)", border:"none", color:"rgba(255,255,255,0.6)", borderRadius:6, width:32, height:32, cursor:"pointer", fontSize:16 }}>✕</button>
+            </div>
+            <TicketDetailContent
+              ticket={selectedTicket}
+              accent={accent}
+              downloading={downloading}
+              sharing={sharing}
+              shareMsg={shareMsg}
+              onDownload={handleDownload}
+              onShare={handleShare}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+ 
+/* ── Shared ticket detail content ─────────────────────────────────────────── */
+function TicketDetailContent({ ticket, accent, downloading, sharing, shareMsg, onDownload, onShare }: {
+  ticket: Ticket; accent: string; downloading: boolean; sharing: boolean; shareMsg: string;
+  onDownload: () => void; onShare: () => void;
+}) {
+  return (
+    <div style={{ background:"linear-gradient(160deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))", border:`1px solid ${accent}44`, borderRadius:14, padding:26 }}>
+      <h3 style={{ fontSize:20, fontFamily:"'Playfair Display', serif", marginBottom:20, lineHeight:1.25 }}>{ticket.eventName}</h3>
+      {[
+        { label:"Date",        value: new Date(ticket.eventStartTime ?? ticket.startTime ?? ticket.purchaseDate).toLocaleDateString("default", { weekday:"long", day:"numeric", month:"long", year:"numeric" }) },
+        { label:"Time",        value: new Date(ticket.eventStartTime ?? ticket.startTime ?? ticket.purchaseDate).toLocaleTimeString("default", { hour:"2-digit", minute:"2-digit" }) },
+        { label:"Venue",       value: ticket.eventVenue ?? ticket.venue ?? 'Venue TBD' },
+        { label:"Seat",        value: ticket.ticketNote ?? 'General Admission' },
+        { label:"Ticket Type", value: ticket.ticketTypeName ?? 'General' },
+        { label:"Price Paid",  value: `KSH ${ticket.ticketPrice !== undefined ? ticket.ticketPrice.toLocaleString() : '—'}` },
+        { label:"Status",      value: ticket.status ?? 'ACTIVE' },
+      ].map(row => (
+        <div key={row.label} style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", padding:"9px 0", borderBottom:"1px solid rgba(255,255,255,0.06)", fontSize:12, gap:16 }}>
+          <span style={{ color:"rgba(255,255,255,0.38)", flexShrink:0 }}>{row.label}</span>
+          <span style={{ color: row.label === "Status" ? accent : "#fff", fontWeight:500, textAlign:"right", fontFamily: row.label === "Status" ? "'DM Mono', monospace" : "inherit" }}>{row.value}</span>
+        </div>
+      ))}
+      <div style={{ display:"flex", gap:10, marginTop:22, flexWrap:"wrap" }}>
+        <button className="action-btn" disabled={downloading} onClick={onDownload}>
+          {downloading ? "⏳ Saving…" : "↓ Download"}
+        </button>
+        <button className="ghost-btn" onClick={onShare}>
+          {sharing ? "⏳" : "↗ Share"}
+        </button>
+      </div>
+      {shareMsg && (
+        <p style={{ fontSize:11, color:"#22c55e", marginTop:10, fontFamily:"'DM Mono', monospace", letterSpacing:1 }}>✓ {shareMsg}</p>
+      )}
+      <p style={{ fontSize:10, color:"rgba(255,255,255,0.2)", marginTop:14, lineHeight:1.6, fontFamily:"'DM Mono', monospace" }}>
+        Download saves the ticket as an image. Share sends event details as text you can paste anywhere.
+      </p>
     </div>
   );
 }
