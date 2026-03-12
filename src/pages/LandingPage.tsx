@@ -14,7 +14,7 @@ const LandingPage: React.FC = () => {
     async function fetchTrending() {
       setLoadingTrending(true);
       try {
-        const resp = await fetch('https://skyent-backend-403800080245.us-central1.run.app/api/events/trending');
+        const resp = await fetch('https://skyent-backend-403800080245.us-central1.run.app/api/v1/api/events/trending');
         const data = await resp.json();
         setTrendingEvents(Array.isArray(data) ? data : []);
       } catch {
@@ -26,7 +26,7 @@ const LandingPage: React.FC = () => {
     async function fetchBlogs() {
       setLoadingBlogs(true);
       try {
-        const resp = await fetch('https://skyent-backend-403800080245.us-central1.run.app/api/blogs/');
+        const resp = await fetch('https://skyent-backend-403800080245.us-central1.run.app/api/v1/api/blogs/');
         const data = await resp.json();
         setBlogs(Array.isArray(data) ? data.slice(0, 4) : (data?.data ?? []).slice(0, 4));
       } catch {

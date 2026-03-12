@@ -1,6 +1,6 @@
 // Generic API helper that handles token storage and 401 responses.
 
-const API_BASE = 'https://skyent-backend-403800080245.us-central1.run.app';
+const API_BASE = 'https://skyent-backend-403800080245.us-central1.run.app/api/v1';
 
 let logoutCallback: (() => void) | null = null;
 
