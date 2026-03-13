@@ -83,13 +83,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // attempt to restore session if token exists
     const init = async () => {
       const token = localStorage.getItem('auth_token');
-      if (token) {
-        try {
-          // refresh token first (role updates reflected in new token)
-          await refreshSession();
-        } catch {
-          logout();
-        }
+    if (token) {
+        await refreshSession();
       }
       setIsLoading(false);
     };
