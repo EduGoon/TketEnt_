@@ -36,7 +36,7 @@ useEffect(() => {
       }
     };
     loadInitialData();
-  }, [user]);
+  }, [user?.id]);
 
   
   // ── Single source of truth for filtering — runs entirely client-side ──
