@@ -16,7 +16,7 @@ const LandingPage: React.FC = () => {
       try {
         const resp = await fetch('https://skyent-backend-403800080245.us-central1.run.app/api/v1/api/events/trending');
         const data = await resp.json();
-        setTrendingEvents(Array.isArray(data) ? data : []);
+       setTrendingEvents(Array.isArray(data) ? data : (data?.data ?? []));
       } catch {
         setTrendingEvents([]);
       }

@@ -13,7 +13,7 @@ export const listUserTickets = async (): Promise<ListResponse<Ticket>> => {
 };
 
 export const getTicket = async (id: string): Promise<Ticket> => {
-  return apiFetch<Ticket>(`/tickets/${id}`);
+  return apiFetch<Ticket>(`/user/tickets/${id}`);
 };
 
 export const listTickets = async (): Promise<ListResponse<Ticket>> => {

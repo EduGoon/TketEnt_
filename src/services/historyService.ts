@@ -1,4 +1,4 @@
-import { apiFetch } from './api';
+import { apiFetch, getToken } from './api';
 
 interface ListResponse<T> {
   data: T[];
@@ -39,6 +39,8 @@ export const listFavorites = async () => {
 
 // Reviews
 export const getEventReviews = async (eventId: string) => {
+  const token = getToken();
+  if (!token) return { data: [] };
   return apiFetch(`/user/reviews/event/${eventId}`);
 };
 
