@@ -8,9 +8,11 @@ const LiveChatWidget: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
+  
+useEffect(() => {
     async function loadHistory() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
       try {
         const data = await apiFetch('/user/chat/history');
         setMessages(Array.isArray(data) ? data : []);
