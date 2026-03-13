@@ -178,8 +178,8 @@ async function downloadTicketAsPng(ticket: Ticket) {
   ctx.fillText("Seat: " + (ticket.ticketNote ?? 'General Admission'), mx, 128);
   ctx.setLineDash([3, 3]); ctx.strokeStyle = "rgba(255,255,255,0.09)"; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(mx, 144); ctx.lineTo(W - 90, 144); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.font = "9px monospace";
-  ctx.fillText("ID: " + ticket.id, mx, 164);
+ ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.font = "9px monospace";
+  ctx.fillText("ID: " + ticket.id, mx, 216);
   ctx.textAlign = "right";
   ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "9px monospace"; ctx.fillText("PRICE", W - 90, 164);
   ctx.fillStyle = accent; ctx.font = "bold 24px monospace";
@@ -196,9 +196,9 @@ async function downloadTicketAsPng(ticket: Ticket) {
       const qrImg = new Image();
       qrImg.crossOrigin = "anonymous";
       qrImg.onload = () => {
-        const qrSize = 64;
-        const qrX = mx;
-        const qrY = H - qrSize - 14;
+        const qrSize = 54;
+  const qrX = mx;
+  const qrY = 148;
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(qrX - 3, qrY - 3, qrSize + 6, qrSize + 6);
         ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
