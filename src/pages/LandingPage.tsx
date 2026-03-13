@@ -2,27 +2,28 @@ import React from 'react';
 import FeaturedEvents from './FeaturedEvents';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
-
+ 
 const LandingPage: React.FC = () => {
   const { user, logout } = useAuth();
   const [_loadingTrending, setLoadingTrending] = React.useState(true);
   const [trendingEvents, setTrendingEvents] = React.useState<any[]>([]);
   const [blogs, setBlogs] = React.useState<any[]>([]);
   const [loadingBlogs, setLoadingBlogs] = React.useState(true);
-
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+ 
   React.useEffect(() => {
     async function fetchTrending() {
       setLoadingTrending(true);
       try {
         const resp = await fetch('https://skyent-backend-403800080245.us-central1.run.app/api/v1/api/events/trending');
         const data = await resp.json();
-       setTrendingEvents(Array.isArray(data) ? data : (data?.data ?? []));
+        setTrendingEvents(Array.isArray(data) ? data : (data?.data ?? []));
       } catch {
         setTrendingEvents([]);
       }
       setLoadingTrending(false);
     }
-
+ 
     async function fetchBlogs() {
       setLoadingBlogs(true);
       try {
@@ -34,21 +35,24 @@ const LandingPage: React.FC = () => {
       }
       setLoadingBlogs(false);
     }
-
+ 
     fetchTrending();
     fetchBlogs();
   }, []);
-
+ 
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+ 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", overflowX: 'hidden' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
+ 
         @keyframes fadeUp    { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeLeft  { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
         @keyframes shimmer   { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
-
+        @keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+ 
         .nav-link {
           color: rgba(255,255,255,0.52); font-size: 13px; font-weight: 500;
           text-decoration: none; padding: 6px 14px; border-radius: 8px;
@@ -63,7 +67,7 @@ const LandingPage: React.FC = () => {
           transition: opacity 0.2s, transform 0.15s;
         }
         .nav-cta:hover { opacity: 0.87; transform: translateY(-1px); }
-
+ 
         .cta-primary {
           background: #f0c040; color: #0a0d14; border: none; border-radius: 12px;
           padding: 16px 36px; font-size: 15px; font-weight: 700; cursor: pointer;
@@ -72,7 +76,7 @@ const LandingPage: React.FC = () => {
           display: inline-flex; align-items: center; gap: 8px;
         }
         .cta-primary:hover { opacity: 0.88; transform: translateY(-2px); }
-
+ 
         .cta-ghost {
           background: transparent; color: rgba(255,255,255,0.65);
           border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
@@ -81,15 +85,7 @@ const LandingPage: React.FC = () => {
           display: inline-flex; align-items: center; gap: 8px;
         }
         .cta-ghost:hover { border-color: rgba(255,255,255,0.35); color: #fff; background: rgba(255,255,255,0.05); }
-
-        .ev-hover-card {
-          position: absolute; width: 320px; text-decoration: none;
-          background: linear-gradient(160deg,#181e2e,#111827);
-          border: 1px solid rgba(255,255,255,0.08); border-radius: 18px;
-          overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-          transition: transform 0.3s, box-shadow 0.3s, z-index 0s;
-        }
-
+ 
         .blog-featured {
           background: linear-gradient(160deg,#141927,#0f1521);
           border: 1px solid rgba(255,255,255,0.07); border-radius: 20px;
@@ -98,7 +94,7 @@ const LandingPage: React.FC = () => {
         .blog-featured:hover { border-color: rgba(240,192,64,0.3); transform: translateY(-4px); box-shadow: 0 28px 60px rgba(0,0,0,0.5); }
         .blog-featured:hover .b-img { transform: scale(1.04); }
         .blog-featured:hover .b-title { color: #f0c040; }
-
+ 
         .blog-side {
           background: linear-gradient(160deg,#141927,#0f1521);
           border: 1px solid rgba(255,255,255,0.06); border-radius: 14px;
@@ -107,17 +103,17 @@ const LandingPage: React.FC = () => {
         }
         .blog-side:hover { border-color: rgba(240,192,64,0.25); transform: translateX(5px); box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
         .blog-side:hover .b-title { color: #f0c040; }
-
+ 
         .b-img { transition: transform 0.5s ease; }
         .b-title { font-family:'Playfair Display',serif; font-weight:700; color:#fff; line-height:1.3; transition:color 0.25s; }
-
+ 
         .eyebrow {
           font-size: 9px; letter-spacing: 4px; color: rgba(240,192,64,0.6);
           text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 14px;
           display: flex; align-items: center; gap: 12px;
         }
         .eyebrow::after { content:''; flex: 0 0 36px; height:1px; background:rgba(240,192,64,0.3); }
-
+ 
         .view-all {
           font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.3);
           text-transform: uppercase; font-family: 'DM Mono', monospace;
@@ -125,29 +121,89 @@ const LandingPage: React.FC = () => {
           display: inline-flex; align-items: center; gap: 6px;
         }
         .view-all:hover { color: #f0c040; }
-
+ 
         .skeleton { background: linear-gradient(160deg,#141927,#0f1521); border-radius:14px; border:1px solid rgba(255,255,255,0.05); position:relative; overflow:hidden; }
         .skeleton::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent); animation:shimmer 1.8s infinite; }
-
+ 
         .divider { height:1px; background:linear-gradient(to right,transparent,rgba(255,255,255,0.07),transparent); }
-
+ 
         .footer-link { color:rgba(255,255,255,0.32); text-decoration:none; font-size:13px; transition:color 0.2s; }
         .footer-link:hover { color:rgba(255,255,255,0.75); }
-
+ 
+        .hamburger {
+          display: none;
+          flex-direction: column; justify-content: center; align-items: center;
+          width: 38px; height: 38px; gap: 5px;
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 9px; cursor: pointer; transition: background 0.2s;
+          flex-shrink: 0;
+        }
+        .hamburger:hover { background: rgba(255,255,255,0.1); }
+        .hamburger span {
+          display: block; width: 18px; height: 1.5px;
+          background: rgba(255,255,255,0.7); border-radius: 2px;
+          transition: all 0.25s;
+        }
+ 
+        .mobile-menu {
+          position: absolute; top: 64px; left: 0; right: 0;
+          background: rgba(10,13,20,0.99);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          backdrop-filter: blur(20px);
+          padding: 12px 20px 18px;
+          display: flex; flex-direction: column; gap: 2px;
+          animation: slideDown 0.2s ease forwards;
+          z-index: 199;
+        }
+ 
+        .mobile-nav-link {
+          color: rgba(255,255,255,0.6); font-size: 15px; font-weight: 500;
+          text-decoration: none; padding: 12px 14px; border-radius: 9px;
+          transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+          background: none; border: none; cursor: pointer; text-align: left; width: 100%;
+          display: block;
+        }
+        .mobile-nav-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
+ 
+        .mobile-nav-cta {
+          background: #f0c040; color: #0a0d14; border: none; border-radius: 9px;
+          padding: 12px 14px; font-size: 15px; font-weight: 700; cursor: pointer;
+          text-decoration: none; font-family: 'DM Sans', sans-serif;
+          transition: opacity 0.2s; margin-top: 8px; text-align: center; display: block;
+        }
+        .mobile-nav-cta:hover { opacity: 0.87; }
+ 
+        .mobile-nav-logout {
+          color: rgba(248,113,113,0.75); font-size: 15px; font-weight: 500;
+          padding: 12px 14px; border-radius: 9px; border: none;
+          background: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+          text-align: left; width: 100%; transition: all 0.2s; display: block;
+        }
+        .mobile-nav-logout:hover { background: rgba(248,113,113,0.08); color: rgba(248,113,113,0.95); }
+ 
+        .mobile-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 6px 0; }
+ 
+        @media (max-width: 680px) {
+          .desktop-nav { display: none !important; }
+          .hamburger { display: flex !important; }
+        }
+ 
         @media (max-width: 860px) {
           .hero-grid { grid-template-columns: 1fr !important; }
           .hero-cards { display: none !important; }
           .blog-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
-
+ 
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
       <header style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,13,20,0.97)', backdropFilter:'blur(16px)', position:'sticky', top:0, zIndex:200 }}>
-        <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between', position:'relative' }}>
           <span style={{ fontSize:20, fontWeight:700, color:'#f0c040', fontFamily:"'Playfair Display', serif", letterSpacing:-0.5 }}>
             ✦ SparkVybzEnt
           </span>
-          <nav style={{ display:'flex', alignItems:'center', gap:4 }}>
+ 
+          {/* Desktop nav */}
+          <nav className="desktop-nav" style={{ display:'flex', alignItems:'center', gap:4 }}>
             <Link to="/events" className="nav-link">Events</Link>
             <Link to="/the-hub" className="nav-link">The Hub</Link>
             {user ? (
@@ -163,17 +219,48 @@ const LandingPage: React.FC = () => {
               </>
             )}
           </nav>
+ 
+          {/* Hamburger — mobile only */}
+          <button className="hamburger" onClick={() => setMobileMenuOpen(o => !o)} aria-label="Toggle menu">
+            <span style={mobileMenuOpen ? { transform:'rotate(45deg) translate(3px, 5px)' } : {}} />
+            <span style={mobileMenuOpen ? { opacity:0 } : {}} />
+            <span style={mobileMenuOpen ? { transform:'rotate(-45deg) translate(3px, -5px)' } : {}} />
+          </button>
         </div>
+ 
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <nav className="mobile-menu">
+            <Link to="/events" className="mobile-nav-link" onClick={closeMobileMenu}>Events</Link>
+            <Link to="/the-hub" className="mobile-nav-link" onClick={closeMobileMenu}>The Hub</Link>
+            <div className="mobile-divider" />
+            {user ? (
+              <>
+                <Link to="/account" className="mobile-nav-link" onClick={closeMobileMenu}>My Account</Link>
+                {user.role === 'ADMIN' && (
+                  <Link to="/admin" className="mobile-nav-link" onClick={closeMobileMenu} style={{ color:'#f0c040' }}>
+                    ✦ Admin Dashboard
+                  </Link>
+                )}
+                <button onClick={() => { logout(); closeMobileMenu(); }} className="mobile-nav-logout">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link to="/signin" className="mobile-nav-link" onClick={closeMobileMenu}>Sign In</Link>
+                <Link to="/signup" className="mobile-nav-cta" onClick={closeMobileMenu}>Sign Up</Link>
+              </>
+            )}
+          </nav>
+        )}
       </header>
-
+ 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
       <section style={{ position:'relative', overflow:'hidden', minHeight:580 }}>
         <div style={{ position:'absolute', inset:0, zIndex:0, background:'radial-gradient(ellipse 70% 60% at 70% 40%, rgba(240,192,64,0.07) 0%, transparent 55%), radial-gradient(ellipse 50% 70% at 5% 70%, rgba(96,200,240,0.05) 0%, transparent 55%), #0a0d14' }} />
         <div style={{ position:'absolute', right:-140, top:-140, width:540, height:540, borderRadius:'50%', border:'1px solid rgba(240,192,64,0.05)', zIndex:0, pointerEvents:'none' }} />
         <div style={{ position:'absolute', right:-70, top:-70, width:380, height:380, borderRadius:'50%', border:'1px dashed rgba(240,192,64,0.07)', zIndex:0, pointerEvents:'none' }} />
-
+ 
         <div className="hero-grid" style={{ maxWidth:1100, margin:'0 auto', padding:'80px 28px 72px', display:'grid', gridTemplateColumns:'1fr 420px', gap:56, alignItems:'center', position:'relative', zIndex:1 }}>
-          {/* LEFT copy */}
           <div style={{ animation:'fadeUp 0.6s ease forwards' }}>
             <p className="eyebrow">Kenya's #1 Events Platform</p>
             <h1 style={{ fontFamily:"'Playfair Display', serif", fontSize:'clamp(38px,5.5vw,64px)', fontWeight:700, lineHeight:1.08, letterSpacing:-2, marginBottom:22, color:'#fff' }}>
@@ -197,8 +284,7 @@ const LandingPage: React.FC = () => {
               ))}
             </div>
           </div>
-
-          {/* RIGHT stacked cards */}
+ 
           <div className="hero-cards" style={{ position:'relative', height:440, animation:'fadeLeft 0.7s ease 0.15s both' }}>
             {(() => {
               const eventCards = trendingEvents.slice(0,2).map(ev => ({ ...ev, _kind:'event' as const }));
@@ -212,13 +298,13 @@ const LandingPage: React.FC = () => {
                 else break;
               }
               if (deck.length < 3) deck.push({ _kind:'info' as const, id:'__info' });
-
+ 
               const configs = [
                 { top:0,  right:0,  rotate:3,  z:12 },
                 { top:36, right:28, rotate:-2, z:11 },
                 { top:68, right:52, rotate:4,  z:10 },
               ];
-
+ 
               return deck.slice(0,3).map((card, i) => {
                 const c = configs[i];
                 const baseStyle: React.CSSProperties = {
@@ -241,7 +327,7 @@ const LandingPage: React.FC = () => {
                   e.currentTarget.style.zIndex = String(c.z);
                   e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.6)';
                 };
-
+ 
                 if (card._kind === 'event') {
                   return (
                     <Link key={card.id} to={`/events/${card.id}`} style={baseStyle} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
@@ -266,15 +352,10 @@ const LandingPage: React.FC = () => {
                     </Link>
                   );
                 }
-
+ 
                 if (card._kind === 'blog') {
                   return (
-                    <div
-                      key={card.id}
-                      style={{ ...baseStyle, border:'1px solid rgba(96,200,240,0.12)', cursor:'default' }}
-                      onMouseEnter={handleEnter}
-                      onMouseLeave={handleLeave}
-                    >
+                    <div key={card.id} style={{ ...baseStyle, border:'1px solid rgba(96,200,240,0.12)', cursor:'default' }} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
                       <div style={{ height:160, overflow:'hidden', background:'#111d2e' }}>
                         {card.imageUrl
                           ? <img src={card.imageUrl} alt={card.title} style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.68)' }} />
@@ -295,7 +376,7 @@ const LandingPage: React.FC = () => {
                     </div>
                   );
                 }
-
+ 
                 return (
                   <div key="info" style={{ ...baseStyle, border:'1px solid rgba(240,192,64,0.15)', cursor:'default' }} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
                     <div style={{ padding:'28px 24px 26px' }}>
@@ -320,9 +401,9 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
-
+ 
       <div className="divider" />
-
+ 
       {/* ── FEATURED EVENTS ─────────────────────────────────────────────── */}
       <section style={{ padding:'72px 0' }}>
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px' }}>
@@ -338,9 +419,9 @@ const LandingPage: React.FC = () => {
           <FeaturedEvents />
         </div>
       </section>
-
+ 
       <div className="divider" />
-
+ 
       {/* ── BLOG SHOWCASE ───────────────────────────────────────────────── */}
       <section style={{ padding:'72px 0', position:'relative' }}>
         <div style={{ position:'absolute', left:'5%', top:'30%', width:380, height:280, background:'radial-gradient(ellipse,rgba(96,200,240,0.04) 0%,transparent 70%)', pointerEvents:'none' }} />
@@ -354,7 +435,7 @@ const LandingPage: React.FC = () => {
             </div>
             <Link to="/the-hub" className="view-all">All articles →</Link>
           </div>
-
+ 
           {loadingBlogs ? (
             <div className="blog-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24 }}>
               <div className="skeleton" style={{ height:420 }} />
@@ -368,9 +449,9 @@ const LandingPage: React.FC = () => {
             </div>
           ) : (
             <div className="blog-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, alignItems:'start' }}>
-              {/* Featured big post */}
               {blogs[0] && (
-                <div className="blog-featured">                  <div style={{ overflow:'hidden', height:260 }}>
+                <div className="blog-featured">
+                  <div style={{ overflow:'hidden', height:260 }}>
                     <img
                       src={blogs[0].imageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80'}
                       alt={blogs[0].title} className="b-img"
@@ -391,8 +472,6 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
               )}
-
-              {/* Side stack */}
               <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
                 {blogs.slice(1,4).map((post, i) => (
                   <div key={post.id} className="blog-side" style={{ animation:`fadeUp 0.45s ease ${i*0.08+0.1}s both` }}>
@@ -417,9 +496,9 @@ const LandingPage: React.FC = () => {
           )}
         </div>
       </section>
-
+ 
       <div className="divider" />
-
+ 
       {/* ── CTA BAND ────────────────────────────────────────────────────── */}
       <section style={{ padding:'80px 28px', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(240,192,64,0.055) 0%, transparent 65%)', pointerEvents:'none' }} />
@@ -437,7 +516,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
-
+ 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <footer style={{ borderTop:'1px solid rgba(255,255,255,0.06)', background:'#07090f', padding:'28px 28px' }}>
         <div style={{ maxWidth:1100, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:14 }}>
@@ -450,9 +529,9 @@ const LandingPage: React.FC = () => {
           <p style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontFamily:"'DM Mono', monospace" }}>© {new Date().getFullYear()} SparkVybzEnt</p>
         </div>
       </footer>
-
+ 
     </div>
   );
 };
-
+ 
 export default LandingPage;
