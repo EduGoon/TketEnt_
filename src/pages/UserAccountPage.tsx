@@ -191,6 +191,24 @@ async function downloadTicketAsPng(ticket: Ticket) {
   ctx.textAlign = "center"; ctx.fillStyle = accent; ctx.font = "bold 9px monospace"; ctx.fillText("ADMIT ONE", 0, 0); ctx.restore();
   ctx.textAlign = "center"; ctx.fillStyle = "rgba(240,192,64,0.2)"; ctx.font = "bold 11px Georgia, serif";
   ctx.fillText("SparkVybzEnt", W / 2, H - 12);
+ if (ticket.qrCode) {
+    await new Promise<void>((resolve) => {
+      const qrImg = new Image();
+      qrImg.crossOrigin = "anonymous";
+      qrImg.onload = () => {
+        const qrSize = 64;
+        const qrX = mx;
+        const qrY = H - qrSize - 14;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(qrX - 3, qrY - 3, qrSize + 6, qrSize + 6);
+        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+        resolve();
+      };
+      qrImg.onerror = () => resolve(); // skip QR silently if it fails to load
+      qrImg.src = ticket.qrCode!;
+    });
+  }
+
   const link = document.createElement("a");
   link.download = "ticket-" + ticket.eventName?.replace(/\s+/g, '-').toLowerCase() + ".png";
   link.href = canvas.toDataURL("image/png"); link.click();
