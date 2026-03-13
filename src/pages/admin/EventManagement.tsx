@@ -212,12 +212,9 @@ const EventManagement: React.FC = () => {
         <h2 className="text-3xl font-bold text-gray-800">Event Management</h2>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-          disabled={submitLoading}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={submitLoading || showForm}
         >
-          {submitLoading ? (
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent inline-block mr-2" />
-          ) : null}
           Create New Event
         </button>
       </div>
@@ -414,17 +411,22 @@ const EventManagement: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex gap-4">
+<div className="flex gap-4">
               <button
                 type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md"
+                disabled={submitLoading}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {editingEvent ? 'Update Event' : 'Create Event'}
+                {submitLoading && (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent inline-block" />
+                )}
+                {submitLoading ? (editingEvent ? 'Updating…' : 'Creating…') : (editingEvent ? 'Update Event' : 'Create Event')}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md"
+                disabled={submitLoading}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>

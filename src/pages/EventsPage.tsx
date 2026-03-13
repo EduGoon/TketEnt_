@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Event } from '../utilities/types';
 import * as eventService from '../services/historyService';
- 
+import { useAuth } from '../utilities/AuthContext';
+
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
@@ -11,14 +12,16 @@ const EventsPage: React.FC = () => {
   const [keyword, setKeyword] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [favorites, setFavorites] = useState<{ [eventId: string]: boolean }>({});
- 
-  useEffect(() => {
+ const { user } = useAuth();
+
+useEffect(() => {
     const loadInitialData = async () => {
+      setFavorites({});
       await fetchEvents();
       const token = localStorage.getItem('auth_token');
-if (!token) return;
-try {
-  const resp = await eventService.listFavorites();
+      if (!token) return;
+      try {
+        const resp = await eventService.listFavorites();
         const favData = resp.data || resp;
         if (Array.isArray(favData)) {
           const map: { [key: string]: boolean } = {};
@@ -33,8 +36,9 @@ try {
       }
     };
     loadInitialData();
-  }, []);
- 
+  }, [user]);
+
+  
   // ── Single source of truth for filtering — runs entirely client-side ──
   const applyFilters = (
     allEvents: Event[],
