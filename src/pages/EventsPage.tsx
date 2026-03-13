@@ -15,8 +15,10 @@ const EventsPage: React.FC = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       await fetchEvents();
-      try {
-        const resp = await eventService.listFavorites();
+      const token = localStorage.getItem('auth_token');
+if (!token) return;
+try {
+  const resp = await eventService.listFavorites();
         const favData = resp.data || resp;
         if (Array.isArray(favData)) {
           const map: { [key: string]: boolean } = {};
