@@ -34,7 +34,7 @@ export const removeFavorite = async (eventId: string) => {
 };
 
 export const listFavorites = async () => {
-  return apiFetch('/user/favorites/');
+  return apiFetch('/user/favorites/mine');
 };
 
 // Reviews
