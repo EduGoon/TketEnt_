@@ -51,8 +51,7 @@ export class ApiError extends Error {
 
 async function handleResponse(response: Response, path: string = '') {
   if (response.status === 401) {
-    const isProtectedRoute = path.includes('/user/') || path.includes('/admin/');
-    if (isProtectedRoute && logoutCallback) logoutCallback();
+const isProtectedRoute = path.includes('/user/') || path.includes('/admin/') || path.includes('/auth/refresh');    if (isProtectedRoute && logoutCallback) logoutCallback();
     throw new ApiError('Unauthorized', 401);
   }
 
