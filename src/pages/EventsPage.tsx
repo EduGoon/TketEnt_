@@ -17,23 +17,26 @@ const EventsPage: React.FC = () => {
 useEffect(() => {
     const loadInitialData = async () => {
       setFavorites({});
-      await fetchEvents();
+
       const token = localStorage.getItem('auth_token');
-      if (!token) return;
-      try {
-        const resp = await eventService.listFavorites();
-        const favData = resp.data || resp;
-        if (Array.isArray(favData)) {
-          const map: { [key: string]: boolean } = {};
-          favData.forEach((f: any) => {
-            const id = f.eventId || f.id;
-            if (id) map[id] = true;
-          });
-          setFavorites(map);
+      if (token && user?.id) {
+        try {
+          const resp = await eventService.listFavorites();
+          const favData = resp.data || resp;
+          if (Array.isArray(favData)) {
+            const map: { [key: string]: boolean } = {};
+            favData.forEach((f: any) => {
+              const id = f.eventId || f.id;
+              if (id) map[id] = true;
+            });
+            setFavorites(map);
+          }
+        } catch (err) {
+          console.error("Failed to sync favorites", err);
         }
-      } catch (err) {
-        console.error("Failed to sync favorites", err);
       }
+
+      await fetchEvents();
     };
     loadInitialData();
   }, [user?.id]);
