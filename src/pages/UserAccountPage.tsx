@@ -553,6 +553,13 @@ export default function UserAccountPage() {
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 24, lineHeight: 1.7 }}>
               To update your name, email, or phone number, reach out via the live chat widget at the bottom of the screen.
             </p>
+            {user?.role === 'USER' && (
+  <div style={{ marginTop: 24, padding: '20px 24px', background: 'linear-gradient(160deg,rgba(240,192,64,0.07),rgba(240,192,64,0.03))', border: '1px solid rgba(240,192,64,0.15)', borderRadius: 14 }}>
+    <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 6 }}>Want to host events?</p>
+    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, marginBottom: 14 }}>Apply to become an organizer and start selling tickets for your events on SparkVybzEnt.</p>
+    <Link to="/apply-organizer" style={{ display: 'inline-block', background: '#f0c040', color: '#0a0d14', padding: '10px 20px', borderRadius: 9, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Apply Now →</Link>
+  </div>
+)}
           </div>
         )}
  

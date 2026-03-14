@@ -112,7 +112,7 @@ export interface User {
   firstName: string;
   lastName: string;
   phone: string;
-  role: 'USER' | 'ADMIN';
+  role: 'USER' | 'ORGANIZER' | 'ADMIN';
   createdAt: string;
   updatedAt: string;
 }
@@ -135,4 +135,65 @@ export interface Analytics {
   eventsByCategory: { [key: string]: number };
   monthlyRevenue: { month: string; revenue: number }[];
   topEvents?: { name: string; tickets: number; revenue: number }[];
+}
+
+export interface OrganizerApplication {
+  id: string;
+  userId: string;
+  organizationName: string;
+  bio: string;
+  phone: string;
+  socialLink?: string;
+  experience?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  adminNote?: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    createdAt: string;
+  };
+}
+
+export interface OrganizerProfile {
+  id: string;
+  userId: string;
+  organizationName: string;
+  bio?: string;
+  mpesaPhone?: string;
+  paybillNumber?: string;
+  accountNumber?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Payout {
+  id: string;
+  organizerId: string;
+  eventId: string;
+  grossAmount: number;
+  platformFee: number;
+  netAmount: number;
+  status: 'PENDING' | 'RELEASED' | 'REJECTED';
+  adminNote?: string;
+  requestedAt: string;
+  releasedAt?: string;
+  event?: { title: string; date: string };
+}
+
+export interface CheckIn {
+  id: string;
+  ticketId: string;
+  eventId: string;
+  scannedById: string;
+  scannedAt: string;
+  ticket?: {
+    ticketTypeName: string;
+    ticketPrice: number;
+    user: { firstName: string; lastName: string; email: string };
+  };
 }

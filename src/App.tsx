@@ -10,6 +10,8 @@ import UserAccountPage from './pages/UserAccountPage';
 import AdminDashboard from './pages/AdminDashboard';
 import BlogPage from './pages/BlogPage';
 import AdminBlogManager from './pages/AdminBlogManager';
+import OrganizerDashboard from './pages/OrganizerDashboard';
+import ApplyOrganizerPage from './pages/ApplyOrganizerPage';
 import LiveChatWidget from './components/LiveChatWidget';
 import PageTransition from './components/PageTransition';
 
@@ -30,11 +32,21 @@ function App() {
                 <UserAccountPage />
               </PrivateRoute>
             } />
+            <Route path="/apply-organizer" element={
+              <PrivateRoute>
+                <ApplyOrganizerPage />
+              </PrivateRoute>
+            } />
             <Route path="/the-hub" element={<BlogPage />} />
             <Route path="/admin/blog-manager" element={<AdminBlogManager />} />
             <Route path="/admin/*" element={
               <PrivateRoute adminOnly>
                 <AdminDashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/organizer/*" element={
+              <PrivateRoute organizerOnly>
+                <OrganizerDashboard />
               </PrivateRoute>
             } />
           </Routes>

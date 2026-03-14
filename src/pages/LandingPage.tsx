@@ -207,11 +207,12 @@ const LandingPage: React.FC = () => {
             <Link to="/events" className="nav-link">Events</Link>
             <Link to="/the-hub" className="nav-link">The Hub</Link>
             {user ? (
-              <>
-                <Link to="/account" className="nav-link">My Account</Link>
-                {user.role === 'ADMIN' && <Link to="/admin" className="nav-cta" style={{ marginLeft:6 }}>Admin</Link>}
-                <button onClick={logout} className="nav-link" style={{ color:'rgba(248,113,113,0.65)' }}>Logout</button>
-              </>
+  <>
+    <Link to="/account" className="nav-link">My Account</Link>
+    {user.role === 'ORGANIZER' && <Link to="/organizer/dashboard" className="nav-link" style={{ color:'#f0c040' }}>My Events</Link>}
+    {user.role === 'ADMIN' && <Link to="/admin" className="nav-cta" style={{ marginLeft:6 }}>Admin</Link>}
+    <button onClick={logout} className="nav-link" style={{ color:'rgba(248,113,113,0.65)' }}>Logout</button>
+  </>
             ) : (
               <>
                 <Link to="/signin" className="nav-link">Sign In</Link>
@@ -234,10 +235,15 @@ const LandingPage: React.FC = () => {
             <Link to="/events" className="mobile-nav-link" onClick={closeMobileMenu}>Events</Link>
             <Link to="/the-hub" className="mobile-nav-link" onClick={closeMobileMenu}>The Hub</Link>
             <div className="mobile-divider" />
-            {user ? (
-              <>
-                <Link to="/account" className="mobile-nav-link" onClick={closeMobileMenu}>My Account</Link>
-                {user.role === 'ADMIN' && (
+     {user ? (
+  <>
+    <Link to="/account" className="mobile-nav-link" onClick={closeMobileMenu}>My Account</Link>
+    {user.role === 'ORGANIZER' && (
+      <Link to="/organizer/dashboard" className="mobile-nav-link" onClick={closeMobileMenu} style={{ color:'#f0c040' }}>
+        🎪 My Events
+      </Link>
+    )}
+    {user.role === 'ADMIN' && (
                   <Link to="/admin" className="mobile-nav-link" onClick={closeMobileMenu} style={{ color:'#f0c040' }}>
                     ✦ Admin Dashboard
                   </Link>
@@ -247,7 +253,7 @@ const LandingPage: React.FC = () => {
             ) : (
               <>
                 <Link to="/signin" className="mobile-nav-link" onClick={closeMobileMenu}>Sign In</Link>
-                <Link to="/signup" className="mobile-nav-cta" onClick={closeMobileMenu}>Sign Up</Link>
+<Link to="/signup" className="mobile-nav-cta" onClick={closeMobileMenu}>Sign Up</Link>
               </>
             )}
           </nav>
