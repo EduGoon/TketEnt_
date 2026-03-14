@@ -7,7 +7,7 @@ interface LocalEventForm extends Omit<Partial<Event>, 'ticketTypes'> {
   ticketTypes?: Array<TicketType>;
 }
 
-// ── Confirm Dialog ────────────────────────────────────────────
+// ── Confirmation Dialog ────────────────────────────────────────────
 function ConfirmDialog({ title, message, onConfirm, onCancel }: {
   title: string; message: string; onConfirm: () => void; onCancel: () => void;
 }) {
