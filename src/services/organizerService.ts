@@ -56,3 +56,14 @@ export const scanTicket = async (ticketId: string, eventId: string) =>
 
 export const getEventCheckIns = async (eventId: string) =>
   apiFetch(`/organizer/checkin/event/${eventId}`);
+
+// ── Admin payouts ─────────────────────────────────────────────
+export const getAllPayouts = async () => apiFetch('/admin/payouts');
+export const releasePayout = async (id: string, adminNote?: string) =>
+  apiFetch(`/admin/payouts/${id}/release`, { method: 'PUT', body: { adminNote } });
+export const rejectPayout = async (id: string, adminNote: string) =>
+  apiFetch(`/admin/payouts/${id}/reject`, { method: 'PUT', body: { adminNote } });
+
+
+export const revokeOrganizer = async (userId: string, adminNote?: string) =>
+  apiFetch(`/admin/applications/revoke/${userId}`, { method: 'PUT', body: { adminNote } });

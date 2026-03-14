@@ -214,11 +214,44 @@ export default function AdminApplicationsManager() {
               )}
 
               {selected.status !== 'PENDING' && (
-                <div className={`p-4 rounded-xl text-sm font-medium ${STATUS_COLORS[selected.status].bg} ${STATUS_COLORS[selected.status].text}`}>
-                  This application has already been {selected.status.toLowerCase()}.
-                  {selected.adminNote && <p className="mt-2 opacity-75">Note: {selected.adminNote}</p>}
-                </div>
-              )}
+  <div>
+    <div className={`p-4 rounded-xl text-sm font-medium mb-4 ${STATUS_COLORS[selected.status].bg} ${STATUS_COLORS[selected.status].text}`}>
+      This application has already been {selected.status.toLowerCase()}.
+      {selected.adminNote && <p className="mt-2 opacity-75">Note: {selected.adminNote}</p>}
+    </div>
+    {selected.status === 'APPROVED' && (
+      <>
+        <div className="mb-4">
+          <label className="block text-sm font-bold text-gray-700 mb-2">
+            Revocation Reason <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <textarea
+            value={adminNote}
+            onChange={e => setAdminNote(e.target.value)}
+            rows={3}
+            placeholder="Reason for revoking organizer access…"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
+          />
+        </div>
+        <button
+          disabled={acting}
+          onClick={async () => {
+            setActing(true);
+            try {
+              await organizerService.revokeOrganizer(selected.userId, adminNote);
+              showToast('Organizer access revoked — email sent');
+              setSelected(null); setAdminNote(''); loadApplications();
+            } catch { showToast('Failed to revoke'); }
+            finally { setActing(false); }
+          }}
+          className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all"
+        >
+          {acting ? 'Processing…' : '🔒 Revoke Organizer Access'}
+        </button>
+      </>
+    )}
+  </div>
+)}
             </div>
           </div>
         </div>

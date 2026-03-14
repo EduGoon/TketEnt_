@@ -11,6 +11,7 @@ import {
   ArrowLeftOnRectangleIcon,
   GlobeAltIcon,
   ClipboardDocumentCheckIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline';
 
 import EventManagement from './admin/EventManagement';
@@ -22,6 +23,7 @@ import AdminUserManager from './AdminUserManager';
 import AdminAnalyticsManager from './AdminAnalyticsManager';
 import AdminSponsorManager from './AdminSponsorManager';
 import AdminApplicationsManager from './AdminApplicationsManager';
+import AdminPayoutsManager from './AdminPayoutsManager';
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
@@ -36,6 +38,7 @@ const AdminDashboard: React.FC = () => {
     { path: '/admin/chats',        label: 'Chats',             icon: ChatBubbleLeftRightIcon },
     { path: '/admin/blogs',        label: 'Blogs',             icon: NewspaperIcon },
     { path: '/admin/users',        label: 'User Records',      icon: UserGroupIcon },
+    { path: '/admin/payouts', label: 'Payouts', icon: BanknotesIcon },
   ];
 
   return (
@@ -121,6 +124,7 @@ const AdminDashboard: React.FC = () => {
               <Route path="/blogs"        element={<AdminBlogManager />} />
               <Route path="/tickets"      element={<AdminTicketManager />} />
               <Route path="/users"        element={<AdminUserManager />} />
+              <Route path="/payouts" element={<AdminPayoutsManager />} />
             </Routes>
           </main>
         </div>

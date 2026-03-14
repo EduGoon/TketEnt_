@@ -391,19 +391,53 @@ function PayoutsTab() {
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
-  const handleRequest = async () => {
-    if (!selectedEventId) return;
-    setRequesting(true);
-    try {
-      await organizerService.requestPayout(selectedEventId);
-      showToast('Payout requested successfully');
-      const resp = await organizerService.getOrganizerPayouts();
-      setPayouts(resp?.data ?? []);
-      setSelectedEventId('');
-    } catch (err: any) {
-      showToast(err.message || 'Failed to request payout');
-    } finally { setRequesting(false); }
-  };
+const [showPaymentForm, setShowPaymentForm] = useState(false);
+const [paymentForm, setPaymentForm] = useState({ mpesaPhone: '', paybillNumber: '', accountNumber: '' });
+const [savingPayment, setSavingPayment] = useState(false);
+
+const handleRequest = async () => {
+  if (!selectedEventId) return;
+  // Check if profile has payment details
+  try {
+    const profileResp = await organizerService.getOrganizerProfile();
+    const profile = profileResp?.data ?? profileResp;
+    if (!profile?.mpesaPhone && !profile?.paybillNumber) {
+      setPaymentForm({ mpesaPhone: profile?.mpesaPhone ?? '', paybillNumber: profile?.paybillNumber ?? '', accountNumber: profile?.accountNumber ?? '' });
+      setShowPaymentForm(true);
+      return;
+    }
+  } catch {}
+  await submitPayoutRequest();
+};
+
+const savePaymentAndRequest = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!paymentForm.mpesaPhone && !paymentForm.paybillNumber) {
+    showToast('Please provide at least an M-Pesa number or Paybill');
+    return;
+  }
+  setSavingPayment(true);
+  try {
+    await organizerService.updateOrganizerProfile(paymentForm);
+    setShowPaymentForm(false);
+    await submitPayoutRequest();
+  } catch {
+    showToast('Failed to save payment details');
+  } finally { setSavingPayment(false); }
+};
+
+const submitPayoutRequest = async () => {
+  setRequesting(true);
+  try {
+    await organizerService.requestPayout(selectedEventId);
+    showToast('Payout requested successfully');
+    const resp = await organizerService.getOrganizerPayouts();
+    setPayouts(resp?.data ?? []);
+    setSelectedEventId('');
+  } catch (err: any) {
+    showToast(err.message || 'Failed to request payout');
+  } finally { setRequesting(false); }
+};
 
   const STATUS_COLOR: any = { PENDING: '#f0c040', RELEASED: '#22c55e', REJECTED: '#ef4444' };
 
@@ -464,6 +498,36 @@ function PayoutsTab() {
           ))}
         </div>
       )}
+      {showPaymentForm && (
+  <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={() => setShowPaymentForm(false)}>
+    <div style={{ background: '#0f1521', border: '1px solid rgba(240,192,64,0.2)', borderRadius: 20, padding: 32, width: '100%', maxWidth: 460 }} onClick={e => e.stopPropagation()}>
+      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Payment Details Required</h3>
+      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 24, lineHeight: 1.65 }}>Before requesting a payout, please provide your M-Pesa details so we know where to send your money.</p>
+      <form onSubmit={savePaymentAndRequest} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <label style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase' as const, fontFamily: "'DM Mono',monospace", marginBottom: 6, display: 'block' }}>M-Pesa Phone Number</label>
+          <input style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '11px 14px', fontSize: 13, color: '#fff', fontFamily: "'DM Sans',sans-serif", outline: 'none', width: '100%' }} value={paymentForm.mpesaPhone} onChange={e => setPaymentForm(p => ({ ...p, mpesaPhone: e.target.value }))} placeholder="e.g. 0712345678" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase' as const, fontFamily: "'DM Mono',monospace", marginBottom: 6, display: 'block' }}>Paybill</label>
+            <input style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '11px 14px', fontSize: 13, color: '#fff', fontFamily: "'DM Sans',sans-serif", outline: 'none', width: '100%' }} value={paymentForm.paybillNumber} onChange={e => setPaymentForm(p => ({ ...p, paybillNumber: e.target.value }))} placeholder="e.g. 522522" />
+          </div>
+          <div>
+            <label style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase' as const, fontFamily: "'DM Mono',monospace", marginBottom: 6, display: 'block' }}>Account No.</label>
+            <input style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '11px 14px', fontSize: 13, color: '#fff', fontFamily: "'DM Sans',sans-serif", outline: 'none', width: '100%' }} value={paymentForm.accountNumber} onChange={e => setPaymentForm(p => ({ ...p, accountNumber: e.target.value }))} placeholder="e.g. Business name" />
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button type="submit" style={{ background: '#f0c040', color: '#0a0d14', border: 'none', borderRadius: 9, padding: '12px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", flex: 1 }} disabled={savingPayment}>
+            {savingPayment ? 'Saving…' : 'Save & Request Payout'}
+          </button>
+          <button type="button" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 9, padding: '12px 20px', fontSize: 13, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }} onClick={() => setShowPaymentForm(false)}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 }
