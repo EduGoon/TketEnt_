@@ -214,7 +214,7 @@ const pct = (ev.totalTicketQuantity ?? 0) > 0 ? Math.round(((ev.ticketsSold ?? 0
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                {['Organizer', 'Events', 'Tickets Sold', 'Gross Revenue', 'Platform Cut'].map(h => (
+                {['Organizer', 'Events', 'Tickets Sold', 'Gross Revenue', 'Projected Cut'].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
