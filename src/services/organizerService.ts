@@ -67,3 +67,11 @@ export const rejectPayout = async (id: string, adminNote: string) =>
 
 export const revokeOrganizer = async (userId: string, adminNote?: string) =>
   apiFetch(`/admin/applications/revoke/${userId}`, { method: 'PUT', body: { adminNote } });
+
+
+// ── Terms ─────────────────────────────────────────────────────
+export const getTerms = async (type: 'USER' | 'ORGANIZER') =>
+  apiFetch(`/api/terms/${type}`);
+
+export const updateTerms = async (type: 'USER' | 'ORGANIZER', content: string, version?: string) =>
+  apiFetch(`/admin/terms/${type}`, { method: 'PUT', body: { content, version } });

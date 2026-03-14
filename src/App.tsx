@@ -14,6 +14,7 @@ import OrganizerDashboard from './pages/OrganizerDashboard';
 import ApplyOrganizerPage from './pages/ApplyOrganizerPage';
 import LiveChatWidget from './components/LiveChatWidget';
 import PageTransition from './components/PageTransition';
+import TermsPage from './pages/TermsPage';
 
 function App() {
   const location = useLocation();
@@ -27,6 +28,7 @@ function App() {
             <Route path="/events/:id" element={<EventDetailsPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/terms/:type" element={<TermsPage />} />
             <Route path="/account" element={
               <PrivateRoute>
                 <UserAccountPage />

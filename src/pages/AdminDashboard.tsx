@@ -24,6 +24,8 @@ import AdminAnalyticsManager from './AdminAnalyticsManager';
 import AdminSponsorManager from './AdminSponsorManager';
 import AdminApplicationsManager from './AdminApplicationsManager';
 import AdminPayoutsManager from './AdminPayoutsManager';
+import AdminTermsManager from './AdminTermsManager';
+import { DocumentTextIcon } from '@heroicons/react/24/outline';
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
@@ -39,6 +41,7 @@ const AdminDashboard: React.FC = () => {
     { path: '/admin/blogs',        label: 'Blogs',             icon: NewspaperIcon },
     { path: '/admin/users',        label: 'User Records',      icon: UserGroupIcon },
     { path: '/admin/payouts', label: 'Payouts', icon: BanknotesIcon },
+    { path: '/admin/terms', label: 'Terms', icon: DocumentTextIcon },
   ];
 
   return (
@@ -125,6 +128,7 @@ const AdminDashboard: React.FC = () => {
               <Route path="/tickets"      element={<AdminTicketManager />} />
               <Route path="/users"        element={<AdminUserManager />} />
               <Route path="/payouts" element={<AdminPayoutsManager />} />
+              <Route path="/terms" element={<AdminTermsManager />} />
             </Routes>
           </main>
         </div>

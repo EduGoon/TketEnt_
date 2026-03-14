@@ -527,11 +527,13 @@ const LandingPage: React.FC = () => {
       <footer style={{ borderTop:'1px solid rgba(255,255,255,0.06)', background:'#07090f', padding:'28px 28px' }}>
         <div style={{ maxWidth:1100, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:14 }}>
           <span style={{ fontFamily:"'Playfair Display', serif", fontSize:16, color:'#f0c040', fontWeight:700 }}>✦ SparkVybzEnt</span>
-          <div style={{ display:'flex', gap:22 }}>
-            <Link to="/events" className="footer-link">Events</Link>
-            <Link to="/the-hub" className="footer-link">Blog</Link>
-            {!user && <Link to="/signin" className="footer-link">Sign In</Link>}
-          </div>
+          <div style={{ display:'flex', gap:22, flexWrap:'wrap' }}>
+  <Link to="/events" className="footer-link">Events</Link>
+  <Link to="/the-hub" className="footer-link">Blog</Link>
+  <Link to="/terms/user" className="footer-link">Terms of Use</Link>
+  <Link to="/terms/organizer" className="footer-link">Organizer Terms</Link>
+  {!user && <Link to="/signin" className="footer-link">Sign In</Link>}
+</div>
           <p style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontFamily:"'DM Mono', monospace" }}>© {new Date().getFullYear()} SparkVybzEnt</p>
         </div>
       </footer>
