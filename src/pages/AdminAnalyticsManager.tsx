@@ -3,272 +3,198 @@ import * as adminService from '../services/adminService';
 import { AdminAnalyticsResponse } from '../utilities/types';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
-const formatNumber = (value: number) => value.toLocaleString();
+const fmt = (v: number) => v.toLocaleString();
 
-const Analytics: React.FC = () => {
+function StatCard({ label, value, sub, color = 'text-gray-900', blur = false }: {
+  label: string; value: string; sub?: string; color?: string; blur?: boolean;
+}) {
+  const [visible, setVisible] = useState(!blur);
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
+      <div className="flex items-start justify-between">
+        <p className={`text-2xl font-black ${color} ${!visible ? 'blur-sm select-none' : ''} transition-all`}>{value}</p>
+        {blur && (
+          <button onClick={() => setVisible(v => !v)} className="text-gray-300 hover:text-gray-500 transition-colors ml-2 flex-shrink-0">
+            {visible ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+          </button>
+        )}
+      </div>
+      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+    </div>
+  );
+}
+
+function BarChart({ data, valueKey, labelKey, color, label }: {
+  data: any[]; valueKey: string; labelKey: string; color: string; label: string;
+}) {
+  const max = useMemo(() => Math.max(...data.map(d => d[valueKey] ?? 0), 1), [data, valueKey]);
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+      <h3 className="text-base font-bold text-gray-800 mb-5">{label}</h3>
+      <div className="flex items-end gap-1 h-48 border-b border-gray-100">
+        {data.map((d, i) => {
+          const pct = max > 0 ? (d[valueKey] / max) * 100 : 0;
+          return (
+            <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+              {/* Tooltip */}
+              <div className="absolute bottom-full mb-1 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                {d[labelKey]}: {fmt(d[valueKey] ?? 0)}
+              </div>
+              <div className={`${color} w-full rounded-t transition-all duration-500`} style={{ height: `${pct}%`, minHeight: d[valueKey] > 0 ? 3 : 0 }} />
+              <span className="text-[9px] text-gray-400 mt-1 uppercase font-bold truncate w-full text-center">{String(d[labelKey]).substring(0, 3)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const AdminAnalyticsManager: React.FC = () => {
   const [analytics, setAnalytics] = useState<AdminAnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'revenue' | 'tickets'>('revenue');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [revenueVisible, setRevenueVisible] = useState(false);
-  const [avgPriceVisible, setAvgPriceVisible] = useState(false);
 
- const loadAnalytics = async () => {
-  try {
-    setError(null);
-    setLoading(true);
-    
-    const res = await adminService.getEventAnalytics();
-    
-    // Simply set the state to the pre-formatted data from backend
-    if (res && res.data) {
-      setAnalytics(res.data);
-    } else {
-      setAnalytics(null);
+  const loadAnalytics = async () => {
+    try {
+      setError(null);
+      const res = await adminService.getEventAnalytics();
+      setAnalytics(res?.data ?? null);
+    } catch {
+      setError('Failed to load analytics.');
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
     }
-  } catch (err) {
-    setError('Failed to load analytics.');
-  } finally {
-    setLoading(false);
-    setIsRefreshing(false);
-  }
-};
-
-
-  useEffect(() => {
-    loadAnalytics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const totals = analytics?.totals ?? { totalRevenue: 0, totalTickets: 0 };
-  const avgTicketPrice = totals.totalTickets ? Math.round(totals.totalRevenue / totals.totalTickets) : 0;
-  const monthlyRevenue = analytics?.monthlyRevenue ?? [];
-  const monthlyTickets = analytics?.monthlyTicketsSold ?? [];
-  const topEvents = analytics?.topEvents ?? [];
-
-  const maxRevenue = useMemo(() => {
-    if (!monthlyRevenue.length) return 1;
-    return Math.max(...monthlyRevenue.map((m) => m.revenue ?? 0), 1);
-  }, [monthlyRevenue]);
-
-  const maxTickets = useMemo(() => {
-    if (!monthlyTickets.length) return 1;
-    return Math.max(...monthlyTickets.map((m) => m.ticketsSold ?? 0), 1);
-  }, [monthlyTickets]);
-
-  const sortedTopEvents = useMemo(() => {
-    const copy = [...topEvents];
-    return copy.sort((a, b) => {
-      if (sortBy === 'tickets') {
-        return (b.ticketsSold ?? 0) - (a.ticketsSold ?? 0);
-      }
-      return (b.revenue ?? 0) - (a.revenue ?? 0);
-    });
-  }, [sortBy, topEvents]);
-
-  const onRefresh = () => {
-    setLoading(true);
-    setIsRefreshing(true);
-    loadAnalytics();
   };
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => { loadAnalytics(); }, []);
 
-  if (loading && !analytics) {
-    return <div className="min-h-screen flex items-center justify-center">Loading analytics...</div>;
-  }
+  const totals    = analytics?.totals        ?? { totalRevenue: 0, totalTickets: 0 };
+  const users     = analytics?.users         ?? { total: 0, organizers: 0, admins: 0, newThisMonth: 0, repeatCustomers: 0, repeatCustomerRate: 0 };
+  const events    = analytics?.events        ?? { total: 0, byStatus: { PUBLISHED: 0, DRAFT: 0, ENDED: 0, CANCELLED: 0 } };
+  const content   = analytics?.content       ?? { totalBlogs: 0, publishedBlogs: 0 };
+  const engage    = analytics?.engagement    ?? { totalReviews: 0, avgPlatformRating: 0, totalCheckIns: 0 };
+  const apps      = analytics?.applications  ?? { pending: 0, total: 0 };
+  const payouts   = analytics?.payouts       ?? { pendingCount: 0, pendingValue: 0, totalPlatformFeeEarned: 0, totalReleasedToOrganizers: 0 };
+  const topOrgs   = analytics?.topOrganizers ?? [];
+  const topEvents = analytics?.topEvents     ?? [];
+  const avgPrice  = totals.totalTickets ? Math.round(totals.totalRevenue / totals.totalTickets) : 0;
+
+  const sortedTopEvents = useMemo(() => {
+    return [...topEvents].sort((a, b) => sortBy === 'tickets' ? (b.ticketsSold - a.ticketsSold) : (b.revenue - a.revenue));
+  }, [sortBy, topEvents]);
+
+  if (error) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="text-center"><p className="text-red-500 font-semibold mb-2">Failed to load analytics</p><button onClick={() => { setLoading(true); loadAnalytics(); }} className="text-sm text-green-600 underline">Retry</button></div>
+    </div>
+  );
+
+  if (loading && !analytics) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="text-center"><div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" /><p className="text-gray-400 text-sm">Loading analytics…</p></div>
+    </div>
+  );
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 mb-8">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800">Analytics Dashboard</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Updated: {analytics?.lastUpdated ? new Date(analytics.lastUpdated).toLocaleString() : '—'}
-          </p>
+          <h2 className="text-3xl font-bold text-gray-800">Analytics</h2>
+          <p className="text-sm text-gray-400 mt-1">Updated: {analytics?.lastUpdated ? new Date(analytics.lastUpdated).toLocaleString() : '—'}</p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onRefresh}
-            disabled={loading || isRefreshing}
-            className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            {isRefreshing ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
-            ) : (
-              'Refresh'
-            )}
-          </button>
-          <div className="inline-flex items-center gap-1 text-sm text-gray-600">
-            <span>Sort:</span>
-            <button
-              onClick={() => setSortBy('revenue')}
-              className={`px-3 py-1 rounded-md ${
-                sortBy === 'revenue' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              Revenue
-            </button>
-            <button
-              onClick={() => setSortBy('tickets')}
-              className={`px-3 py-1 rounded-md ${
-                sortBy === 'tickets' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              Tickets
-            </button>
-          </div>
-        </div>
+        <button onClick={() => { setLoading(true); setIsRefreshing(true); loadAnalytics(); }} disabled={isRefreshing}
+          className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50">
+          {isRefreshing ? <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : '↻'} Refresh
+        </button>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">Total Events</h3>
-          <p className="text-3xl font-bold text-gray-900">{analytics?.perEventMonthly?.length ?? 0}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">Total Tickets Sold</h3>
-          <p className="text-3xl font-bold text-blue-600">{formatNumber(totals.totalTickets)}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">Total Revenue</h3>
-          <div className="relative">
-            <p className={`text-3xl font-bold text-green-600 ${!revenueVisible ? 'blur-sm' : ''}`}>KSH {formatNumber(totals.totalRevenue)}</p>
-            <button
-              className="absolute top-0 right-0 p-2 bg-transparent"
-              onClick={() => setRevenueVisible(v => !v)}
-              aria-label={revenueVisible ? 'Hide' : 'Show'}
-            >
-              {revenueVisible ? <EyeSlashIcon className="w-6 h-6 text-green-600" /> : <EyeIcon className="w-6 h-6 text-green-600" />}
-            </button>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">Avg Ticket Price</h3>
-          <div className="relative">
-            <p className={`text-3xl font-bold text-yellow-600 ${!avgPriceVisible ? 'blur-sm' : ''}`}>KSH {formatNumber(avgTicketPrice)}</p>
-            <button
-              className="absolute top-0 right-0 p-2 bg-transparent"
-              onClick={() => setAvgPriceVisible(v => !v)}
-              aria-label={avgPriceVisible ? 'Hide' : 'Show'}
-            >
-              {avgPriceVisible ? <EyeSlashIcon className="w-6 h-6 text-yellow-600" /> : <EyeIcon className="w-6 h-6 text-yellow-600" />}
-            </button>
-          </div>
-        </div>
+      {/* ── Section 1: Revenue & Tickets ── */}
+      <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Revenue & Tickets</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard label="Total Revenue" value={`KSH ${fmt(totals.totalRevenue)}`} sub="All time ticket sales" color="text-green-600" blur />
+        <StatCard label="Total Tickets Sold" value={fmt(totals.totalTickets)} sub="All time" color="text-blue-600" />
+        <StatCard label="Avg Ticket Price" value={`KSH ${fmt(avgPrice)}`} color="text-yellow-600" blur />
+        <StatCard label="Platform Fees Earned" value={`KSH ${fmt(payouts.totalPlatformFeeEarned)}`} sub="From released payouts" color="text-purple-600" blur />
       </div>
 
-      {/* Charts Container */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-  {/* Monthly Revenue Chart */}
-  <div className="bg-white rounded-lg shadow-md p-6">
-    <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Revenue</h3>
-    <div className="h-64 flex items-end justify-between space-x-2 border-b border-gray-100">
-      {monthlyRevenue.length > 0 ? (
-        monthlyRevenue.map((data) => (
-          <div key={data.month} className="flex-1 flex flex-col items-center h-full justify-end">
-            <div
-              className="bg-green-500 w-full rounded-t transition-all duration-500"
-              style={{ 
-                // Using percentage instead of px to prevent overflow
-                height: `${maxRevenue > 0 ? (data.revenue / maxRevenue) * 100 : 0}%`,
-                minHeight: data.revenue > 0 ? '4px' : '0px' 
-              }}
-            ></div>
-            <div className="w-full text-center mt-2">
-              <span className="block text-[10px] text-gray-500 font-bold uppercase">{data.month}</span>
-              <span className="block text-[10px] text-gray-700 truncate">
-                KSH {formatNumber(data.revenue ?? 0)}
-              </span>
-            </div>
-          </div>
-        ))
-      ) : (
-        <div className="w-full text-center pb-24 text-gray-400 text-sm italic">No monthly revenue data available.</div>
-      )}
-    </div>
-  </div>
+      {/* ── Section 2: Users ── */}
+      <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Users</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard label="Total Users" value={fmt(users.total)} sub={`+${users.newThisMonth} this month`} color="text-gray-900" />
+        <StatCard label="Organizers" value={fmt(users.organizers)} sub={`${apps.pending} application${apps.pending !== 1 ? 's' : ''} pending`} color="text-orange-600" />
+        <StatCard label="Repeat Customers" value={`${users.repeatCustomerRate}%`} sub={`${fmt(users.repeatCustomers)} users bought 2+ events`} color="text-indigo-600" />
+        <StatCard label="Total Admins" value={fmt(users.admins)} color="text-gray-600" />
+      </div>
 
-  {/* Monthly Tickets Chart */}
-  <div className="bg-white rounded-lg shadow-md p-6">
-    <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Tickets Sold</h3>
-    <div className="h-64 flex items-end justify-between space-x-2 border-b border-gray-100">
-      {monthlyTickets.length > 0 ? (
-        monthlyTickets.map((data) => (
-          <div key={data.month} className="flex-1 flex flex-col items-center h-full justify-end">
-            <div
-              className="bg-blue-500 w-full rounded-t transition-all duration-500"
-              style={{ 
-                // Using percentage to keep bars inside the h-64 container
-                height: `${maxTickets > 0 ? (data.ticketsSold / maxTickets) * 100 : 0}%`,
-                minHeight: data.ticketsSold > 0 ? '4px' : '0px'
-              }}
-            ></div>
-            <div className="w-full text-center mt-2">
-              <span className="block text-[10px] text-gray-500 font-bold uppercase">{data.month}</span>
-              <span className="block text-[10px] text-gray-700 font-medium">
-                {formatNumber(data.ticketsSold ?? 0)}
-              </span>
-            </div>
-          </div>
-        ))
-      ) : (
-        <div className="w-full text-center pb-24 text-gray-400 text-sm italic">No ticket sales data available.</div>
-      )}
-    </div>
-  </div>
-</div>
+      {/* ── Section 3: Events ── */}
+      <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Events</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard label="Total Events" value={fmt(events.total)} color="text-gray-900" />
+        <StatCard label="Published" value={fmt(events.byStatus.PUBLISHED)} color="text-green-600" />
+        <StatCard label="Ended" value={fmt(events.byStatus.ENDED)} color="text-gray-500" />
+        <StatCard label="Cancelled / Draft" value={`${fmt(events.byStatus.CANCELLED)} / ${fmt(events.byStatus.DRAFT)}`} color="text-red-400" />
+      </div>
 
-      {/* Top Events Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-xl font-semibold text-gray-800">Top Performing Events</h3>
+      {/* ── Section 4: Engagement ── */}
+      <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Engagement & Content</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard label="Avg Platform Rating" value={`${engage.avgPlatformRating}/5`} sub={`${fmt(engage.totalReviews)} total reviews`} color="text-orange-500" />
+        <StatCard label="Total Check-Ins" value={fmt(engage.totalCheckIns)} sub="QR scans at events" color="text-teal-600" />
+        <StatCard label="Blog Posts" value={fmt(content.publishedBlogs)} sub={`${fmt(content.totalBlogs)} total incl. drafts`} color="text-blue-500" />
+        <StatCard label="Pending Payouts" value={fmt(payouts.pendingCount)} sub={`KSH ${fmt(payouts.pendingValue)} awaiting release`} color="text-yellow-600" />
+      </div>
+
+      {/* ── Charts ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <BarChart data={analytics?.monthlyRevenue ?? []} valueKey="revenue" labelKey="label" color="bg-green-500" label="Monthly Revenue (KSH)" />
+        <BarChart data={analytics?.monthlyTicketsSold ?? []} valueKey="ticketsSold" labelKey="label" color="bg-blue-500" label="Monthly Tickets Sold" />
+        <BarChart data={analytics?.newUsersPerMonth ?? []} valueKey="count" labelKey="label" color="bg-indigo-400" label="New Users per Month" />
+      </div>
+
+      {/* ── Top Events Table ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
+          <h3 className="text-base font-bold text-gray-800">Top Events</h3>
+          <div className="flex gap-2">
+            {(['revenue', 'tickets'] as const).map(s => (
+              <button key={s} onClick={() => setSortBy(s)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${sortBy === s ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tickets Sold</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance(Ticket-Based)</th>
+                {['Event', 'Status', 'Tickets Sold', 'Revenue', 'Check-ins', 'Fill Rate'].map(h => (
+                  <th key={h} className="px-5 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {sortedTopEvents.map((event) => {
-                const totalTickets = event.totalTicketQuantity ?? 0;
-                const sold = event.ticketsSold ?? 0;
-                const percent = totalTickets > 0 ? Math.round((sold / totalTickets) * 100) : 0;
-
+            <tbody className="divide-y divide-gray-50">
+              {sortedTopEvents.length === 0 ? (
+                <tr><td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-400 italic">No event data yet</td></tr>
+              ) : sortedTopEvents.map((ev) => {
+const pct = (ev.totalTicketQuantity ?? 0) > 0 ? Math.round(((ev.ticketsSold ?? 0) / (ev.totalTicketQuantity ?? 1)) * 100) : 0;                const statusColors: any = { PUBLISHED: 'bg-green-100 text-green-700', DRAFT: 'bg-yellow-100 text-yellow-700', ENDED: 'bg-gray-100 text-gray-500', CANCELLED: 'bg-red-100 text-red-600' };
                 return (
-                  <tr key={event.eventId}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {event.title}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatNumber(sold)} / {formatNumber(totalTickets)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      KSH {formatNumber(event.revenue ?? 0)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-green-600 h-2 rounded-full"
-                          style={{ width: `${percent}%` }}
-                        />
+                  <tr key={ev.eventId} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-5 py-4 text-sm font-semibold text-gray-800 max-w-[200px] truncate">{ev.title}</td>
+                    <td className="px-5 py-4"><span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColors[ev.status] ?? 'bg-gray-100 text-gray-500'}`}>{ev.status}</span></td>
+<td className="px-5 py-4 text-sm text-gray-600">{fmt(ev.ticketsSold ?? 0)} / {fmt(ev.totalTicketQuantity ?? 0)}</td>                    <td className="px-5 py-4 text-sm font-semibold text-green-700">KSH {fmt(ev.revenue)}</td>
+<td className="px-5 py-4 text-sm text-gray-600">{fmt((ev as any).checkIns ?? 0)}</td>                    <td className="px-5 py-4 min-w-[120px]">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className="text-xs text-gray-400 font-mono w-8 text-right">{pct}%</span>
                       </div>
                     </td>
                   </tr>
@@ -279,26 +205,38 @@ const Analytics: React.FC = () => {
         </div>
       </div>
 
-      {/* Additional Stats */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Conversion Rate</h3>
-          <p className="text-2xl font-bold text-purple-600">3.2%</p>
-          <p className="text-sm text-gray-500">Visitors to ticket purchases</p>
+      {/* ── Top Organizers Table ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h3 className="text-base font-bold text-gray-800">Top Organizers</h3>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Average Event Rating</h3>
-          <p className="text-2xl font-bold text-orange-600">4.7/5</p>
-          <p className="text-sm text-gray-500">Based on user feedback</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Repeat Customers</h3>
-          <p className="text-2xl font-bold text-indigo-600">28%</p>
-          <p className="text-sm text-gray-500">Customers who bought multiple events</p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                {['Organizer', 'Events', 'Tickets Sold', 'Gross Revenue', 'Platform Cut'].map(h => (
+                  <th key={h} className="px-5 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {topOrgs.length === 0 ? (
+                <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-400 italic">No organizer data yet</td></tr>
+              ) : topOrgs.map((org) => (
+                <tr key={org.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-5 py-4 text-sm font-semibold text-gray-800">{org.name || `Organizer ${org.id.substring(0,6)}`}</td>
+                  <td className="px-5 py-4 text-sm text-gray-600">{org.events}</td>
+                  <td className="px-5 py-4 text-sm text-gray-600">{fmt(org.ticketsSold)}</td>
+                  <td className="px-5 py-4 text-sm font-semibold text-green-700">KSH {fmt(org.revenue)}</td>
+                  <td className="px-5 py-4 text-sm text-gray-500">KSH {fmt(Math.round(org.revenue * 0.05))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
 };
 
-export default Analytics;
+export default AdminAnalyticsManager;

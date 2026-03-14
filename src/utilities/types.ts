@@ -48,16 +48,24 @@ export interface AdminAnalyticsTopEvent {
   percentageOfTotalTickets?: number;
   monthly?: Record<string, number>;
   totalTicketQuantity?: number;
+  checkIns?: number;
 }
 
 export interface AdminAnalyticsResponse {
   lastUpdated: string;
-  since: string | null;
+  totals: { totalRevenue: number; totalTickets: number };
+  users: { total: number; organizers: number; admins: number; newThisMonth: number; repeatCustomers: number; repeatCustomerRate: number };
+  events: { total: number; byStatus: { PUBLISHED: number; DRAFT: number; ENDED: number; CANCELLED: number } };
+  content: { totalBlogs: number; publishedBlogs: number };
+  engagement: { totalReviews: number; avgPlatformRating: number; totalCheckIns: number };
+  applications: { pending: number; total: number };
+  payouts: { pendingCount: number; pendingValue: number; totalPlatformFeeEarned: number; totalReleasedToOrganizers: number };
   monthlyRevenue: AdminAnalyticsMonthlyRevenueItem[];
   monthlyTicketsSold: AdminAnalyticsMonthlyTicketsSoldItem[];
-  perEventMonthly: AdminAnalyticsPerEventMonthly[];
+  newUsersPerMonth: { month: string; label: string; count: number }[];
   topEvents: AdminAnalyticsTopEvent[];
-  totals: { totalRevenue: number; totalTickets: number };
+  topOrganizers: { id: string; name: string; revenue: number; events: number; ticketsSold: number }[];
+  perEventMonthly: AdminAnalyticsPerEventMonthly[];
 }
 
 export interface Event {
