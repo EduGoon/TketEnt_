@@ -213,26 +213,38 @@ export default function AdminApplicationsManager() {
                 </>
               )}
 
-              {selected.status !== 'PENDING' && (
+             {selected.status !== 'PENDING' && (
   <div>
     <div className={`p-4 rounded-xl text-sm font-medium mb-4 ${STATUS_COLORS[selected.status].bg} ${STATUS_COLORS[selected.status].text}`}>
-      This application has already been {selected.status.toLowerCase()}.
+      This application has been {selected.status.toLowerCase()}.
       {selected.adminNote && <p className="mt-2 opacity-75">Note: {selected.adminNote}</p>}
     </div>
-    {selected.status === 'APPROVED' && (
-      <>
-        <div className="mb-4">
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Revocation Reason <span className="font-normal text-gray-400">(optional)</span>
-          </label>
-          <textarea
-            value={adminNote}
-            onChange={e => setAdminNote(e.target.value)}
-            rows={3}
-            placeholder="Reason for revoking organizer access…"
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
-          />
-        </div>
+
+    <div className="mb-4">
+      <label className="block text-sm font-bold text-gray-700 mb-2">
+        Admin Note <span className="font-normal text-gray-400">(optional)</span>
+      </label>
+      <textarea
+        value={adminNote}
+        onChange={e => setAdminNote(e.target.value)}
+        rows={3}
+        placeholder="Add a note…"
+        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+      />
+    </div>
+
+    <div className="flex flex-col gap-3">
+      {/* Re-approve — always available */}
+      <button
+        disabled={acting}
+        onClick={() => handleApprove(selected.id)}
+        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all"
+      >
+        {acting ? 'Processing…' : '✓ Approve / Re-approve'}
+      </button>
+
+      {/* Revoke — only shown for APPROVED */}
+      {selected.status === 'APPROVED' && (
         <button
           disabled={acting}
           onClick={async () => {
@@ -248,8 +260,8 @@ export default function AdminApplicationsManager() {
         >
           {acting ? 'Processing…' : '🔒 Revoke Organizer Access'}
         </button>
-      </>
-    )}
+      )}
+    </div>
   </div>
 )}
             </div>
