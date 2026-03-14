@@ -24,7 +24,7 @@ const SignInPage: React.FC = () => {
 
     const success = await login(email, password);
     if (success) {
-      const storedUser = localStorage.getItem('sparkvybzent_user');
+      const storedUser = localStorage.getItem('TketEnt_user');
       const userObj = storedUser ? JSON.parse(storedUser) : null;
       if (userObj && (userObj.role === 'ADMIN' || userObj.role === 'admin')) {
         navigate('/admin');
@@ -105,7 +105,7 @@ const SignInPage: React.FC = () => {
         {/* Brand */}
         <div style={{ textAlign:'center', marginBottom:36 }}>
           <Link to="/" style={{ textDecoration:'none' }}>
-            <span style={{ fontFamily:"'Playfair Display', serif", fontSize:22, fontWeight:700, color:'#f0c040', letterSpacing:-0.5 }}>✦ SparkVybzEnt</span>
+            <span style={{ fontFamily:"'Playfair Display', serif", fontSize:22, fontWeight:700, color:'#f0c040', letterSpacing:-0.5 }}>✦ TketEnt</span>
           </Link>
         </div>
 

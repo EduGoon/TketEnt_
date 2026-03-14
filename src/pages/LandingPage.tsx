@@ -199,7 +199,7 @@ const LandingPage: React.FC = () => {
       <header style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,13,20,0.97)', backdropFilter:'blur(16px)', position:'sticky', top:0, zIndex:200 }}>
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between', position:'relative' }}>
           <span style={{ fontSize:20, fontWeight:700, color:'#f0c040', fontFamily:"'Playfair Display', serif", letterSpacing:-0.5 }}>
-            ✦ SparkVybzEnt
+            ✦ TketEnt
           </span>
  
           {/* Desktop nav */}
@@ -386,7 +386,7 @@ const LandingPage: React.FC = () => {
                 return (
                   <div key="info" style={{ ...baseStyle, border:'1px solid rgba(240,192,64,0.15)', cursor:'default' }} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
                     <div style={{ padding:'28px 24px 26px' }}>
-                      <p style={{ fontSize:9, letterSpacing:3, color:'rgba(240,192,64,0.55)', textTransform:'uppercase', fontFamily:"'DM Mono', monospace", marginBottom:18 }}>Why SparkVybzEnt</p>
+                      <p style={{ fontSize:9, letterSpacing:3, color:'rgba(240,192,64,0.55)', textTransform:'uppercase', fontFamily:"'DM Mono', monospace", marginBottom:18 }}>Why TketEnt</p>
                       {[{ icon:'🎟', stat:'500+', label:'Events Listed' }, { icon:'👥', stat:'50K+', label:'Tickets Sold' }, { icon:'📍', stat:'20+', label:'Cities in Kenya' }].map(row => (
                         <div key={row.label} style={{ display:'flex', alignItems:'center', gap:14, marginBottom:16 }}>
                           <span style={{ fontSize:18, width:28, textAlign:'center', flexShrink:0 }}>{row.icon}</span>
@@ -526,7 +526,7 @@ const LandingPage: React.FC = () => {
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <footer style={{ borderTop:'1px solid rgba(255,255,255,0.06)', background:'#07090f', padding:'28px 28px' }}>
         <div style={{ maxWidth:1100, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:14 }}>
-          <span style={{ fontFamily:"'Playfair Display', serif", fontSize:16, color:'#f0c040', fontWeight:700 }}>✦ SparkVybzEnt</span>
+          <span style={{ fontFamily:"'Playfair Display', serif", fontSize:16, color:'#f0c040', fontWeight:700 }}>✦ TketEnt</span>
           <div style={{ display:'flex', gap:22, flexWrap:'wrap' }}>
   <Link to="/events" className="footer-link">Events</Link>
   <Link to="/the-hub" className="footer-link">Blog</Link>
@@ -534,7 +534,7 @@ const LandingPage: React.FC = () => {
   <Link to="/terms/organizer" className="footer-link">Organizer Terms</Link>
   {!user && <Link to="/signin" className="footer-link">Sign In</Link>}
 </div>
-          <p style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontFamily:"'DM Mono', monospace" }}>© {new Date().getFullYear()} SparkVybzEnt</p>
+          <p style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontFamily:"'DM Mono', monospace" }}>© {new Date().getFullYear()} TketEnt</p>
         </div>
       </footer>
  

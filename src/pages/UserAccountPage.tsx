@@ -190,7 +190,7 @@ async function downloadTicketAsPng(ticket: Ticket) {
   ctx.save(); ctx.translate(W - 36, H / 2 + 30); ctx.rotate(-Math.PI / 2);
   ctx.textAlign = "center"; ctx.fillStyle = accent; ctx.font = "bold 9px monospace"; ctx.fillText("ADMIT ONE", 0, 0); ctx.restore();
   ctx.textAlign = "center"; ctx.fillStyle = "rgba(240,192,64,0.2)"; ctx.font = "bold 11px Georgia, serif";
-  ctx.fillText("SparkVybzEnt", W / 2, H - 12);
+  ctx.fillText("TketEnt", W / 2, H - 12);
  if (ticket.qrCode) {
     await new Promise<void>((resolve) => {
       const qrImg = new Image();
@@ -217,7 +217,7 @@ async function downloadTicketAsPng(ticket: Ticket) {
 async function shareTicket(ticket: Ticket): Promise<string | undefined> {
   const d = new Date(ticket.eventStartTime ?? ticket.startTime ?? ticket.purchaseDate);
   const dateStr = d.toLocaleDateString("default", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const text = "I'm going to " + ticket.eventName + "!\nVenue: " + (ticket.eventVenue ?? 'TBD') + "\nDate: " + dateStr + "\n\nBooked via SparkVybzEnt";
+  const text = "I'm going to " + ticket.eventName + "!\nVenue: " + (ticket.eventVenue ?? 'TBD') + "\nDate: " + dateStr + "\n\nBooked via TketEnt";
   if (navigator.share) { try { await navigator.share({ title: ticket.eventName, text }); return; } catch {} }
   await navigator.clipboard.writeText(text);
   return "copied";
@@ -435,7 +435,7 @@ export default function UserAccountPage() {
       {/* Nav */}
       <header style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(10,13,20,0.96)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 16px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: "#f0c040", fontFamily: "'Playfair Display',serif", letterSpacing: -0.3, textDecoration: "none" }}>✦ SparkVybzEnt</Link>
+          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: "#f0c040", fontFamily: "'Playfair Display',serif", letterSpacing: -0.3, textDecoration: "none" }}>✦ TketEnt</Link>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button className="ghost-btn" style={{ padding: "8px 14px" }} onClick={logout}>Sign Out</button>
             {user && (
@@ -556,7 +556,7 @@ export default function UserAccountPage() {
             {user?.role === 'USER' && (
   <div style={{ marginTop: 24, padding: '20px 24px', background: 'linear-gradient(160deg,rgba(240,192,64,0.07),rgba(240,192,64,0.03))', border: '1px solid rgba(240,192,64,0.15)', borderRadius: 14 }}>
     <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 6 }}>Want to host events?</p>
-    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, marginBottom: 14 }}>Apply to become an organizer and start selling tickets for your events on SparkVybzEnt.</p>
+    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, marginBottom: 14 }}>Apply to become an organizer and start selling tickets for your events on TketEnt.</p>
     <Link to="/apply-organizer" style={{ display: 'inline-block', background: '#f0c040', color: '#0a0d14', padding: '10px 20px', borderRadius: 9, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Apply Now →</Link>
   </div>
 )}

@@ -1,4 +1,4 @@
-# SparkVybzEnt 🎪
+# TketEnt 🎪
 
 A modern, full-featured event management and ticketing platform built for Kenya's vibrant event scene. Experience seamless event discovery, secure ticket purchasing, and comprehensive admin management.
 
@@ -41,8 +41,8 @@ A modern, full-featured event management and ticketing platform built for Kenya'
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/sparkvybzent.git
-   cd sparkvybzent
+   git clone https://github.com/yourusername/TketEnt.git
+   cd TketEnt
    ```
 
 2. **Install dependencies**
@@ -76,14 +76,14 @@ npm run preview
 
 ### Full Experience
 - **Sign up** with any email/password
-- **Admin access**: Use `admin@sparkvybzent.com` / `password`
+- **Admin access**: Use `admin@TketEnt.com` / `password`
 - **Browse events** and purchase tickets
 - **Manage account** and view ticket history
 
 ## 📂 Project Structure
 
 ```
-sparkvybzent/
+TketEnt/
 ├── src/
 │   ├── components/          # Reusable UI components
 │   ├── layouts/            # Layout components

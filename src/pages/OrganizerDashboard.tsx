@@ -591,7 +591,7 @@ export default function OrganizerDashboard() {
       {/* Nav */}
       <header style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(10,13,20,0.97)', backdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 16px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display',serif", textDecoration: 'none', letterSpacing: -0.3, flexShrink: 0 }}>✦ SparkVybzEnt</Link>
+          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display',serif", textDecoration: 'none', letterSpacing: -0.3, flexShrink: 0 }}>✦ TketEnt</Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <span style={{ fontSize: 9, letterSpacing: 2, color: '#f0c040', background: 'rgba(240,192,64,0.1)', border: '1px solid rgba(240,192,64,0.2)', borderRadius: 20, padding: '3px 10px', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', flexShrink: 0 }}>ORGANIZER</span>
             <button onClick={logout} style={{ ...S.ghost, padding: '6px 12px', fontSize: 12 }}>Out</button>

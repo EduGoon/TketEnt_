@@ -6,7 +6,7 @@ import { useAuth } from '../../utilities/AuthContext';
 interface LocalEventForm extends Omit<Partial<Event>, 'ticketTypes'> {
   ticketTypes?: Array<TicketType>;
 }
- 
+
 // ── Confirm Dialog ────────────────────────────────────────────
 function ConfirmDialog({ title, message, onConfirm, onCancel }: {
   title: string; message: string; onConfirm: () => void; onCancel: () => void;

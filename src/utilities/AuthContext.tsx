@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = React.useCallback(() => {
     setUser(null);
     authService.clearToken();
-    localStorage.removeItem('sparkvybzent_user');
+    localStorage.removeItem('TketEnt_user');
     // Force redirect to signin when token invalid/expired
     if (window.location.pathname !== '/signin') {
       window.location.href = '/signin';
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         authService.storeToken(refreshResp.token);
         const me = await authService.getCurrentUser();
         setUser(me);
-        localStorage.setItem('sparkvybzent_user', JSON.stringify(me));
+        localStorage.setItem('TketEnt_user', JSON.stringify(me));
 
 
         if (shouldShowLoading) setIsLoading(false);
@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authService.storeToken(resp.token);
       const me = await authService.getCurrentUser();
       setUser(me);
-      localStorage.setItem('sparkvybzent_user', JSON.stringify(me));
+      localStorage.setItem('TketEnt_user', JSON.stringify(me));
       setIsLoading(false);
       return true;
     } catch (err) {
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authService.storeToken(resp.token);
       const me = await authService.getCurrentUser();
       setUser(me);
-      localStorage.setItem('sparkvybzent_user', JSON.stringify(me));
+      localStorage.setItem('TketEnt_user', JSON.stringify(me));
       setIsLoading(false);
       return true;
     } catch (err) {
