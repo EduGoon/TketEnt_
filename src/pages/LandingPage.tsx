@@ -474,6 +474,11 @@ const LandingPage: React.FC = () => {
                       <span style={{ fontSize:10, color:'rgba(255,255,255,0.22)', fontFamily:"'DM Mono', monospace" }}>
                         {new Date(blogs[0].createdAt || Date.now()).toLocaleDateString('default',{day:'numeric',month:'short',year:'numeric'})}
                       </span>
+                      {blogs[0].event && (
+  <Link to={`/events/${blogs[0].event.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 14, background: 'rgba(240,192,64,0.1)', border: '1px solid rgba(240,192,64,0.25)', borderRadius: 8, padding: '8px 14px', textDecoration: 'none' }}>
+    <span style={{ fontSize: 11, color: '#f0c040', fontFamily: "'DM Mono',monospace", fontWeight: 600 }}>🎟 Get tickets → {blogs[0].event.title}</span>
+  </Link>
+)}
                     </div>
                   </div>
                 </div>
@@ -494,6 +499,11 @@ const LandingPage: React.FC = () => {
                       <p style={{ fontSize:10, color:'rgba(255,255,255,0.22)', fontFamily:"'DM Mono', monospace" }}>
                         {new Date(post.createdAt || Date.now()).toLocaleDateString('default',{day:'numeric',month:'short'})}
                       </p>
+                      {post.event && (
+  <Link to={`/events/${post.event.id}`} style={{ fontSize: 9, color: '#f0c040', fontFamily: "'DM Mono',monospace", textDecoration: 'none', display: 'block', marginTop: 4 }}>
+    🎟 {post.event.title}
+  </Link>
+)}
                     </div>
                   </div>
                 ))}
@@ -505,6 +515,52 @@ const LandingPage: React.FC = () => {
  
       <div className="divider" />
  
+
+ {/* ── ORGANIZER CTA ── */}
+{!user?.role || user.role === 'USER' ? (
+  <section style={{ padding: '72px 28px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 70% 60% at 30% 50%, rgba(96,200,240,0.04) 0%, transparent 60%)', pointerEvents: 'none' }} />
+    <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 48, alignItems: 'center', position: 'relative' }}>
+      <div>
+        <p style={{ fontSize: 9, letterSpacing: 4, color: 'rgba(96,200,240,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+          For Event Creators
+          <span style={{ flex: '0 0 36px', height: 1, background: 'rgba(96,200,240,0.3)', display: 'inline-block' }} />
+        </p>
+        <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 700, lineHeight: 1.18, marginBottom: 18 }}>
+          Have an event idea?<br /><span style={{ color: '#60c8f0' }}>Let's make it happen.</span>
+        </h2>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.42)', lineHeight: 1.8, marginBottom: 32, maxWidth: 420 }}>
+          TketEnt gives Kenyan event organizers a professional home. Create your event, sell tickets, check in attendees, and receive your payout — all in one place.
+        </p>
+        <Link to="/apply-organizer" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: 'rgba(96,200,240,0.1)', border: '1px solid rgba(96,200,240,0.3)', color: '#60c8f0', borderRadius: 12, padding: '14px 28px', fontSize: 14, fontWeight: 700, textDecoration: 'none', fontFamily: "'DM Sans',sans-serif", transition: 'all 0.2s' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(96,200,240,0.18)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(96,200,240,0.1)'; }}
+        >
+          Apply to be an Organizer →
+        </Link>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 14, fontFamily: "'DM Mono',monospace" }}>Free to apply · Reviewed within 48 hours</p>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        {[
+          { icon: '🎟', title: 'Sell Tickets', desc: 'Multiple ticket tiers with real-time availability tracking' },
+          { icon: '📊', title: 'Live Analytics', desc: 'Track sales, check-ins, revenue and audience ratings' },
+          { icon: '✅', title: 'Easy Check-in', desc: 'QR code scanning at the door, right from your phone' },
+          { icon: '💰', title: 'Fast Payouts', desc: 'Request your earnings anytime via M-Pesa' },
+        ].map(f => (
+          <div key={f.title} style={{ background: 'linear-gradient(160deg,#141927,#0f1521)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '20px 18px' }}>
+            <span style={{ fontSize: 22, display: 'block', marginBottom: 10 }}>{f.icon}</span>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 6 }}>{f.title}</p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', lineHeight: 1.6 }}>{f.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+) : null}
+
+<div className="divider" />
+
+
       {/* ── CTA BAND ────────────────────────────────────────────────────── */}
       <section style={{ padding:'80px 28px', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(240,192,64,0.055) 0%, transparent 65%)', pointerEvents:'none' }} />

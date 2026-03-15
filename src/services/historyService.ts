@@ -87,3 +87,29 @@ export async function updateUserPreferences(prefs: Partial<UserPreferences>): Pr
   });
   return data?.data ?? data;
 }
+
+
+// Trending events
+export const getTrendingEvents = async () => {
+  return apiFetch('/api/events/trending');
+};
+
+// Nearby events — accepts user coordinates
+export const getNearbyEvents = async (lat: number, lng: number, radius = 50) => {
+  return apiFetch(`/api/events/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
+};
+
+// Related events for a given event
+export const getRelatedEvents = async (id: string) => {
+  return apiFetch(`/api/events/${id}/related`);
+};
+
+// Increment view count — fire and forget
+export const incrementEventView = async (id: string) => {
+  return apiFetch(`/api/events/${id}/view`, { method: 'POST' });
+};
+
+// Organizer public profile
+export const getOrganizerPublicProfile = async (id: string) => {
+  return apiFetch(`/api/organizers/${id}`);
+};

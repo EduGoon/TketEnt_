@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
 import * as organizerService from '../services/organizerService';
 import { Event, Payout, OrganizerProfile } from '../utilities/types';
+
  
-type Tab = 'events' | 'checkin' | 'payouts' | 'profile';
- 
+type Tab = 'events' | 'checkin' | 'payouts' | 'profile' | 'analytics';
+
+
 const S = {
   page:   { minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: 'hidden' as const },
   card:   { background: 'linear-gradient(160deg,#141927,#0f1521)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 20 } as React.CSSProperties,
@@ -44,6 +46,9 @@ function EventForm({ initial, onSave, onCancel, saving }: {
     category: initial?.category ?? '',
     status: initial?.status ?? 'DRAFT',
     imageUrl: initial?.imageUrl ?? '',
+    address:   (initial as any)?.address   ?? '',
+  latitude:  (initial as any)?.latitude  ?? '',
+  longitude: (initial as any)?.longitude ?? '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(initial?.imageUrl ?? '');
@@ -67,6 +72,9 @@ function EventForm({ initial, onSave, onCancel, saving }: {
       payload.startTime = form.startTime ? new Date(`${form.date}T${form.startTime}`).toISOString() : undefined;
       payload.endTime   = form.endTime   ? new Date(`${form.date}T${form.endTime}`).toISOString()   : undefined;
       payload.date      = new Date(form.date).toISOString();
+      payload.address   = form.address   || undefined;
+payload.latitude  = form.latitude  ? parseFloat(form.latitude)  : undefined;
+payload.longitude = form.longitude ? parseFloat(form.longitude) : undefined;
     }
     if (imageFile) {
       const base64 = await new Promise<string>((res, rej) => {
@@ -118,6 +126,25 @@ function EventForm({ initial, onSave, onCancel, saving }: {
       {field('Venue', <input style={S.input} value={form.venue} onChange={e => setForm(p => ({ ...p, venue: e.target.value }))} />)}
       {field('Location', <input style={S.input} value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} />)}
  
+ <div>
+  <label style={S.label}>Map Address (for directions)</label>
+  <input style={S.input} value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} placeholder="Full address e.g. KICC, Harambee Ave, Nairobi" />
+  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+    <input style={{ ...S.input, flex: 1 }} placeholder="Latitude (auto or manual)" value={form.latitude} onChange={e => setForm(p => ({ ...p, latitude: e.target.value }))} />
+    <input style={{ ...S.input, flex: 1 }} placeholder="Longitude (auto or manual)" value={form.longitude} onChange={e => setForm(p => ({ ...p, longitude: e.target.value }))} />
+    <button type="button" style={{ ...S.ghost, padding: '8px 14px', fontSize: 12, flexShrink: 0 }}
+      onClick={() => {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(pos => {
+          setForm(p => ({ ...p, latitude: String(pos.coords.latitude), longitude: String(pos.coords.longitude) }));
+        });
+      }}>
+      📍 Use My Location
+    </button>
+  </div>
+  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 6, fontFamily: "'DM Mono',monospace" }}>Users will see a Google Maps directions link on your event page</p>
+</div>
+
       <div>
         <label style={S.label}>Event Image</label>
         {imagePreview && <img src={imagePreview} alt="preview" style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 10, marginBottom: 10, filter: 'brightness(0.8)' }} />}
@@ -564,6 +591,82 @@ function ProfileTab() {
   );
 }
  
+
+function AnalyticsTab() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    organizerService.getOrganizerAnalytics()
+      .then(resp => setData(resp?.data ?? null))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Loading analytics…</p>;
+  if (!data) return <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>No analytics available yet.</p>;
+
+  const { totals, events } = data;
+
+  const statCards = [
+    { label: 'Total Revenue',  value: `KSH ${(totals.totalRevenue ?? 0).toLocaleString()}`, color: '#f0c040' },
+    { label: 'Tickets Sold',   value: (totals.totalTickets ?? 0).toLocaleString(),          color: '#60c8f0' },
+    { label: 'Total Check-Ins',value: (totals.totalCheckIns ?? 0).toLocaleString(),         color: '#22c55e' },
+    { label: 'Total Reviews',  value: (totals.totalReviews ?? 0).toLocaleString(),          color: '#a78bfa' },
+    { label: 'Total Views',    value: (totals.totalViews ?? 0).toLocaleString(),            color: '#fb923c' },
+    { label: 'Total Events',   value: (totals.totalEvents ?? 0).toLocaleString(),           color: 'rgba(255,255,255,0.6)' },
+  ];
+
+  return (
+    <div>
+      <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Analytics</h2>
+
+      {/* Stat cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 28 }}>
+        {statCards.map(s => (
+          <div key={s.label} style={{ ...S.card, padding: '16px' }}>
+            <p style={{ ...S.label, marginBottom: 8 }}>{s.label}</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: "'DM Mono',monospace" }}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Per-event breakdown */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {(events ?? []).map((ev: any) => (
+          <div key={ev.id} style={{ ...S.card, padding: '16px' }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 14 }}>
+              {ev.imageUrl && <img src={ev.imageUrl} alt={ev.title} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, flexShrink: 0, filter: 'brightness(0.8)' }} />}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontFamily: "'Playfair Display',serif", fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono',monospace" }}>
+                  {ev.startTime ? new Date(ev.startTime).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBD'}
+                </p>
+              </div>
+              <span style={{ fontSize: 9, letterSpacing: 1.5, color: ev.status === 'PUBLISHED' ? '#22c55e' : ev.status === 'ENDED' ? 'rgba(255,255,255,0.3)' : '#f0c040', background: ev.status === 'PUBLISHED' ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${ev.status === 'PUBLISHED' ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 20, padding: '2px 8px', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', flexShrink: 0 }}>{ev.status}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(100px,1fr))', gap: 10 }}>
+              {[
+                { label: 'Revenue',   value: `KSH ${(ev.totalRevenue ?? 0).toLocaleString()}`,                                    color: '#f0c040' },
+                { label: 'Tickets',   value: `${ev.totalSold ?? 0}/${ev.totalCapacity ?? 0}`,                                     color: '#60c8f0' },
+                { label: 'Fill Rate', value: `${ev.fillRate ?? 0}%`,                                                              color: ev.fillRate >= 70 ? '#22c55e' : ev.fillRate >= 30 ? '#f0c040' : '#ef4444' },
+                { label: 'Rating',    value: ev.avgRating ? `${ev.avgRating}/5 ★` : '—',                                         color: '#fb923c' },
+                { label: 'Check-ins', value: String(ev.checkInCount ?? 0),                                                        color: '#22c55e' },
+                { label: 'Views',     value: String(ev.views ?? 0),                                                               color: 'rgba(255,255,255,0.5)' },
+              ].map(m => (
+                <div key={m.label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px' }}>
+                  <p style={{ fontSize: 8, letterSpacing: 2, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 4 }}>{m.label}</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: m.color, fontFamily: "'DM Mono',monospace" }}>{m.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────
 export default function OrganizerDashboard() {
   const { user, logout } = useAuth();
@@ -574,6 +677,7 @@ export default function OrganizerDashboard() {
     { id: 'checkin', label: 'Check-In',  icon: '✅' },
     { id: 'payouts', label: 'Payouts',   icon: '💰' },
     { id: 'profile', label: 'Profile',   icon: '⚙️' },
+    { id: 'analytics', label: 'Analytics', icon: '📊' },
   ];
  
   return (
@@ -624,6 +728,7 @@ export default function OrganizerDashboard() {
         {activeTab === 'checkin' && <CheckInTab />}
         {activeTab === 'payouts' && <PayoutsTab />}
         {activeTab === 'profile' && <ProfileTab />}
+        {activeTab === 'analytics' && <AnalyticsTab />}
       </main>
     </div>
   );

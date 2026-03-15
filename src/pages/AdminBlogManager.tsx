@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import * as adminService from '../services/adminService';
-import { 
-  PlusIcon, PencilIcon, TrashIcon, 
-  EyeIcon, EyeSlashIcon, XMarkIcon 
+import {
+  PlusIcon, PencilIcon, TrashIcon,
+  EyeIcon, EyeSlashIcon, XMarkIcon
 } from '@heroicons/react/24/outline';
 
 const AdminBlogManager: React.FC = () => {
-  const [blogs, setBlogs] = useState<any[]>([]);
-  const [_loading, setLoading] = useState(true);
+  const [blogs, setBlogs]         = useState<any[]>([]);
+  const [events, setEvents]       = useState<any[]>([]);
+  const [_loading, setLoading]    = useState(true);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<any>(null);
 
-  // Removed category and summary to match Prisma Schema
-  const initialForm = { title: '', content: '', imageUrl: '', author: '' };
+  const initialForm = { title: '', content: '', imageUrl: '', author: '', eventId: '' };
   const [formData, setFormData] = useState(initialForm);
 
   const fetchBlogs = async () => {
@@ -23,15 +23,23 @@ const AdminBlogManager: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchBlogs(); }, []);
+  const fetchEvents = async () => {
+    try {
+      const data = await adminService.listEvents();
+      setEvents(data?.data || []);
+    } catch { setEvents([]); }
+  };
+
+  useEffect(() => { fetchBlogs(); fetchEvents(); }, []);
 
   const handleOpenPanel = (blog: any = null) => {
     setEditingBlog(blog);
     setFormData({
-      title: blog?.title || '',
-      content: blog?.content || '',
+      title:    blog?.title    || '',
+      content:  blog?.content  || '',
       imageUrl: blog?.imageUrl || '',
-      author: blog?.author || ''
+      author:   blog?.author   || '',
+      eventId:  blog?.eventId  || '',
     });
     setIsPanelOpen(true);
   };
@@ -39,19 +47,20 @@ const AdminBlogManager: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (editingBlog) await adminService.updateBlog(editingBlog.id, formData);
-      else await adminService.createBlog(formData);
+      const payload = { ...formData, eventId: formData.eventId || null };
+      if (editingBlog) await adminService.updateBlog(editingBlog.id, payload);
+      else             await adminService.createBlog(payload);
       setIsPanelOpen(false);
       fetchBlogs();
-    } catch (err) { alert("Save failed"); }
+    } catch { alert('Save failed'); }
   };
 
   const handleTogglePublish = async (blog: any) => {
     try {
       if (blog.published) await adminService.unpublishBlog(blog.id);
-      else await adminService.publishBlog(blog.id);
+      else                await adminService.publishBlog(blog.id);
       fetchBlogs();
-    } catch (err) { alert("Toggle failed"); }
+    } catch { alert('Toggle failed'); }
   };
 
   return (
@@ -70,14 +79,18 @@ const AdminBlogManager: React.FC = () => {
               <img src={blog.imageUrl || 'https://via.placeholder.com'} className="h-16 w-16 rounded-2xl object-cover bg-gray-50" alt="" />
               <div>
                 <h3 className="font-bold text-gray-900 text-lg leading-none mb-2">{blog.title}</h3>
-                <div className="flex items-center gap-3">
-                  {/* Only showing Status and Date now */}
+                <div className="flex items-center gap-3 flex-wrap">
                   <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${blog.published ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-400'}`}>
                     {blog.published ? 'Published' : 'Draft'}
                   </span>
                   <span className="text-[10px] font-bold text-gray-400">
                     {new Date(blog.createdAt).toLocaleDateString()}
                   </span>
+                  {blog.event && (
+                    <span className="text-[10px] font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-md">
+                      🎟 {blog.event.title}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -86,8 +99,12 @@ const AdminBlogManager: React.FC = () => {
               <button onClick={() => handleTogglePublish(blog)} className={`p-3 rounded-xl ${blog.published ? 'text-blue-600 bg-blue-50' : 'text-gray-400'}`}>
                 {blog.published ? <EyeIcon className="h-6 w-6" /> : <EyeSlashIcon className="h-6 w-6" />}
               </button>
-              <button onClick={() => handleOpenPanel(blog)} className="p-3 text-gray-400 hover:text-gray-900"><PencilIcon className="h-5 w-5" /></button>
-              <button onClick={() => adminService.deleteBlog(blog.id).then(fetchBlogs)} className="p-3 text-gray-400 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
+              <button onClick={() => handleOpenPanel(blog)} className="p-3 text-gray-400 hover:text-gray-900">
+                <PencilIcon className="h-5 w-5" />
+              </button>
+              <button onClick={() => adminService.deleteBlog(blog.id).then(fetchBlogs)} className="p-3 text-gray-400 hover:text-red-600">
+                <TrashIcon className="h-5 w-5" />
+              </button>
             </div>
           </div>
         ))}
@@ -104,18 +121,44 @@ const AdminBlogManager: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <input required placeholder="Post Title" className="w-full p-4 bg-gray-50 rounded-2xl outline-none" 
-                value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-              
+              <input required placeholder="Post Title" className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+
               <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Author Name" className="w-full p-4 bg-gray-50 rounded-2xl outline-none" 
-                  value={formData.author} onChange={e => setFormData({...formData, author: e.target.value})} />
-                <input placeholder="Image URL" className="w-full p-4 bg-gray-50 rounded-2xl outline-none" 
-                  value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+                <input placeholder="Author Name" className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                  value={formData.author} onChange={e => setFormData({ ...formData, author: e.target.value })} />
+                <input placeholder="Image URL" className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                  value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} />
               </div>
 
-              <textarea required placeholder="Write your content here..." rows={15} className="w-full p-4 bg-gray-50 rounded-2xl outline-none resize-none" 
-                value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} />
+              {/* Event link */}
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                  Link to Event <span className="font-normal normal-case text-gray-400">(optional — adds a ticket button to this article)</span>
+                </label>
+                <select
+                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none text-sm"
+                  value={formData.eventId}
+                  onChange={e => setFormData({ ...formData, eventId: e.target.value })}
+                >
+                  <option value="">— No event linked —</option>
+                  {events
+                    .filter(ev => ev.status === 'PUBLISHED')
+                    .map(ev => (
+                      <option key={ev.id} value={ev.id}>{ev.title}</option>
+                    ))
+                  }
+                </select>
+                {formData.eventId && (
+                  <p className="text-xs text-yellow-600 mt-2 font-medium">
+                    ✓ Readers will see a "Get Tickets" button for this event at the bottom of the article
+                  </p>
+                )}
+              </div>
+
+              <textarea required placeholder="Write your content here..." rows={15}
+                className="w-full p-4 bg-gray-50 rounded-2xl outline-none resize-none"
+                value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} />
 
               <button type="submit" className="w-full py-5 bg-gray-900 text-white font-black rounded-3xl hover:bg-black transition-all">
                 {editingBlog ? 'Update Post' : 'Create Post'}

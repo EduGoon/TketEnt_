@@ -75,3 +75,6 @@ export const getTerms = async (type: 'USER' | 'ORGANIZER') =>
 
 export const updateTerms = async (type: 'USER' | 'ORGANIZER', content: string, version?: string) =>
   apiFetch(`/admin/terms/${type}`, { method: 'PUT', body: { content, version } });
+
+export const getOrganizerAnalytics = async () =>
+  apiFetch('/organizer/analytics');

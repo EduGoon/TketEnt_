@@ -244,7 +244,113 @@ function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, t
     </div>
   );
 }
- 
+
+/* ── Shareable Ticket Graphic ───────────────────────────────────────────── */
+function ShareableTicket({ event, ticketType, userName }: { event: any; ticketType: string; userName: string }) {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [ready, setReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width  = 1080;
+    canvas.height = 1080;
+
+    const bg = ctx.createLinearGradient(0, 0, 1080, 1080);
+    bg.addColorStop(0, '#0a0d14');
+    bg.addColorStop(1, '#141927');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 1080, 1080);
+
+    ctx.beginPath();
+    ctx.arc(900, 180, 320, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(240,192,64,0.04)';
+    ctx.fill();
+
+    ctx.fillStyle = '#f0c040';
+    ctx.fillRect(80, 260, 6, 80);
+
+    ctx.font = 'bold 36px serif';
+    ctx.fillStyle = '#f0c040';
+    ctx.fillText('✦ TketEnt', 80, 120);
+
+    ctx.font = 'bold 72px serif';
+    ctx.fillStyle = '#ffffff';
+    const title = event.title ?? '';
+    const words = title.split(' ');
+    let line = '', lines: string[] = [], y = 300;
+    for (const word of words) {
+      const test = line + word + ' ';
+      if (ctx.measureText(test).width > 900 && line) { lines.push(line.trim()); line = word + ' '; }
+      else line = test;
+    }
+    if (line) lines.push(line.trim());
+    lines.slice(0, 3).forEach(l => { ctx.fillText(l, 80, y); y += 86; });
+
+    const details = [
+      event.startTime ? `📅 ${new Date(event.startTime).toLocaleDateString('default', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}` : '',
+      event.startTime ? `🕐 ${new Date(event.startTime).toLocaleTimeString('default', { hour: '2-digit', minute: '2-digit' })}` : '',
+      (event.venue ?? event.location) ? `📍 ${event.venue ?? event.location}` : '',
+      ticketType ? `🎟 ${ticketType}` : '',
+    ].filter(Boolean);
+
+    ctx.font = '32px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    let dy = y + 40;
+    details.forEach(d => { ctx.fillText(d, 80, dy); dy += 48; });
+
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillText(`Reserved for ${userName}`, 80, 920);
+
+    ctx.fillStyle = '#f0c040';
+    ctx.fillRect(80, 960, 920, 3);
+
+    ctx.font = '22px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillText('tket-ent.vercel.app', 80, 1010);
+
+    if (event.imageUrl) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload  = () => { ctx.globalAlpha = 0.18; ctx.drawImage(img, 600, 0, 480, 480); ctx.globalAlpha = 1; setReady(true); };
+      img.onerror = () => setReady(true);
+      img.src     = event.imageUrl;
+    } else {
+      setReady(true);
+    }
+  }, [event, ticketType, userName]);
+
+  const download = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const link    = document.createElement('a');
+    link.download = `${event.title?.replace(/\s+/g, '-') ?? 'ticket'}-tketent.png`;
+    link.href     = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  const shareWhatsapp = () => {
+    const text = `I'm going to ${event.title}! 🎉\n${event.startTime ? new Date(event.startTime).toLocaleDateString() : ''}\n${event.venue ?? ''}\n\nGet tickets: ${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  return (
+    <div style={{ marginTop: 32, background: 'linear-gradient(160deg,#141927,#0f1521)', border: '1px solid rgba(240,192,64,0.15)', borderRadius: 16, padding: '24px' }}>
+      <p style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 14 }}>Share Your Ticket</p>
+      <canvas ref={canvasRef} style={{ width: '100%', borderRadius: 10, display: ready ? 'block' : 'none', marginBottom: 14 }} />
+      {!ready && <div style={{ height: 200, background: 'rgba(255,255,255,0.03)', borderRadius: 10, marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>Generating graphic…</span></div>}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <button onClick={download} style={{ background: '#f0c040', color: '#0a0d14', border: 'none', borderRadius: 9, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>⬇ Download Graphic</button>
+        <button onClick={shareWhatsapp} style={{ background: 'rgba(37,211,102,0.12)', color: '#25d366', border: '1px solid rgba(37,211,102,0.25)', borderRadius: 9, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>WhatsApp</button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Page ──────────────────────────────────────────────────────────── */
 const EventDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -258,7 +364,10 @@ const EventDetailsPage: React.FC = () => {
   const [purchasing, setPurchasing] = useState(false);
   const [paymentState, setPaymentState] = useState<'idle' | 'waiting' | 'failed'>('idle');
   const [_checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
- 
+const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
+  const [lastPurchasedTicketType, setLastPurchasedTicketType] = useState(''); 
+
+
   useEffect(() => {
     const load = async () => {
       if (id) {
@@ -267,6 +376,13 @@ const EventDetailsPage: React.FC = () => {
           setEvent(e);
           const meta = await eventService.getEventShareMeta(id);
           setShareMeta(meta?.data ?? meta);
+          // Increment view count
+eventService.incrementEventView(id).catch(() => {});
+
+// Load related events
+eventService.getRelatedEvents(id)
+  .then(resp => setRelatedEvents(resp?.data ?? []))
+  .catch(() => {});
         } catch (err) { console.error('Failed to load event', err); }
       }
       setLoading(false);
@@ -305,6 +421,11 @@ const EventDetailsPage: React.FC = () => {
       const firstResult = results[0];
       setCheckoutRequestId(firstResult.checkoutRequestId);
       setPaymentState('waiting');
+      const firstEntry = Object.entries(selectedTickets).find(([, qty]) => qty > 0);
+      if (firstEntry) {
+        const tt = ticketTypes.find((t: any) => t.id === firstEntry[0]);
+        setLastPurchasedTicketType(tt?.type ?? '');
+      }
       setSelectedTickets({});
 
       // Poll every 3 seconds for up to 2 minutes
@@ -384,8 +505,13 @@ const EventDetailsPage: React.FC = () => {
       <div style={{ width: '100%', maxWidth: 440, background: 'linear-gradient(160deg,#141927,#0f1521)', border: '1px solid rgba(240,192,64,0.2)', borderRadius: 20, padding: '48px 40px', textAlign: 'center', animation: 'fadeUp 0.5s ease forwards' }}>
         <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(126,217,154,0.12)', border: '1px solid rgba(126,217,154,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 20px' }}>✓</div>
         <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: '#fff', marginBottom: 10 }}>Purchase Successful!</h2>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, marginBottom: 32, lineHeight: 1.6 }}>Your tickets have been added to your account.</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+<p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>Your tickets have been added to your account.</p>
+        <ShareableTicket
+          event={event}
+          ticketType={lastPurchasedTicketType}
+          userName={user?.firstName ?? 'You'}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 24 }}>
           <Link to="/account" style={{ background: '#f0c040', color: '#0a0d14', borderRadius: 10, padding: '12px 24px', fontWeight: 700, fontSize: 14, textDecoration: 'none', fontFamily: "'DM Sans', sans-serif" }}>View My Tickets</Link>
           <Link to="/events" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '12px 24px', fontWeight: 500, fontSize: 14, textDecoration: 'none', fontFamily: "'DM Sans', sans-serif" }}>Browse More Events</Link>
         </div>
@@ -457,7 +583,7 @@ const EventDetailsPage: React.FC = () => {
               {[
                 { icon: '🗓', label: 'Starts', value: event.startTime ? new Date(event.startTime).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'TBD' },
                 { icon: '🏁', label: 'Ends', value: event.endTime ? new Date(event.endTime).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'TBD' },
-                { icon: '📍', label: 'Venue', value: event.venue ?? event.location ?? '—' },
+{ icon: '📍', label: 'Venue', value: event.venue ?? event.location ?? '—' },              
               ].map(m => (
                 <div key={m.label}>
                   <p style={{ fontSize: 9, letterSpacing: 2.5, color: 'rgba(240,192,64,0.55)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 5 }}>{m.icon} {m.label}</p>
@@ -466,6 +592,43 @@ const EventDetailsPage: React.FC = () => {
               ))}
             </div>
  
+    {(event.address || (event.latitude && event.longitude)) && (
+  <div style={{ marginBottom: 24 }}>
+    <a
+      href={
+        event.address
+          ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address)}`
+          : `https://www.google.com/maps?q=${event.latitude},${event.longitude}`
+      }
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 8,
+        background: 'rgba(96,200,240,0.08)',
+        border: '1px solid rgba(96,200,240,0.2)',
+        borderRadius: 10,
+        padding: '10px 18px',
+        textDecoration: 'none'
+      }}
+    >
+      <span style={{ fontSize: 16 }}>🗺</span>
+      <span
+        style={{
+          fontSize: 13,
+          color: '#60c8f0',
+          fontFamily: "'DM Mono', monospace",
+          fontWeight: 600
+        }}
+      >
+        Get Directions
+      </span>
+      <span style={{ fontSize: 13, color: 'rgba(96,200,240,0.5)' }}>→</span>
+    </a>
+  </div>
+)}
+
             <div style={{ marginBottom: 40 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
                 <div style={{ width: 3, height: 24, background: '#f0c040', borderRadius: 2, flexShrink: 0 }} />
@@ -479,9 +642,12 @@ const EventDetailsPage: React.FC = () => {
     </div>
     <div>
       <p style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 3 }}>Organized by</p>
-      <p style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>
-        {event.organizer?.organizerProfile?.organizationName ?? `${event.organizer?.firstName} ${event.organizer?.lastName}`}
-      </p>
+     <Link to={`/organizer/${event.organizer?.id}`} style={{ fontSize: 14, fontWeight: 600, color: '#fff', textDecoration: 'none', transition: 'color 0.2s' }}
+        onMouseEnter={e => (e.currentTarget.style.color = '#f0c040')}
+        onMouseLeave={e => (e.currentTarget.style.color = '#fff')}
+      >
+        {event.organizer?.organizerProfile?.organizationName ?? `${event.organizer?.firstName} ${event.organizer?.lastName}`} →
+      </Link>
       {event.organizer?.organizerProfile?.bio && (
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.5 }}>{event.organizer.organizerProfile.bio}</p>
       )}
@@ -508,6 +674,49 @@ const EventDetailsPage: React.FC = () => {
           <div className="ticket-panel-desktop" style={{ position: 'sticky', top: 76, animation: 'fadeUp 0.5s ease 0.12s both' }}>
 <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />          </div>
         </div>
+        {/* ── Related Events ── */}
+{relatedEvents.length > 0 && (
+  <div style={{ marginTop: 64, paddingTop: 48, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
+      <div style={{ width: 3, height: 24, background: '#f0c040', borderRadius: 2, flexShrink: 0 }} />
+      <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 700 }}>You Might Also Like</h2>
+    </div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 20 }}>
+      {relatedEvents.map((ev: any) => {
+        const firstPrice = ev.ticketTypes?.[0]?.price;
+        const totalCap   = ev.ticketTypes?.reduce((s: number, t: any) => s + (t.quantity ?? 0), 0) ?? 0;
+        const totalSold  = ev.ticketTypes?.reduce((s: number, t: any) => s + (t.sold ?? 0), 0) ?? 0;
+        const remaining  = totalCap - totalSold;
+        const isLowStock = totalCap > 0 && remaining > 0 && remaining <= 10;
+        const eventStart = ev.startTime ?? ev.date;
+        return (
+          <Link key={ev.id} to={`/events/${ev.id}`} style={{ textDecoration: 'none', display: 'block', background: 'linear-gradient(160deg,#141927,#0f1521)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.3s,transform 0.3s', color: '#fff' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(240,192,64,0.3)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
+          >
+            <div style={{ height: 140, overflow: 'hidden', position: 'relative' }}>
+              {ev.imageUrl
+                ? <img src={ev.imageUrl} alt={ev.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.75)' }} />
+                : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1a2540,#0d1523)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 28, opacity: 0.2 }}>✦</span></div>
+              }
+              {ev.category && <span style={{ position: 'absolute', top: 10, left: 10, background: '#f0c040', color: '#0a0d14', padding: '2px 8px', borderRadius: 4, fontSize: 8, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', fontFamily: "'DM Mono',monospace" }}>{ev.category}</span>}
+              {isLowStock && <span style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', padding: '2px 8px', borderRadius: 20, fontSize: 8, fontWeight: 800, letterSpacing: 1, fontFamily: "'DM Mono',monospace" }}>⚡ {remaining} left</span>}
+            </div>
+            <div style={{ padding: '14px 16px 18px' }}>
+              <p style={{ fontFamily: "'Playfair Display',serif", fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6, lineHeight: 1.3 }}>{ev.title}</p>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono',monospace", marginBottom: 10 }}>
+                🗓 {eventStart ? new Date(eventStart).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBD'}
+              </p>
+              {firstPrice != null && (
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#f0c040', fontFamily: "'DM Mono',monospace" }}>KSH {firstPrice.toLocaleString()}</p>
+              )}
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  </div>
+)}
       </div>
  
       {/* Mobile bottom drawer */}
