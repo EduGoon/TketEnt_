@@ -1,6 +1,3 @@
-export const getUserUpcomingEvents = async () => {
-  return apiFetch('/user/events/');
-};
 import { apiFetch } from './api';
 import { Ticket } from '../utilities/types';
 
@@ -20,19 +17,32 @@ export const listTickets = async (): Promise<ListResponse<Ticket>> => {
   return apiFetch<ListResponse<Ticket>>('/user/tickets/');
 };
 
+// Initiate M-Pesa purchase — returns checkoutRequestId for polling
 export const purchaseTickets = async (
   eventId: string,
   ticketTypeId: string,
-  quantity: number
-): Promise<ListResponse<Ticket>> => {
-  return apiFetch<ListResponse<Ticket>>('/user/tickets/purchase', {
+  quantity: number,
+  phoneNumber: string,
+): Promise<{ checkoutRequestId: string; paymentId: string; ticketIds: string[]; amount: number; message: string }> => {
+  return apiFetch('/user/tickets/purchase', {
     method: 'POST',
-    body: { eventId, ticketTypeId, quantity },
+    body: { eventId, ticketTypeId, quantity, phoneNumber },
   });
+};
+
+// Poll payment status
+export const pollPaymentStatus = async (
+  checkoutRequestId: string,
+): Promise<{ status: 'PENDING' | 'COMPLETED' | 'FAILED'; message: string }> => {
+  return apiFetch(`/user/tickets/poll/${checkoutRequestId}`);
 };
 
 export const refundTicket = async (id: string): Promise<{ message: string }> => {
   return apiFetch<{ message: string }>(`/user/tickets/${id}/refund`, {
     method: 'POST',
   });
+};
+
+export const getUserUpcomingEvents = async () => {
+  return apiFetch('/user/events/');
 };

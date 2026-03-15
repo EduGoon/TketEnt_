@@ -108,8 +108,9 @@ function ReviewsSection({ eventId, user }: { eventId: string; user: any }) {
 }
  
 /* ── Shared Ticket Panel ─────────────────────────────────────────────────── */
-function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user }: any) {
+function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, phoneNumber, setPhoneNumber, purchasing, paymentState }: any) {
   const allSoldOut = ticketTypes.every((t: any) => (t.available ?? 0) === 0);
+
   return (
     <div style={{ background: 'linear-gradient(160deg,#141927,#0f1521)', border: '1px solid rgba(240,192,64,0.18)', borderRadius: 18, overflow: 'hidden' }}>
       <div style={{ padding: '20px 22px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -118,11 +119,11 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
       </div>
       <div style={{ padding: '20px 22px' }}>
         {ticketTypes.map((ticket: any) => {
-          const soldOut = (ticket.available ?? 0) === 0;
+          const soldOut  = (ticket.available ?? 0) === 0;
           const lowStock = !soldOut && (ticket.available ?? 0) <= 5;
-          const maxQty = Math.min(10, ticket.available ?? 0);
+          const maxQty   = Math.min(10, ticket.available ?? 0);
           return (
-            <div key={ticket.id} className="ticket-row" style={{ opacity: soldOut ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+            <div key={ticket.id} className="ticket-row" style={{ opacity: soldOut ? 0.5 : 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3 }}>{ticket.type}</p>
@@ -134,24 +135,74 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: 1, textTransform: 'uppercase', fontFamily: "'DM Mono', monospace" }}>Qty</p>
-                <select value={selectedTickets[ticket.id] || 0} onChange={e => handleTicketChange(ticket.id, parseInt(e.target.value))} disabled={soldOut} className="qty-select" style={{ opacity: soldOut ? 0.4 : 1, cursor: soldOut ? 'not-allowed' : 'pointer' }}>
+                <select value={selectedTickets[ticket.id] || 0} onChange={e => handleTicketChange(ticket.id, parseInt(e.target.value))} disabled={soldOut || purchasing} className="qty-select">
                   {[...Array(maxQty + 1).keys()].map(num => (<option key={num} value={num}>{num}</option>))}
                 </select>
-                {soldOut && <span style={{ fontSize: 9, letterSpacing: 1.5, fontFamily: "'DM Mono', monospace", color: '#f87171', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 5, padding: '3px 8px', textTransform: 'uppercase' }}>Sold Out</span>}
               </div>
             </div>
           );
         })}
+
         <div style={{ marginTop: 8, paddingTop: 18, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           {totalPrice > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono', monospace", letterSpacing: 1 }}>TOTAL</p>
               <p style={{ fontSize: 22, fontWeight: 700, color: '#f0c040', fontFamily: "'DM Mono', monospace" }}>KSH {(totalPrice ?? 0).toLocaleString()}</p>
             </div>
           )}
-          <button onClick={handlePurchase} disabled={!user || allSoldOut || totalPrice === 0}
-            style={{ width: '100%', background: allSoldOut ? 'rgba(255,255,255,0.04)' : !user || totalPrice === 0 ? 'rgba(255,255,255,0.06)' : '#f0c040', color: allSoldOut || !user || totalPrice === 0 ? 'rgba(255,255,255,0.25)' : '#0a0d14', border: allSoldOut ? '1px solid rgba(248,113,113,0.2)' : '1px solid transparent', borderRadius: 11, padding: '14px 24px', fontSize: 14, fontWeight: 700, cursor: (!user || allSoldOut || totalPrice === 0) ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", letterSpacing: 0.3, transition: 'all 0.2s' }}>
-            {allSoldOut ? 'No Tickets Available' : !user ? 'Sign In to Buy' : totalPrice === 0 ? 'Select Tickets Above' : 'Buy Tickets'}
+
+          {/* Phone number input */}
+          {user && totalPrice > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 6 }}>M-Pesa Number</p>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={e => setPhoneNumber(e.target.value)}
+                placeholder="e.g. 0712345678"
+                disabled={purchasing}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 9, padding: '10px 14px', fontSize: 13, color: '#fff', fontFamily: "'DM Mono', monospace", outline: 'none', boxSizing: 'border-box' as const }}
+              />
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 5, fontFamily: "'DM Mono', monospace" }}>
+                You'll receive an M-Pesa prompt on this number
+              </p>
+            </div>
+          )}
+
+          {/* Payment state feedback */}
+          {paymentState === 'waiting' && (
+            <div style={{ marginBottom: 14, padding: '12px 14px', background: 'rgba(240,192,64,0.08)', border: '1px solid rgba(240,192,64,0.2)', borderRadius: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 16, height: 16, border: '2px solid rgba(240,192,64,0.3)', borderTop: '2px solid #f0c040', borderRadius: '50%', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 2 }}>Check your phone</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono', monospace" }}>Enter your M-Pesa PIN to complete payment</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {paymentState === 'failed' && (
+            <div style={{ marginBottom: 14, padding: '12px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10 }}>
+              <p style={{ fontSize: 13, color: '#ef4444', fontWeight: 600 }}>✕ Payment failed or cancelled</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 3, fontFamily: "'DM Mono', monospace" }}>Please try again</p>
+            </div>
+          )}
+
+          <button
+            onClick={handlePurchase}
+            disabled={!user || allSoldOut || totalPrice === 0 || purchasing || !phoneNumber}
+            style={{
+              width: '100%',
+              background: allSoldOut ? 'rgba(255,255,255,0.04)' : (!user || totalPrice === 0 || !phoneNumber) ? 'rgba(255,255,255,0.06)' : purchasing ? 'rgba(240,192,64,0.6)' : '#f0c040',
+              color: allSoldOut || !user || totalPrice === 0 || !phoneNumber ? 'rgba(255,255,255,0.25)' : '#0a0d14',
+              border: 'none', borderRadius: 11, padding: '14px 24px',
+              fontSize: 14, fontWeight: 700,
+              cursor: (!user || allSoldOut || totalPrice === 0 || purchasing || !phoneNumber) ? 'not-allowed' : 'pointer',
+              fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s',
+            }}
+          >
+            {purchasing ? 'Processing…' : allSoldOut ? 'No Tickets Available' : !user ? 'Sign In to Buy' : totalPrice === 0 ? 'Select Tickets Above' : !phoneNumber ? 'Enter M-Pesa Number' : 'Pay with M-Pesa'}
           </button>
           {!user && !allSoldOut && (
             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', textAlign: 'center', marginTop: 10, fontFamily: "'DM Mono', monospace" }}>Sign in to complete your purchase</p>
@@ -162,11 +213,10 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
   );
 }
  
-/* ── Mobile Ticket Drawer ────────────────────────────────────────────────── */
-function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user }: any) {
+function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, phoneNumber, setPhoneNumber, purchasing, paymentState }: any) {
   const [expanded, setExpanded] = useState(false);
   const allSoldOut = ticketTypes.every((t: any) => (t.available ?? 0) === 0);
- 
+
   return (
     <div className="ticket-panel-mobile">
       <div className="mobile-panel-collapsed" onClick={() => setExpanded(e => !e)}>
@@ -178,10 +228,10 @@ function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, t
           }
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {totalPrice > 0 && (
+          {totalPrice > 0 && phoneNumber && !purchasing && (
             <button onClick={e => { e.stopPropagation(); handlePurchase(); }}
               style={{ background: '#f0c040', color: '#0a0d14', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-              Buy Now
+              Pay Now
             </button>
           )}
           <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.4)', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block', lineHeight: 1 }}>⌃</span>
@@ -189,8 +239,7 @@ function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, t
       </div>
       {expanded && (
         <div style={{ padding: '0 16px 28px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} />
-        </div>
+<TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />        </div>
       )}
     </div>
   );
@@ -202,9 +251,13 @@ const EventDetailsPage: React.FC = () => {
   const { user } = useAuth();
   const [event, setEvent] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
+ const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [shareMeta, setShareMeta] = useState<any>(null);
+  const [phoneNumber, setPhoneNumber] = useState(user?.phone ?? '');
+  const [purchasing, setPurchasing] = useState(false);
+  const [paymentState, setPaymentState] = useState<'idle' | 'waiting' | 'failed'>('idle');
+  const [_checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
  
   useEffect(() => {
     const load = async () => {
@@ -234,15 +287,66 @@ const EventDetailsPage: React.FC = () => {
     return sum + (t ? t.price * qty : 0);
   }, 0);
  
-  const handlePurchase = async () => {
-    if (!user || !event) return;
+ const handlePurchase = async () => {
+    if (!user || !event || !phoneNumber) return;
+    setPurchasing(true);
+    setPaymentState('idle');
+
     try {
-      await Promise.all(Object.entries(selectedTickets).map(([ticketTypeId, qty]) =>
-        ticketService.purchaseTickets(event.id, ticketTypeId, qty)
-      ));
-      setPurchaseSuccess(true);
+      // Initiate STK push
+      const results = await Promise.all(
+        Object.entries(selectedTickets)
+          .filter(([, qty]) => qty > 0)
+          .map(([ticketTypeId, qty]) =>
+            ticketService.purchaseTickets(event.id, ticketTypeId, qty, phoneNumber)
+          )
+      );
+
+      const firstResult = results[0];
+      setCheckoutRequestId(firstResult.checkoutRequestId);
+      setPaymentState('waiting');
       setSelectedTickets({});
-    } catch (err) { console.error('Purchase failed', err); alert('Purchase failed'); }
+
+      // Poll every 3 seconds for up to 2 minutes
+      let attempts = 0;
+      const maxAttempts = 40;
+
+      const poll = async () => {
+        attempts++;
+        try {
+          const status = await ticketService.pollPaymentStatus(firstResult.checkoutRequestId);
+          if (status.status === 'COMPLETED') {
+            setPurchaseSuccess(true);
+            setPaymentState('idle');
+            setPurchasing(false);
+            return;
+          }
+          if (status.status === 'FAILED') {
+            setPaymentState('failed');
+            setPurchasing(false);
+            return;
+          }
+          // Still pending
+          if (attempts < maxAttempts) {
+            setTimeout(poll, 3000);
+          } else {
+            // Timeout — tell user to check their account
+            setPaymentState('failed');
+            setPurchasing(false);
+          }
+        } catch {
+          if (attempts < maxAttempts) setTimeout(poll, 3000);
+          else { setPaymentState('failed'); setPurchasing(false); }
+        }
+      };
+
+      setTimeout(poll, 3000);
+
+    } catch (err: any) {
+      console.error('Purchase failed', err);
+      setPaymentState('failed');
+      setPurchasing(false);
+    }
   };
  
   const sharedStyles = `
@@ -250,7 +354,8 @@ const EventDetailsPage: React.FC = () => {
     * { box-sizing: border-box; margin: 0; padding: 0; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes headerIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-  `;
+    @keyframes spin { to { transform: rotate(360deg); } } 
+    `;
  
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#0a0d14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -367,6 +472,22 @@ const EventDetailsPage: React.FC = () => {
                 <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700 }}>About This Event</h2>
               </div>
               <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.85, letterSpacing: 0.15 }}>{event.description}</p>
+              {(event.organizer?.organizerProfile?.organizationName || event.organizer?.firstName) && (
+  <div style={{ marginTop: 24, padding: '16px 20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 14 }}>
+    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#f0c040,#c8920a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#0a0d14', flexShrink: 0 }}>
+      {(event.organizer?.organizerProfile?.organizationName ?? event.organizer?.firstName ?? '?')[0]}
+    </div>
+    <div>
+      <p style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 3 }}>Organized by</p>
+      <p style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>
+        {event.organizer?.organizerProfile?.organizationName ?? `${event.organizer?.firstName} ${event.organizer?.lastName}`}
+      </p>
+      {event.organizer?.organizerProfile?.bio && (
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.5 }}>{event.organizer.organizerProfile.bio}</p>
+      )}
+    </div>
+  </div>
+)}
             </div>
  
             {shareMeta && (
@@ -391,8 +512,7 @@ const EventDetailsPage: React.FC = () => {
       </div>
  
       {/* Mobile bottom drawer */}
-      <MobileTicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} />
-    </div>
+<MobileTicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />    </div>
   );
 };
  
