@@ -506,8 +506,7 @@ const EventDetailsPage: React.FC = () => {
  
           {/* Right — desktop only */}
           <div className="ticket-panel-desktop" style={{ position: 'sticky', top: 76, animation: 'fadeUp 0.5s ease 0.12s both' }}>
-            <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} />
-          </div>
+<TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />          </div>
         </div>
       </div>
  
