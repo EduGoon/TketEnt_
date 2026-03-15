@@ -150,3 +150,18 @@ export const getUsers = async () => {
   // Returns the data array or an empty list if undefined
   return res?.data || [];
 };
+
+//Admin payments records
+export const getAllPayments = async (status?: string) => {
+  const query = status ? `?status=${status}` : '';
+  return apiFetch(`/admin/payments${query}`);
+};
+
+export const getPaymentStats = async () =>
+  apiFetch('/admin/payments/stats');
+
+export const confirmPayment = async (id: string, note?: string) =>
+  apiFetch(`/admin/payments/${id}/confirm`, { method: 'PUT', body: { note } });
+
+export const refundPayment = async (id: string, note?: string) =>
+  apiFetch(`/admin/payments/${id}/refund`, { method: 'PUT', body: { note } });

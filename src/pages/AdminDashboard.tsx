@@ -11,7 +11,8 @@ import {
   ArrowLeftOnRectangleIcon,
   GlobeAltIcon,
   ClipboardDocumentCheckIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  CreditCardIcon,
 } from '@heroicons/react/24/outline';
 
 import EventManagement from './admin/EventManagement';
@@ -26,6 +27,7 @@ import AdminApplicationsManager from './AdminApplicationsManager';
 import AdminPayoutsManager from './AdminPayoutsManager';
 import AdminTermsManager from './AdminTermsManager';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
+import AdminPaymentsManager from './AdminPaymentsManager';
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
@@ -42,6 +44,7 @@ const AdminDashboard: React.FC = () => {
     { path: '/admin/users',        label: 'User Records',      icon: UserGroupIcon },
     { path: '/admin/payouts', label: 'Payouts', icon: BanknotesIcon },
     { path: '/admin/terms', label: 'Terms', icon: DocumentTextIcon },
+    { path: '/admin/payments', label: 'Payments', icon: CreditCardIcon },
   ];
 
   return (
@@ -89,9 +92,9 @@ const AdminDashboard: React.FC = () => {
         </header>
 
         <div className="flex flex-1">
-          <aside className="w-72 bg-white border-r sticky top-20 h-[calc(100vh-80px)]">
-            <nav className="p-6">
-              <ul className="space-y-2">
+          <aside className="w-72 bg-white border-r sticky top-20 h-[calc(100vh-80px)] overflow-y-auto">
+  <nav className="p-6">
+    <ul className="space-y-2">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
@@ -129,6 +132,7 @@ const AdminDashboard: React.FC = () => {
               <Route path="/users"        element={<AdminUserManager />} />
               <Route path="/payouts" element={<AdminPayoutsManager />} />
               <Route path="/terms" element={<AdminTermsManager />} />
+              <Route path="/payments" element={<AdminPaymentsManager />} />
             </Routes>
           </main>
         </div>
