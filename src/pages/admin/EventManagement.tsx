@@ -224,8 +224,9 @@ const EventManagement: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+const [searchQuery, setSearchQuery] = useState('');
+const [statusFilter, setStatusFilter] = useState<string>('ALL');
+const [loadingEvents, setLoadingEvents] = useState(true);
  
   const { refreshSession } = useAuth();
   const hasLoadedRef = React.useRef(false);
@@ -234,15 +235,17 @@ const EventManagement: React.FC = () => {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
     const load = async () => {
-      try {
-        await refreshSession({ silent: true });
-        const resp = await adminService.listEvents();
-        setEvents(resp.data);
-      } catch (err) {
-        const status = (err as any)?.status;
-        setError(status === 403 ? 'Admin access required.' : 'Failed to load events.');
-      }
-    };
+  try {
+    await refreshSession({ silent: true });
+    const resp = await adminService.listEvents();
+    setEvents(resp.data);
+  } catch (err) {
+    const status = (err as any)?.status;
+    setError(status === 403 ? 'Admin access required.' : 'Failed to load events.');
+  } finally {
+    setLoadingEvents(false);
+  }
+};
     load();
   }, [refreshSession]);
  
@@ -477,11 +480,15 @@ const EventManagement: React.FC = () => {
       </div>
  
       {/* Events Grid */}
-      {filteredEvents.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
-          <p className="text-gray-400 font-medium">No events found</p>
-        </div>
-      ) : (
+      {loadingEvents ? (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    {[1,2,3,4].map(i => <div key={i} className="h-36 bg-gray-100 rounded-2xl animate-pulse" />)}
+  </div>
+) : filteredEvents.length === 0 ? (
+  <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
+    <p className="text-gray-400 font-medium">No events found</p>
+  </div>
+) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredEvents.map(event => {
             const totalCap  = (event.ticketTypes ?? []).reduce((s, t) => s + (t.quantity ?? 0), 0);

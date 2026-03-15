@@ -1,138 +1,111 @@
-# TketEnt 🎪
+Frontend readme · MD
+Copy
 
-A modern, full-featured event management and ticketing platform built for Kenya's vibrant event scene. Experience seamless event discovery, secure ticket purchasing, and comprehensive admin management.
-
-## ✨ Features
-
-### 🎫 **For Event Attendees**
-- **Browse Events**: Discover events across multiple categories (Music, Technology, Arts, Sports, Food)
-- **Secure Purchasing**: Buy tickets with multiple pricing tiers (General, VIP, Premium)
-- **Account Management**: View purchase history and manage tickets
-- **Responsive Design**: Optimized for all devices
-
-### 👨‍💼 **For Event Organizers**
-- **Admin Dashboard**: Full CRUD operations for events and sponsors
-- **Analytics**: Comprehensive insights and reporting
-- **Role-Based Access**: Secure admin authentication
-- **Real-time Management**: Live event and ticket management
-
-### 🎨 **Technical Features**
-- **Demo Mode**: Showcase functionality without authentication
-- **Local Storage**: Persistent data across sessions
-- **Modern UI**: Beautiful, Kenyan-themed design
-- **Type-Safe**: Full TypeScript implementation
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 18 + TypeScript
-- **Routing**: React Router DOM
-- **Styling**: Tailwind CSS
-- **Build Tool**: Vite
-- **State Management**: React Context API
-- **Data Persistence**: LocalStorage (demo) / Firebase (production)
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 16+
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/TketEnt.git
-   cd TketEnt
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser**
-   ```
-   http://localhost:5173
-   ```
-
-### Build for Production
-
+# TketEnt Frontend
+ 
+React + TypeScript frontend for TketEnt — a full-stack events ticketing platform built for Kenya's event scene. Live at [tket-ent.vercel.app](https://tket-ent.vercel.app).
+ 
+## Tech Stack
+ 
+- **React 18 + TypeScript** — UI and type safety
+- **React Router DOM** — client-side routing
+- **Tailwind CSS** — utility-first styling
+- **Vite** — build tool and dev server
+- **React Context API** — auth state management
+ 
+## Prerequisites
+ 
+- Node.js 18+
+- npm
+ 
+## Getting Started
+ 
 ```bash
-npm run build
-npm run preview
+# Install dependencies
+npm install
+ 
+# Start development server
+npm run dev
 ```
-
-## 📱 Usage
-
-### Demo Mode (No Login Required)
-- Visit `/account` or `/admin` directly to see full functionality
-- Purchase tickets and view them in your account
-- Explore admin features without authentication
-
-### Full Experience
-- **Sign up** with any email/password
-- **Admin access**: Use `admin@TketEnt.com` / `password`
-- **Browse events** and purchase tickets
-- **Manage account** and view ticket history
-
-## 📂 Project Structure
-
+ 
+The app runs at `http://localhost:5173` by default.
+ 
+## Environment Variables
+ 
+Create a `.env` file in the root:
+ 
+```env
+VITE_API_URL=http://localhost:4000/api/v1
 ```
-TketEnt/
-├── src/
-│   ├── components/          # Reusable UI components
-│   ├── layouts/            # Layout components
-│   ├── pages/              # Page components
-│   │   ├── admin/          # Admin-specific pages
-│   │   └── ...             # Public pages
-│   ├── services/           # Data services & mock data
-│   ├── utilities/          # Helper functions & context
+ 
+For production this points to the Cloud Run backend URL.
+ 
+## Available Scripts
+ 
+```bash
+npm run dev       # Start dev server
+npm run build     # Build for production
+npm run preview   # Preview production build
+npm run lint      # Run ESLint
+```
+ 
+## Project Structure
+ 
+```
+src/
+├── pages/                  # Route-level page components
+│   ├── admin/              # Admin-only pages (EventManagement, etc.)
+│   ├── AdminDashboard.tsx
+│   ├── EventDetailsPage.tsx
+│   ├── EventsPage.tsx
+│   ├── LandingPage.tsx
+│   ├── OrganizerDashboard.tsx
+│   ├── ApplyOrganizerPage.tsx
+│   ├── TermsPage.tsx
 │   └── ...
-├── public/                 # Static assets
-├── package.json            # Dependencies & scripts
-├── tailwind.config.js      # Styling configuration
-├── tsconfig.json          # TypeScript configuration
-└── vite.config.ts         # Build configuration
+├── services/               # API call functions (one file per domain)
+│   ├── api.ts              # Base fetch wrapper with auth headers
+│   ├── adminService.ts
+│   ├── ticketService.ts
+│   ├── organizerService.ts
+│   └── ...
+├── utilities/              # Shared logic and types
+│   ├── AuthContext.tsx     # JWT auth context and hooks
+│   ├── PrivateRoute.tsx    # Route guards by role
+│   └── types.ts            # TypeScript interfaces
+└── App.tsx                 # Route definitions
 ```
-
-## 🔧 Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-## 🔮 Future Integration
-
-This demo is designed for seamless backend integration:
-
-- **Authentication**: Firebase Auth
-- **Database**: Firestore
-- **File Storage**: Firebase Storage
-- **Payments**: Stripe/PayPal
-- **Hosting**: Firebase Hosting
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Images**: [Unsplash](https://unsplash.com) for beautiful stock photos
-- **Icons**: Heroicons for consistent iconography
-- **Colors**: Inspired by Kenya's vibrant culture
-
----
+ 
+## Authentication
+ 
+Auth is JWT-based. On sign-in the token is stored in `localStorage` and attached to every API request via the `Authorization: Bearer <token>` header. The `AuthContext` exposes the current user, `login`, `logout`, and `refreshSession` functions.
+ 
+Protected routes use `<PrivateRoute>` with optional `adminOnly` or `organizerOnly` props.
+ 
+## User Roles
+ 
+| Role | Access |
+|------|--------|
+| `USER` | Browse events, buy tickets, reviews, account management |
+| `ORGANIZER` | Everything above + organizer dashboard, create events, request payouts |
+| `ADMIN` | Full platform access including admin dashboard |
+ 
+## Ticket Purchasing Flow
+ 
+1. User selects ticket type and quantity on the event page
+2. User enters their M-Pesa phone number
+3. Frontend calls `POST /user/tickets/purchase` — backend initiates an STK push to the phone
+4. Frontend shows a "Check your phone" waiting state and polls `GET /user/tickets/poll/:checkoutRequestId` every 3 seconds
+5. Once Safaricom sends the payment callback to the backend and confirms success, the poll returns `COMPLETED`
+6. Frontend shows the success screen and the ticket appears in the user's account
+ 
+## Deployment
+ 
+The frontend is deployed to Vercel. Every push to the main branch triggers a production deployment automatically.
+ 
+```bash
+npm run build   # Vite outputs to /dist
+```
+ 
+Vercel serves the `/dist` folder. The `VITE_API_URL` environment variable is set in the Vercel project settings.
+ 

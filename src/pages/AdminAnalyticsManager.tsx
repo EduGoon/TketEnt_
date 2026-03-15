@@ -42,7 +42,9 @@ function BarChart({ data, valueKey, labelKey, color, label }: {
                 {d[labelKey]}: {fmt(d[valueKey] ?? 0)}
               </div>
               <div className={`${color} w-full rounded-t transition-all duration-500`} style={{ height: `${pct}%`, minHeight: d[valueKey] > 0 ? 3 : 0 }} />
-              <span className="text-[9px] text-gray-400 mt-1 uppercase font-bold truncate w-full text-center">{String(d[labelKey]).substring(0, 3)}</span>
+<span className="text-[9px] text-gray-400 mt-1 uppercase font-bold truncate w-full text-center">
+  {String(d['label'] ?? d[labelKey]).substring(0, 3)}
+</span>
             </div>
           );
         })}
@@ -153,8 +155,7 @@ const AdminAnalyticsManager: React.FC = () => {
       {/* ── Charts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <BarChart data={analytics?.monthlyRevenue ?? []} valueKey="revenue" labelKey="label" color="bg-green-500" label="Monthly Revenue (KSH)" />
-        <BarChart data={analytics?.monthlyTicketsSold ?? []} valueKey="ticketsSold" labelKey="label" color="bg-blue-500" label="Monthly Tickets Sold" />
-        <BarChart data={analytics?.newUsersPerMonth ?? []} valueKey="count" labelKey="label" color="bg-indigo-400" label="New Users per Month" />
+<BarChart data={analytics?.monthlyTicketsSold ?? []} valueKey="ticketsSold" labelKey="month" color="bg-blue-500" label="Monthly Tickets Sold" />        <BarChart data={analytics?.newUsersPerMonth ?? []} valueKey="count" labelKey="label" color="bg-indigo-400" label="New Users per Month" />
       </div>
 
       {/* ── Top Events Table ── */}
