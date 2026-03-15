@@ -36,15 +36,15 @@ const AdminDashboard: React.FC = () => {
   const navItems = [
     { path: '/admin/analytics',    label: 'Analytics',         icon: ChartBarIcon },
     { path: '/admin/events',       label: 'Events',            icon: TicketIcon },
+    { path: '/admin/payments', label: 'Payments', icon: CreditCardIcon },
+    { path: '/admin/payouts', label: 'Payouts', icon: BanknotesIcon },
     { path: '/admin/applications', label: 'Applications',      icon: ClipboardDocumentCheckIcon },
-    { path: '/admin/sponsors',     label: 'Sponsors',          icon: HandRaisedIcon },
     { path: '/admin/reviews',      label: 'Reviews & Favs',    icon: StarIcon },
     { path: '/admin/chats',        label: 'Chats',             icon: ChatBubbleLeftRightIcon },
     { path: '/admin/blogs',        label: 'Blogs',             icon: NewspaperIcon },
     { path: '/admin/users',        label: 'User Records',      icon: UserGroupIcon },
-    { path: '/admin/payouts', label: 'Payouts', icon: BanknotesIcon },
     { path: '/admin/terms', label: 'Terms', icon: DocumentTextIcon },
-    { path: '/admin/payments', label: 'Payments', icon: CreditCardIcon },
+    { path: '/admin/sponsors',     label: 'Sponsors',          icon: HandRaisedIcon },
   ];
 
   return (
