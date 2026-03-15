@@ -642,7 +642,7 @@ eventService.getRelatedEvents(id)
     </div>
     <div>
       <p style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 3 }}>Organized by</p>
-     <Link to={`/organizer/${event.organizer?.id}`} style={{ fontSize: 14, fontWeight: 600, color: '#fff', textDecoration: 'none', transition: 'color 0.2s' }}
+     <Link to={`/host/${event.organizer?.id}`} style={{ fontSize: 14, fontWeight: 600, color: '#fff', textDecoration: 'none', transition: 'color 0.2s' }}
         onMouseEnter={e => (e.currentTarget.style.color = '#f0c040')}
         onMouseLeave={e => (e.currentTarget.style.color = '#fff')}
       >

@@ -52,7 +52,7 @@ function App() {
                 <OrganizerDashboard />
               </PrivateRoute>
             } />
-            <Route path="/organizer/:id" element={<OrganizerProfilePage />} />
+<Route path="/host/:id" element={<OrganizerProfilePage />} />
           </Routes>
         </PageTransition>
         <LiveChatWidget />
