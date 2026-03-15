@@ -30,7 +30,6 @@ function App() {
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/terms/:type" element={<TermsPage />} />
-            <Route path="/organizer/:id" element={<OrganizerProfilePage />} />
             <Route path="/account" element={
               <PrivateRoute>
                 <UserAccountPage />
@@ -53,6 +52,7 @@ function App() {
                 <OrganizerDashboard />
               </PrivateRoute>
             } />
+            <Route path="/organizer/:id" element={<OrganizerProfilePage />} />
           </Routes>
         </PageTransition>
         <LiveChatWidget />
