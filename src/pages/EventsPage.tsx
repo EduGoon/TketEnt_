@@ -47,8 +47,7 @@ const EventsPage: React.FC = () => {
         try {
           const { latitude, longitude } = pos.coords;
          const resp = await eventService.getNearbyEvents(latitude, longitude);
-
-console.log("Nearby API response:", resp);
+         console.log("Nearby API response:", resp.data);
 
 const nearby = resp?.data ?? resp ?? [];
           const ids = new Set<string>();
