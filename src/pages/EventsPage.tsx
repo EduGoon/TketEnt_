@@ -39,27 +39,58 @@ const EventsPage: React.FC = () => {
   // Request location once after events load
   useEffect(() => {
     if (events.length === 0 || askedLocation.current) return;
+    
     askedLocation.current = true;
     setLocationAsked(true);
-    if (!navigator.geolocation) return;
+
+    if (!navigator.geolocation) {
+      console.error("Geolocation not supported");
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       async pos => {
         try {
           const { latitude, longitude } = pos.coords;
-         const resp = await eventService.getNearbyEvents(latitude, longitude);
-         console.log("Nearby API response:", resp.data);
+          console.log("Fetching nearby for:", latitude, longitude);
+          
+          const resp = await eventService.getNearbyEvents(latitude, longitude);
+          
+          // Debugging log - check this in your browser console!
+          console.log("Raw Nearby Response:", resp);
 
-const nearby = resp?.data ?? resp ?? [];
+          // Handle the { success: true, data: [...] } format
+          const nearbyArray = resp?.data || (Array.isArray(resp) ? resp : []);
+          
+          if (!Array.isArray(nearbyArray)) {
+            console.warn("Nearby data is not an array:", nearbyArray);
+            return;
+          }
+
           const ids = new Set<string>();
           const distances: Record<string, number> = {};
-          nearby.forEach((e: any) => { ids.add(e.id); distances[e.id] = e.distanceKm; });
+          
+          nearbyArray.forEach((e: any) => { 
+            if (e && e.id) {
+              ids.add(e.id); 
+              distances[e.id] = e.distanceKm; 
+            }
+          });
+
           setNearbyIds(ids);
           setNearbyDist(distances);
-        } catch {}
+          console.log(`Successfully mapped ${ids.size} nearby events`);
+        } catch (err) {
+          console.error("Nearby events fetch failed:", err);
+        }
       },
-      () => {} // silently ignore denial
+      (err) => {
+        console.warn("Location access denied by user:", err.message);
+      },
+      { timeout: 10000 } // 10 second timeout for GPS
     );
   }, [events]);
+
 
   // Load trending badges
   useEffect(() => {
