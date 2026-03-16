@@ -111,5 +111,5 @@ export const incrementEventView = async (id: string) => {
 
 // Organizer public profile
 export const getOrganizerPublicProfile = async (id: string) => {
-  return apiFetch(`/api/organizers/${id}`);
+  return apiFetch(`/api/events/organizers/${id}`);
 };
