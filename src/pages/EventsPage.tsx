@@ -46,8 +46,11 @@ const EventsPage: React.FC = () => {
       async pos => {
         try {
           const { latitude, longitude } = pos.coords;
-          const resp = await eventService.getNearbyEvents(latitude, longitude);
-          const nearby = resp?.data ?? [];
+         const resp = await eventService.getNearbyEvents(latitude, longitude);
+
+console.log("Nearby API response:", resp);
+
+const nearby = resp?.data ?? resp ?? [];
           const ids = new Set<string>();
           const distances: Record<string, number> = {};
           nearby.forEach((e: any) => { ids.add(e.id); distances[e.id] = e.distanceKm; });
