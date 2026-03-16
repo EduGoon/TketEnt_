@@ -1,248 +1,357 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Event } from '../utilities/types';
 import * as eventService from '../services/historyService';
 import { useAuth } from '../utilities/AuthContext';
 
 const EventsPage: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [filteredEvents, setFiltered] = useState<Event[]>([]);
-  const [trendingIds, setTrendingIds] = useState<Set<string>>(new Set());
-  const [nearbyIds, setNearbyIds] = useState<Set<string>>(new Set());
-  const [nearbyDistances, setNearbyDist] = useState<Record<string, number>>({});
+  const [events, setEvents]               = useState<Event[]>([]);
+  const [filteredEvents, setFiltered]     = useState<Event[]>([]);
+  const [trendingIds, setTrendingIds]     = useState<Set<string>>(new Set());
+  const [nearbyIds, setNearbyIds]         = useState<Set<string>>(new Set());
+  const [nearbyDistances, setNearbyDist]  = useState<Record<string, number>>({});
+  const [locationAsked, setLocationAsked] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('All');
-  const [dateFilter, setDateFilter] = useState('');
-  const [keyword, setKeyword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+  const [dateFilter, setDateFilter]       = useState('');
+  const [keyword, setKeyword]             = useState('');
+  const [loading, setLoading]             = useState(false);
+  const [favorites, setFavorites]         = useState<Record<string, boolean>>({});
   const { user } = useAuth();
   const askedLocation = useRef(false);
 
-  // 1. Initial Load (Events only)
   useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      try {
-        const resp = await eventService.listAllevents();
-        const data = resp.data || (Array.isArray(resp) ? resp : []);
-        setEvents(data);
-        setFiltered(data);
-      } catch { setFiltered([]); }
-      finally { setLoading(false); }
-    };
-    init();
-
-    eventService.getTrendingEvents().then(r => {
-      const d = r?.data ?? [];
-      setTrendingIds(new Set(d.map((e: any) => e.id)));
-    }).catch(() => {});
-  }, []);
-
-  // 2. Load Favorites (Separate to avoid page blinking)
-  useEffect(() => {
-    if (user?.id) {
-      eventService.listFavorites().then(resp => {
-        const data = resp.data || resp;
-        if (Array.isArray(data)) {
-          const map: Record<string, boolean> = {};
-          data.forEach((f: any) => { const id = f.eventId || f.id; if (id) map[id] = true; });
-          setFavorites(map);
-        }
-      }).catch(() => {});
+    setFavorites({});
+    const token = localStorage.getItem('auth_token');
+    if (token && user?.id) {
+      eventService.listFavorites()
+        .then(resp => {
+          const favData = resp.data || resp;
+          if (Array.isArray(favData)) {
+            const map: Record<string, boolean> = {};
+            favData.forEach((f: any) => { const id = f.eventId || f.id; if (id) map[id] = true; });
+            setFavorites(map);
+          }
+        }).catch(() => {});
     }
+    fetchEvents();
   }, [user?.id]);
 
-  // 3. Geolocation
+  // Request location once after events load
   useEffect(() => {
     if (events.length === 0 || askedLocation.current) return;
+    
     askedLocation.current = true;
-    if (!navigator.geolocation) return;
+    setLocationAsked(true);
 
-    navigator.geolocation.getCurrentPosition(async pos => {
-      try {
-        const { latitude, longitude } = pos.coords;
-        const resp = await eventService.getNearbyEvents(latitude, longitude);
-        const data = resp?.data || [];
-        const ids = new Set<string>();
-        const dists: Record<string, number> = {};
-        data.forEach((e: any) => { ids.add(e.id); dists[e.id] = e.distanceKm; });
-        setNearbyIds(ids);
-        setNearbyDist(dists);
-      } catch {}
-    }, () => {}, { timeout: 10000 });
+    if (!navigator.geolocation) {
+      console.error("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          
+          const resp = await eventService.getNearbyEvents(latitude, longitude);
+
+          // Handle the { success: true, data: [...] } format
+          const nearbyArray = resp?.data || (Array.isArray(resp) ? resp : []);
+          
+          if (!Array.isArray(nearbyArray)) {
+            return;
+          }
+
+          const ids = new Set<string>();
+          const distances: Record<string, number> = {};
+          
+          nearbyArray.forEach((e: any) => { 
+            if (e && e.id) {
+              ids.add(e.id); 
+              distances[e.id] = e.distanceKm; 
+            }
+          });
+
+          setNearbyIds(ids);
+          setNearbyDist(distances);
+        } catch (err) {
+          console.error("Nearby events fetch failed:", err);
+        }
+      },
+      (err) => {
+        console.warn("Location access denied by user:", err.message);
+      },
+      { timeout: 10000 } // 10 second timeout for GPS
+    );
   }, [events]);
 
-  const categories = useMemo(() => 
-    ['All', ...Array.from(new Set(events.map(e => e.category).filter(Boolean)))], 
-    [events]
-  );
 
-  const handleFilter = (kw: string, cat: string, date: string) => {
-    setKeyword(kw);
-    setCategoryFilter(cat);
-    setDateFilter(date);
-    
-    let r = [...events];
+  // Load trending badges
+  useEffect(() => {
+    eventService.getTrendingEvents()
+      .then(resp => {
+        const data = resp?.data ?? [];
+        setTrendingIds(new Set(data.map((e: any) => e.id)));
+      }).catch(() => {});
+  }, []);
+
+  const applyFilters = (all: Event[], kw: string, cat: string, date: string) => {
+    let r = [...all];
     if (kw.trim()) {
       const low = kw.toLowerCase();
       r = r.filter(e => e.title?.toLowerCase().includes(low) || e.description?.toLowerCase().includes(low));
     }
-    if (cat !== 'All') r = r.filter(e => e.category === cat);
+    if (cat && cat !== 'All') r = r.filter(e => e.category === cat);
     if (date) {
       const sel = new Date(date);
-      r = r.filter(e => new Date(e.startTime ?? e.date ?? '') >= sel);
+      r = r.filter(e => {
+        const d = new Date(e.startTime ?? e.date ?? '');
+        return !isNaN(d.getTime()) && d >= sel;
+      });
     }
-    setFiltered(r);
+    return r;
   };
 
-  const nearbyList = filteredEvents.filter(e => nearbyIds.has(e.id)).sort((a, b) => (nearbyDistances[a.id] || 0) - (nearbyDistances[b.id] || 0));
-  const otherList = filteredEvents.filter(e => !nearbyIds.has(e.id)).sort((b) => (trendingIds.has(b.id) ? -1 : 1));
-
-  const EventCard = ({ event, idx }: { event: Event, idx: number }) => {
-    const isFav = favorites[event.id] || false;
-    const isTrend = trendingIds.has(event.id);
-    const dist = nearbyDistances[event.id];
-    const price = event.ticketTypes?.[0]?.price;
-    const start = event.startTime ?? event.date;
-
-    const toggleFav = async (e: any) => {
-      e.preventDefault();
-      const next = !isFav;
-      setFavorites(p => ({ ...p, [event.id]: next }));
-      try {
-        next ? await eventService.addFavorite(event.id) : await eventService.removeFavorite(event.id);
-      } catch { setFavorites(p => ({ ...p, [event.id]: !next })); }
-    };
-
-    return (
-      <div className="ev-card" style={{ animation: `fadeUp 0.5s ease ${idx * 0.04}s both` }}>
-        <div className="card-media">
-          <img src={event.imageUrl} alt={event.title} className="ev-img" />
-          {/* SCRIM: Darkens top area so badges POP even on bright images */}
-          <div className="card-scrim" />
-          
-          <div className="badge-stack">
-            {event.category && <div className="cat-tag">{event.category}</div>}
-            {isTrend && <span className="badge-green">🔥 Trending</span>}
-            {dist !== undefined && <span className="badge-green">📍 {dist}km away</span>}
-          </div>
-          <button onClick={toggleFav} className="fav-btn" style={{ color: isFav ? '#f0c040' : '#fff' }}>
-            {isFav ? '★' : '☆'}
-          </button>
-        </div>
-        <div className="card-body">
-          <p className="ev-title">{event.title}</p>
-          <p className="ev-meta">📍 {event.venue || event.location}</p>
-          <p className="ev-date">🗓 {start ? new Date(start).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'TBD'}</p>
-          <div className="card-footer">
-            <p className="ev-price">{price ? `KSH ${price.toLocaleString()}` : 'Free'}</p>
-            <Link to={`/events/${event.id}`} className="view-btn">Details →</Link>
-          </div>
-        </div>
-      </div>
-    );
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const resp = await eventService.listAllevents();
+      const data = resp.data || (Array.isArray(resp) ? resp : []);
+      setEvents(data);
+      setFiltered(data);
+    } catch { setFiltered([]); }
+    finally { setLoading(false); }
   };
+
+  const categories = ['All', ...Array.from(new Set(events.map(e => e.category).filter(Boolean)))];
+
+  const handleKeyword     = (v: string) => { setKeyword(v);        setFiltered(applyFilters(events, v, categoryFilter, dateFilter)); };
+  const handleCategory    = (v: string) => { setCategoryFilter(v); setFiltered(applyFilters(events, keyword, v, dateFilter)); };
+  const handleDate        = (v: string) => { setDateFilter(v);     setFiltered(applyFilters(events, keyword, categoryFilter, v)); };
+
+  // Sort: nearby first, then trending, then rest
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const aNear = nearbyIds.has(a.id) ? 0 : 1;
+    const bNear = nearbyIds.has(b.id) ? 0 : 1;
+    if (aNear !== bNear) return aNear - bNear;
+    const aTrend = trendingIds.has(a.id) ? 0 : 1;
+    const bTrend = trendingIds.has(b.id) ? 0 : 1;
+    return aTrend - bTrend;
+  });
 
   return (
-    <div className="page-wrap">
+    <div style={{ minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans','Helvetica Neue',sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com');
-        
-        .page-wrap { min-height: 100vh; background: #0a0d14; color: #fff; font-family: 'DM Sans', sans-serif; }
-        .container { maxWidth: 1060px; margin: 0 auto; padding: 0 24px; }
-        
-        /* Layout Fixes */
-        .filter-grid { display: flex; gap: 16px; margin-bottom: 24px; }
-        @media (max-width: 768px) {
-          .filter-grid { flex-direction: column; }
-          .filter-grid input[type="date"] { width: 100%; -webkit-appearance: none; min-height: 44px; }
-          .filter-grid input[type="date"]::before { content: attr(placeholder); color: rgba(255,255,255,0.3); margin-right: 10px; }
-        }
-
-        /* Card Visuals */
-        .ev-card { background: #141927; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); overflow: hidden; display: flex; flex-direction: column; transition: 0.3s ease; }
-        .ev-card:hover { transform: translateY(-6px); border-color: #f0c040; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .card-media { position: relative; height: 200px; overflow: hidden; }
-        .ev-img { width: 100%; height: 100%; object-fit: cover; }
-        .card-scrim { position: absolute; top: 0; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%); pointer-events: none; }
-        
-        /* Badges & Typography */
-        .badge-stack { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 2; }
-        .badge-green { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); border: 1px solid #4ade80; color: #4ade80; font-size: 8px; padding: 3px 8px; border-radius: 20px; font-family: 'DM Mono'; font-weight: 800; text-transform: uppercase; }
-        .cat-tag { background: #f0c040; color: #0a0d14; padding: 3px 10px; border-radius: 6px; font-size: 9px; font-weight: 800; font-family: 'DM Mono'; text-transform: uppercase; }
-        .ev-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-        .ev-meta { font-size: 12px; color: #60c8f0; font-family: 'DM Mono'; }
-        .ev-date { font-size: 11px; color: rgba(255,255,255,0.3); margin: 4px 0 16px; }
-        .ev-price { font-size: 17px; font-weight: 700; color: #f0c040; font-family: 'DM Mono'; }
-        
-        /* Controls */
-        .field-input, .field-select { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; color: #fff; font-size: 14px; outline: none; transition: 0.2s; }
-        .field-input:focus { border-color: #f0c040; }
-        .cat-pill { padding: 8px 16px; border-radius: 30px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'DM Mono'; border: 1px solid transparent; }
-        .cat-pill.active { background: #f0c040; color: #0a0d14; }
-        .cat-pill.inactive { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.1); }
-        .view-btn { background: rgba(240,192,64,0.1); border: 1px solid rgba(240,192,64,0.3); color: #f0c040; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-family: 'DM Mono'; transition: 0.2s; }
-        .view-btn:hover { background: #f0c040; color: #0a0d14; }
-        .fav-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; width: 36px; height: 36px; position: absolute; top: 10px; right: 10px; cursor: pointer; backdrop-filter: blur(6px); z-index: 3; }
-        
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+        @keyframes headerIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        .ev-card{background:linear-gradient(160deg,#141927 0%,#0f1521 100%);border-radius:16px;border:1px solid rgba(255,255,255,0.06);overflow:hidden;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s;display:flex;flex-direction:column;}
+        .ev-card:hover{border-color:rgba(240,192,64,0.28);transform:translateY(-5px);box-shadow:0 24px 56px rgba(0,0,0,0.55);}
+        .ev-card:hover .ev-img{transform:scale(1.06);}
+        .ev-card:hover .ev-title{color:#f0c040;}
+        .ev-card:hover .ev-arrow{transform:translateX(4px);}
+        .ev-img{width:100%;height:200px;object-fit:cover;transition:transform 0.5s ease;filter:brightness(0.78);}
+        .ev-title{font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700;color:#fff;line-height:1.3;transition:color 0.25s;margin-bottom:8px;}
+        .ev-arrow{display:inline-block;transition:transform 0.2s;}
+        .field-wrap{display:flex;flex-direction:column;gap:6px;}
+        .field-label{font-size:9px;letter-spacing:2.5px;color:rgba(240,192,64,0.6);text-transform:uppercase;font-family:'DM Mono',monospace;}
+        .field-input,.field-select{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;font-size:13px;color:#fff;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;min-width:160px;}
+        .field-input:focus,.field-select:focus{border-color:rgba(240,192,64,0.5);}
+        .field-input::placeholder{color:rgba(255,255,255,0.25);}
+        .field-select option{background:#141927;color:#fff;}
+        input[type='date']::-webkit-calendar-picker-indicator{filter:invert(0.5);cursor:pointer;}
+        .ghost-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all 0.2s;}
+        .ghost-btn:hover{background:rgba(255,255,255,0.1);color:#fff;}
+        .view-btn{background:rgba(240,192,64,0.1);border:1px solid rgba(240,192,64,0.25);color:#f0c040;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Mono',sans-serif;text-decoration:none;letter-spacing:0.5px;transition:all 0.2s;white-space:nowrap;}
+        .view-btn:hover{background:rgba(240,192,64,0.2);}
+        .skeleton{height:360px;background:linear-gradient(160deg,#141927,#0f1521);border-radius:16px;border:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;}
+        .skeleton::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent);animation:shimmer 1.8s infinite;}
+        .cat-pill{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:'DM Mono',monospace;letter-spacing:0.5px;transition:all 0.2s;white-space:nowrap;}
+        .cat-pill.active{background:#f0c040;color:#0a0d14;}
+        .cat-pill.inactive{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.08);}
+        .cat-pill.inactive:hover{background:rgba(255,255,255,0.1);color:#fff;}
+        .badge-trending{background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.35);color:#f0c040;font-size:8px;letter-spacing:1.5px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;text-transform:uppercase;font-weight:800;}
+        .badge-nearby{background:rgba(96,200,240,0.12);border:1px solid rgba(96,200,240,0.3);color:#60c8f0;font-size:8px;letter-spacing:1.5px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;text-transform:uppercase;font-weight:800;}
+        .badge-lowstock{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-size:8px;letter-spacing:1.5px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;text-transform:uppercase;font-weight:800;}
       `}</style>
 
-      <header style={{ height: 64, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, background: 'rgba(10,13,20,0.9)', backdropFilter: 'blur(10px)', zIndex: 10 }}>
-        <div className="container" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 18, fontWeight: 700, color: '#f0c040', fontFamily: 'Playfair Display' }}>✦ TketEnt</span>
-          <Link to="/" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: 13 }}>Home</Link>
+      {/* Nav */}
+      <header style={{ borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(10,13,20,0.96)', backdropFilter:'blur(14px)', position:'sticky', top:0, zIndex:100, animation:'headerIn 0.4s ease forwards' }}>
+        <div style={{ maxWidth:1060, margin:'0 auto', padding:'0 24px', height:60, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <span style={{ fontSize:17, fontWeight:700, color:'#f0c040', fontFamily:"'Playfair Display',serif", letterSpacing:-0.3 }}>✦ TketEnt</span>
+          <nav style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <Link to="/" className="ghost-btn">← Home</Link>
+          </nav>
         </div>
       </header>
 
-      <main className="container" style={{ paddingTop: 48 }}>
-        <div style={{ marginBottom: 40 }}>
-          <h1 style={{ fontFamily: 'Playfair Display', fontSize: 44, fontWeight: 700 }}>Events Near You<span style={{ color: '#f0c040' }}>.</span></h1>
-          <p style={{ color: 'rgba(255,255,255,0.3)', marginTop: 8 }}>Discover curated experiences in your city.</p>
+      {/* Hero */}
+      <div style={{ maxWidth:1060, margin:'0 auto', padding:'52px 24px 36px', animation:'fadeUp 0.5s ease forwards' }}>
+        <p style={{ fontSize:9, letterSpacing:4, color:'rgba(240,192,64,0.65)', textTransform:'uppercase', fontFamily:"'DM Mono',monospace", marginBottom:10 }}>Discover</p>
+        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+          <div style={{ width:3, height:44, background:'#f0c040', borderRadius:2, flexShrink:0 }} />
+          <h1 style={{ fontFamily:"'Playfair Display',serif", fontSize:42, fontWeight:700, lineHeight:1.1, letterSpacing:-1 }}>
+            Upcoming Events<span style={{ color:'#f0c040' }}>.</span>
+          </h1>
         </div>
-
-        <section className="filter-grid">
-          <input type="text" className="field-input" placeholder="Search events..." style={{ flex: 2 }} value={keyword} onChange={e => handleFilter(e.target.value, categoryFilter, dateFilter)} />
-          <select className="field-select" style={{ flex: 1 }} value={categoryFilter} onChange={e => handleFilter(keyword, e.target.value, dateFilter)}>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <input type="date" className="field-input" placeholder="Select Date" style={{ flex: 1 }} value={dateFilter} onChange={e => handleFilter(keyword, categoryFilter, e.target.value)} />
-        </section>
-
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 48 }}>
-          {categories.map(c => (
-            <button key={c} className={`cat-pill ${categoryFilter === c ? 'active' : 'inactive'}`} onClick={() => handleFilter(keyword, c, dateFilter)}>{c}</button>
-          ))}
-        </div>
-
-        {loading ? (
-          <div style={{ padding: '40px 0', textAlign: 'center', opacity: 0.5 }}>Syncing events...</div>
-        ) : (
-          <>
-            {nearbyList.length > 0 && (
-              <div style={{ marginBottom: 64 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-                  <h2 style={{ fontSize: 11, letterSpacing: 3, color: '#4ade80', fontFamily: 'DM Mono', textTransform: 'uppercase' }}>📍 Strictly Local</h2>
-                  <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, rgba(74,222,128,0.2), transparent)' }} />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 24 }}>
-                  {nearbyList.map((e, i) => <EventCard key={e.id} event={e} idx={i} />)}
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-              <h2 style={{ fontSize: 11, letterSpacing: 3, color: 'rgba(255,255,255,0.2)', fontFamily: 'DM Mono', textTransform: 'uppercase' }}>
-                {nearbyList.length > 0 ? 'Widen Your Search' : 'All Published Events'}
-              </h2>
-              <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, rgba(255,255,255,0.05), transparent)' }} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 24, paddingBottom: 100 }}>
-              {otherList.map((e, i) => <EventCard key={e.id} event={e} idx={i + nearbyList.length} />)}
-            </div>
-          </>
+        <p style={{ color:'rgba(255,255,255,0.35)', fontSize:14, marginTop:10, marginLeft:17, paddingLeft:14, borderLeft:'1px solid rgba(255,255,255,0.08)' }}>
+          Find and book the best events near you.
+        </p>
+        {locationAsked && nearbyIds.size > 0 && (
+          <div style={{ display:'inline-flex', alignItems:'center', gap:8, marginTop:14, background:'rgba(96,200,240,0.07)', border:'1px solid rgba(96,200,240,0.2)', borderRadius:20, padding:'6px 14px' }}>
+            <span style={{ fontSize:12 }}>📍</span>
+            <span style={{ fontSize:11, color:'#60c8f0', fontFamily:"'DM Mono',monospace" }}>Showing {nearbyIds.size} events near you</span>
+          </div>
         )}
-      </main>
+      </div>
+
+      {/* Filters */}
+      <section style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'24px 0' }}>
+        <div style={{ maxWidth:1060, margin:'0 auto', padding:'0 24px' }}>
+          <form onSubmit={e => e.preventDefault()} style={{ display:'flex', gap:16, flexWrap:'wrap', alignItems:'flex-end' }}>
+            <div className="field-wrap" style={{ flex:'1 1 180px' }}>
+              <label className="field-label">Search</label>
+              <input type="text" value={keyword} onChange={e => handleKeyword(e.target.value)} className="field-input" placeholder="Event name or keyword" />
+            </div>
+            <div className="field-wrap">
+              <label className="field-label">Category</label>
+              <select value={categoryFilter} onChange={e => handleCategory(e.target.value)} className="field-select">
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="field-wrap">
+              <label className="field-label">Date From</label>
+              <input type="date" value={dateFilter} onChange={e => handleDate(e.target.value)} className="field-input" />
+            </div>
+          </form>
+          {categories.length > 1 && (
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginTop:18 }}>
+              {categories.map(cat => (
+                <button key={cat} type="button" className={`cat-pill ${categoryFilter === cat ? 'active' : 'inactive'}`} onClick={() => handleCategory(cat)}>{cat}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Events Grid */}
+      <section style={{ padding:'48px 0 80px' }}>
+        <div style={{ maxWidth:1060, margin:'0 auto', padding:'0 24px' }}>
+          {loading ? (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:24 }}>
+              {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton" />)}
+            </div>
+          ) : sortedEvents.length === 0 ? (
+            <div style={{ textAlign:'center', padding:'80px 32px', background:'linear-gradient(160deg,#141927,#0f1521)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:20 }}>
+              <div style={{ fontSize:36, marginBottom:14 }}>✦</div>
+              <p style={{ fontFamily:"'Playfair Display',serif", fontSize:18, color:'rgba(255,255,255,0.5)', fontStyle:'italic', marginBottom:6 }}>No events found.</p>
+              <p style={{ fontSize:11, color:'rgba(255,255,255,0.2)', fontFamily:"'DM Mono',monospace", letterSpacing:1 }}>TRY ADJUSTING YOUR FILTERS</p>
+            </div>
+          ) : (
+            <>
+              <p style={{ fontSize:10, letterSpacing:2, color:'rgba(255,255,255,0.25)', fontFamily:"'DM Mono',monospace", marginBottom:24 }}>
+                {sortedEvents.length} EVENT{sortedEvents.length !== 1 ? 'S' : ''}
+                {nearbyIds.size > 0 && <span style={{ marginLeft:12, color:'rgba(96,200,240,0.5)' }}>· Sorted by proximity</span>}
+              </p>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:24 }}>
+                {sortedEvents.map((event, idx) => {
+                  const firstPrice  = event.ticketTypes?.[0]?.price;
+                  const eventStart  = event.startTime ?? event.date;
+                  const venue       = event.venue ?? event.location;
+                  const isFavorite  = favorites[event.id] || false;
+                  const isTrending  = trendingIds.has(event.id);
+                  const isNearby    = nearbyIds.has(event.id);
+                  const distance    = nearbyDistances[event.id];
+                  const totalCap    = event.ticketTypes?.reduce((s, t) => s + (t.quantity ?? 0), 0) ?? 0;
+                  const totalSold   = event.ticketTypes?.reduce((s, t) => s + (t.sold ?? 0), 0) ?? 0;
+                  const remaining   = totalCap - totalSold;
+                  const isLowStock  = totalCap > 0 && remaining > 0 && remaining <= 10;
+                  const isSoldOut   = totalCap > 0 && remaining === 0;
+
+                  // Countdown
+                  const now       = new Date();
+                  const eventDate = eventStart ? new Date(eventStart) : null;
+                  let countdown   = '';
+                  if (eventDate && eventDate > now) {
+                    const diff  = eventDate.getTime() - now.getTime();
+                    const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    if (days > 0)       countdown = `In ${days}d`;
+                    else if (hours > 0) countdown = `In ${hours}h`;
+                    else                countdown = 'Today!';
+                  }
+
+                  const handleFavorite = async (e: React.MouseEvent) => {
+                    e.preventDefault(); e.stopPropagation();
+                    if (!isFavorite) {
+                      await eventService.addFavorite(event.id);
+                      setFavorites(prev => ({ ...prev, [event.id]: true }));
+                    } else {
+                      await eventService.removeFavorite(event.id);
+                      setFavorites(prev => ({ ...prev, [event.id]: false }));
+                    }
+                  };
+
+                  return (
+                    <div key={event.id} className="ev-card" style={{ animation:`fadeUp 0.45s ease ${idx * 0.06}s both` }}>
+                      <div style={{ position:'relative', overflow:'hidden', flexShrink:0 }}>
+                        <img src={event.imageUrl} alt={event.title} className="ev-img" />
+                        <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom,transparent 45%,#141927 100%)' }} />
+
+                        {/* Top badges */}
+                        <div style={{ position:'absolute', top:12, left:12, display:'flex', gap:5, flexWrap:'wrap', maxWidth:'calc(100% - 56px)' }}>
+                          {event.category && <div style={{ background:'#f0c040', color:'#0a0d14', padding:'3px 10px', borderRadius:5, fontSize:9, fontWeight:800, letterSpacing:2, textTransform:'uppercase', fontFamily:"'DM Mono',monospace" }}>{event.category}</div>}
+                          {isTrending && <span className="badge-trending">🔥 Trending</span>}
+                          {isNearby && distance !== undefined && <span className="badge-nearby">📍 {distance}km</span>}
+                          {isLowStock && <span className="badge-lowstock">⚡ {remaining} left</span>}
+                          {isSoldOut && <span style={{ background:'rgba(107,114,128,0.2)', border:'1px solid rgba(107,114,128,0.3)', color:'#9ca3af', fontSize:8, letterSpacing:1.5, padding:'2px 8px', borderRadius:20, fontFamily:"'DM Mono',monospace", textTransform:'uppercase', fontWeight:800 }}>Sold Out</span>}
+                        </div>
+
+                        {/* Favorite + Countdown */}
+                        <div style={{ position:'absolute', top:10, right:10, display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6 }}>
+                          <button onClick={handleFavorite} style={{ background:isFavorite ? 'rgba(240,192,64,0.9)' : 'rgba(10,13,20,0.7)', border:`1px solid ${isFavorite ? '#f0c040' : 'rgba(255,255,255,0.15)'}`, borderRadius:8, width:34, height:34, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, cursor:'pointer', backdropFilter:'blur(8px)', transition:'all 0.2s', color:isFavorite ? '#0a0d14' : 'rgba(255,255,255,0.7)' }} title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
+                            {isFavorite ? '★' : '☆'}
+                          </button>
+                          {countdown && (
+                            <div style={{ background:'rgba(10,13,20,0.85)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:6, padding:'3px 8px', fontSize:9, fontFamily:"'DM Mono',monospace", color:countdown === 'Today!' ? '#f0c040' : 'rgba(255,255,255,0.7)', letterSpacing:1, backdropFilter:'blur(8px)' }}>
+                              {countdown}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ padding:'18px 20px 22px', display:'flex', flexDirection:'column', flex:1 }}>
+                        <p className="ev-title">{event.title}</p>
+                        <p style={{ fontSize:12, color:'#60c8f0', marginBottom:3, fontFamily:"'DM Mono',monospace" }}>📍 {venue}</p>
+                        <p style={{ fontSize:11, color:'rgba(255,255,255,0.32)', fontFamily:"'DM Mono',monospace", marginBottom:16 }}>
+                          🗓 {eventStart ? new Date(eventStart).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Date TBD'}
+                        </p>
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, marginTop:'auto', paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.06)', flexWrap:'wrap' }}>
+                          {firstPrice != null && !isSoldOut ? (
+                            <div>
+                              <p style={{ fontSize:8, letterSpacing:2, color:'rgba(255,255,255,0.25)', fontFamily:"'DM Mono',monospace", marginBottom:2 }}>FROM</p>
+                              <p style={{ fontSize:17, fontWeight:700, color:'#f0c040', fontFamily:"'DM Mono',monospace" }}>
+                                KSH {firstPrice.toLocaleString()}
+                                {(event.ticketTypes?.length ?? 0) > 1 && <span style={{ fontSize:10, color:'rgba(255,255,255,0.3)', marginLeft:4 }}>& up</span>}
+                              </p>
+                            </div>
+                          ) : isSoldOut ? (
+                            <p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', fontFamily:"'DM Mono',monospace" }}>Sold Out</p>
+                          ) : null}
+                          <Link to={`/events/${event.id}`} className="view-btn">View Details <span className="ev-arrow">→</span></Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
     </div>
   );
 };
