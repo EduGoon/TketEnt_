@@ -70,21 +70,22 @@ useEffect(() => {
           70%  { transform: scale(1.5); opacity: 0; }
           100% { transform: scale(1.5); opacity: 0; }
         }
-        @keyframes bobFab {
-          0%,100% { transform: translateY(0); }
-          50%     { transform: translateY(-4px); }
-        }
 
         .chat-fab {
-          position: fixed; bottom: 28px; right: 28px; z-index: 9999;
-          width: 52px; height: 52px; border-radius: 50%;
-          background: linear-gradient(135deg, #f0c040, #c8920a);
-          border: none; cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 8px 28px rgba(240,192,64,0.35), 0 2px 8px rgba(0,0,0,0.5);
-          transition: box-shadow 0.25s, transform 0.2s;
-          animation: bobFab 3s ease-in-out 2s infinite;
-        }
+  position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #f0c040, #c8920a);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 28px rgba(240,192,64,0.35), 0 2px 8px rgba(0,0,0,0.5);
+  transition: box-shadow 0.25s, transform 0.2s;
+  will-change: transform;
+  isolation: isolate;
+}
+.chat-fab:hover {
+  box-shadow: 0 12px 36px rgba(240,192,64,0.5), 0 4px 12px rgba(0,0,0,0.5);
+  transform: scale(1.08);
+}
         .chat-fab:hover {
           box-shadow: 0 12px 36px rgba(240,192,64,0.5), 0 4px 12px rgba(0,0,0,0.5);
           transform: scale(1.08);
@@ -247,8 +248,8 @@ useEffect(() => {
       )}
 
       {/* ── FAB Toggle ──────────────────────────────────────────────────── */}
-      <button className="chat-fab" onClick={() => setOpen(o => !o)} title="Chat with us" style={{ position:'fixed' }}>
-        {unread > 0 && !open && (
+<button className="chat-fab" onClick={() => setOpen(o => !o)} title="Chat with us">
+          {unread > 0 && !open && (
           <span className="unread-badge">{unread > 9 ? '9+' : unread}</span>
         )}
         <div className="pulse-ring" />
