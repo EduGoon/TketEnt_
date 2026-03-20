@@ -287,7 +287,7 @@ function CheckInTab() {
   const [result, setResult]             = useState<{ success: boolean; message: string; attendee?: any } | null>(null);
   const [checkIns, setCheckIns]         = useState<any[]>([]);
   const [loadingCheckIns, setLoadingCheckIns] = useState(false);
-  const [isMobile, setIsMobile]         = useState(false);
+  const [_isMobile, setIsMobile]         = useState(false);
   const videoRef                        = useRef<HTMLVideoElement>(null);
   const codeReaderRef                   = useRef<any>(null);
 
@@ -323,43 +323,48 @@ function CheckInTab() {
     loadCheckIns(ev.id);
   };
 
-  const stopCamera = () => {
-    if (codeReaderRef.current) {
-      try { codeReaderRef.current.reset(); } catch {}
-      codeReaderRef.current = null;
-    }
-    setCameraActive(false);
-  };
+ const stopCamera = () => {
+  if (codeReaderRef.current) {
+    try { codeReaderRef.current.reset(); } catch {}
+    codeReaderRef.current = null;
+  }
+  // Stop actual video tracks to free the camera
+  if (videoRef.current?.srcObject) {
+    (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+    videoRef.current.srcObject = null;
+  }
+  setCameraActive(false);
+};
 
-  const startCamera = async () => {
-    if (!videoRef.current) return;
-    try {
-      const { BrowserMultiFormatReader } = await import('@zxing/browser');
-      const codeReader = new BrowserMultiFormatReader();
-      codeReaderRef.current = codeReader;
-      setCameraActive(true);
-      setResult(null);
+const startCamera = async () => {
+  if (!videoRef.current) return;
+  try {
+    const { BrowserMultiFormatReader } = await import('@zxing/browser');
+    const codeReader = new BrowserMultiFormatReader();
+    codeReaderRef.current = codeReader;
+    setCameraActive(true);
+    setResult(null);
 
-      await codeReader.decodeFromVideoDevice(
-        undefined, // use default camera
-        videoRef.current,
-        async (result, _err) => {
-          if (result) {
-            const text = result.getText();
-            // QR codes are in format "ticket:TICKET_ID"
-            const ticketIdFromQR = text.startsWith('ticket:') ? text.replace('ticket:', '') : text;
-            stopCamera();
-            await processCheckIn(ticketIdFromQR);
-          }
-          // ignore err — it fires continuously when no QR in frame
+    // Use default camera regardless of device
+    await codeReader.decodeFromVideoDevice(
+      undefined,
+      videoRef.current,
+      async (result, _err) => {
+        if (result) {
+          const ticketIdFromQR = result.getText().startsWith('ticket:')
+            ? result.getText().replace('ticket:', '')
+            : result.getText();
+          stopCamera();
+          await processCheckIn(ticketIdFromQR);
         }
-      );
-    } catch (err: any) {
-      setCameraActive(false);
-      console.error('[camera]', err);
-      setResult({ success: false, message: `Camera error: ${err?.message ?? 'Unknown error'}` });
-    }
-  };
+      }
+    );
+  } catch (err: any) {
+    stopCamera();
+    console.error('[camera]', err);
+    setResult({ success: false, message: `Camera error: ${err?.message ?? 'Unknown error'}` });
+  }
+};
 
   const processCheckIn = async (id: string) => {
     if (!selectedEvent || !id.trim()) return;
@@ -399,47 +404,35 @@ function CheckInTab() {
           <div style={{ ...S.card, marginBottom: 16 }}>
             <label style={S.label}>QR Code Scanner</label>
 
-            {isMobile ? (
-              <>
-                {!cameraActive ? (
-                  <button
-                    style={{ ...S.btn, width: '100%', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                    onClick={startCamera}
-                  >
-                    📷 Start Camera Scanner
-                  </button>
-                ) : (
-                  <div style={{ marginBottom: 12 }}>
-                    <video
-                      ref={videoRef}
-                      style={{ width: '100%', borderRadius: 12, background: '#000', display: 'block', maxHeight: 280, objectFit: 'cover' }}
-                      autoPlay
-                      playsInline
-                      muted
-                    />
-                    <button
-                      style={{ ...S.ghost, width: '100%', marginTop: 10, textAlign: 'center' as const }}
-                      onClick={stopCamera}
-                    >
-                      Stop Camera
-                    </button>
-                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono',monospace" }}>
-                      Point camera at a ticket QR code
-                    </p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div style={{ background: 'rgba(240,192,64,0.06)', border: '1px solid rgba(240,192,64,0.15)', borderRadius: 10, padding: '14px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>📱</span>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 2 }}>Use your phone to scan</p>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono',monospace", lineHeight: 1.5 }}>
-                    Open the organizer dashboard on your mobile browser for camera scanning. Manual entry works here.
-                  </p>
-                </div>
-              </div>
-            )}
+            <div style={{ marginBottom: 12 }}>
+  {!cameraActive ? (
+    <button
+      style={{ ...S.btn, width: '100%', marginBottom: 12 }}
+      onClick={startCamera}
+    >
+      📷 Start Camera Scanner
+    </button>
+  ) : (
+    <div>
+      <video
+        ref={videoRef}
+        style={{ width: '100%', borderRadius: 12, background: '#000', display: 'block', maxHeight: 280, objectFit: 'cover' }}
+        autoPlay
+        playsInline
+        muted
+      />
+      <button
+        style={{ ...S.ghost, width: '100%', marginTop: 10 }}
+        onClick={stopCamera}
+      >
+        Stop Camera
+      </button>
+      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono',monospace" }}>
+        Point camera at a ticket QR code
+      </p>
+    </div>
+  )}
+</div>
 
             {/* Result feedback */}
             {result && (
