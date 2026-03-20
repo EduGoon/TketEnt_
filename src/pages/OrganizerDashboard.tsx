@@ -356,7 +356,8 @@ function CheckInTab() {
       );
     } catch (err: any) {
       setCameraActive(false);
-      setResult({ success: false, message: 'Could not access camera. Please allow camera permission.' });
+      console.error('[camera]', err);
+      setResult({ success: false, message: `Camera error: ${err?.message ?? 'Unknown error'}` });
     }
   };
 
