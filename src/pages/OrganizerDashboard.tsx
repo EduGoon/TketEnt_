@@ -287,7 +287,7 @@ function CheckInTab() {
   const [result, setResult]             = useState<{ success: boolean; message: string; attendee?: any } | null>(null);
   const [checkIns, setCheckIns]         = useState<any[]>([]);
   const [loadingCheckIns, setLoadingCheckIns] = useState(false);
-  const [_isMobile, setIsMobile]         = useState(false);
+  const [isMobile, setIsMobile]         = useState(false);
   const videoRef                        = useRef<HTMLVideoElement>(null);
   const codeReaderRef                   = useRef<any>(null);
 
@@ -323,46 +323,68 @@ function CheckInTab() {
     loadCheckIns(ev.id);
   };
 
- const stopCamera = () => {
-  if (codeReaderRef.current) {
-    try { codeReaderRef.current.reset(); } catch {}
-    codeReaderRef.current = null;
-  }
-  // Stop actual video tracks to free the camera
-  if (videoRef.current?.srcObject) {
-    (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
-    videoRef.current.srcObject = null;
-  }
-  setCameraActive(false);
-};
+  const stopCamera = () => {
+    if (codeReaderRef.current) {
+      try { codeReaderRef.current.reset(); } catch {}
+      codeReaderRef.current = null;
+    }
+    setCameraActive(false);
+  };
 
 const startCamera = async () => {
-  if (!videoRef.current) return;
+  console.log('[camera] startCamera called');
+  console.log('[camera] videoRef.current:', videoRef.current);
+  
+  if (!videoRef.current) {
+    console.log('[camera] no videoRef, setting cameraActive to show video element first');
+    setCameraActive(true);
+    // Wait for video element to render then try again
+    setTimeout(async () => {
+      if (!videoRef.current) {
+        console.log('[camera] still no videoRef after render');
+        setResult({ success: false, message: 'Camera UI failed to initialize. Please try again.' });
+        setCameraActive(false);
+        return;
+      }
+      await initCamera();
+    }, 300);
+    return;
+  }
+  await initCamera();
+};
+
+const initCamera = async () => {
   try {
+    console.log('[camera] requesting camera permission...');
+    // First explicitly request camera permission
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    console.log('[camera] permission granted, stream:', stream);
+    stream.getTracks().forEach(t => t.stop()); // stop the test stream
+
     const { BrowserMultiFormatReader } = await import('@zxing/browser');
+    console.log('[camera] BrowserMultiFormatReader loaded');
     const codeReader = new BrowserMultiFormatReader();
     codeReaderRef.current = codeReader;
-    setCameraActive(true);
     setResult(null);
 
-    // Use default camera regardless of device
     await codeReader.decodeFromVideoDevice(
       undefined,
-      videoRef.current,
+      videoRef.current!,
       async (result, _err) => {
         if (result) {
-          const ticketIdFromQR = result.getText().startsWith('ticket:')
-            ? result.getText().replace('ticket:', '')
-            : result.getText();
+          const text = result.getText();
+          console.log('[camera] QR detected:', text);
+          const ticketIdFromQR = text.startsWith('ticket:') ? text.replace('ticket:', '') : text;
           stopCamera();
           await processCheckIn(ticketIdFromQR);
         }
       }
     );
+    console.log('[camera] decoder started');
   } catch (err: any) {
-    stopCamera();
-    console.error('[camera]', err);
-    setResult({ success: false, message: `Camera error: ${err?.message ?? 'Unknown error'}` });
+    console.error('[camera] error:', err);
+    setCameraActive(false);
+    setResult({ success: false, message: `Camera error: ${err?.message ?? String(err)}` });
   }
 };
 
@@ -404,35 +426,47 @@ const startCamera = async () => {
           <div style={{ ...S.card, marginBottom: 16 }}>
             <label style={S.label}>QR Code Scanner</label>
 
-            <div style={{ marginBottom: 12 }}>
-  {!cameraActive ? (
-    <button
-      style={{ ...S.btn, width: '100%', marginBottom: 12 }}
-      onClick={startCamera}
-    >
-      📷 Start Camera Scanner
-    </button>
-  ) : (
-    <div>
-      <video
-        ref={videoRef}
-        style={{ width: '100%', borderRadius: 12, background: '#000', display: 'block', maxHeight: 280, objectFit: 'cover' }}
-        autoPlay
-        playsInline
-        muted
-      />
-      <button
-        style={{ ...S.ghost, width: '100%', marginTop: 10 }}
-        onClick={stopCamera}
-      >
-        Stop Camera
-      </button>
-      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono',monospace" }}>
-        Point camera at a ticket QR code
-      </p>
-    </div>
-  )}
-</div>
+            {isMobile ? (
+              <>
+                {!cameraActive ? (
+                  <button
+                    style={{ ...S.btn, width: '100%', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                    onClick={startCamera}
+                  >
+                    📷 Start Camera Scanner
+                  </button>
+                ) : (
+                  <div style={{ marginBottom: 12 }}>
+                    <video
+                      ref={videoRef}
+                      style={{ width: '100%', borderRadius: 12, background: '#000', display: 'block', maxHeight: 280, objectFit: 'cover' }}
+                      autoPlay
+                      playsInline
+                      muted
+                    />
+                    <button
+                      style={{ ...S.ghost, width: '100%', marginTop: 10, textAlign: 'center' as const }}
+                      onClick={stopCamera}
+                    >
+                      Stop Camera
+                    </button>
+                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono',monospace" }}>
+                      Point camera at a ticket QR code
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ background: 'rgba(240,192,64,0.06)', border: '1px solid rgba(240,192,64,0.15)', borderRadius: 10, padding: '14px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>📱</span>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 2 }}>Use your phone to scan</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono',monospace", lineHeight: 1.5 }}>
+                    Open the organizer dashboard on your mobile browser for camera scanning. Manual entry works here.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Result feedback */}
             {result && (
