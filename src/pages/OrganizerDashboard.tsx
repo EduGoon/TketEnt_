@@ -334,16 +334,12 @@ const stopCamera = () => {
 };
 
 const startCamera = async () => {
-  console.log('[camera] startCamera called');
-  console.log('[camera] videoRef.current:', videoRef.current);
   
   if (!videoRef.current) {
-    console.log('[camera] no videoRef, setting cameraActive to show video element first');
     setCameraActive(true);
     // Wait for video element to render then try again
     setTimeout(async () => {
       if (!videoRef.current) {
-        console.log('[camera] still no videoRef after render');
         setResult({ success: false, message: 'Camera UI failed to initialize. Please try again.' });
         setCameraActive(false);
         return;
@@ -357,14 +353,11 @@ const startCamera = async () => {
 
 const initCamera = async () => {
   try {
-    console.log('[camera] requesting camera permission...');
     // First explicitly request camera permission
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    console.log('[camera] permission granted, stream:', stream);
     stream.getTracks().forEach(t => t.stop()); // stop the test stream
 
     const { BrowserMultiFormatReader } = await import('@zxing/browser');
-    console.log('[camera] BrowserMultiFormatReader loaded');
     const codeReader = new BrowserMultiFormatReader();
     codeReaderRef.current = codeReader;
     setResult(null);
@@ -373,26 +366,22 @@ const initCamera = async () => {
       undefined,
       videoRef.current!,
    (result, _err) => {
-  if (!result || processingRef.current) return;
+  if (!result) return;
+  if (processingRef.current) return;
+  if (!codeReaderRef.current) return;
   processingRef.current = true;
+  const reader = codeReaderRef.current;
+  codeReaderRef.current = null;
+  setCameraActive(false);
+  try { reader.reset(); } catch {}
   const text = result.getText();
   const ticketIdFromQR = text.startsWith('ticket:') ? text.replace('ticket:', '') : text;
-  // Stop camera immediately before any async work
-  if (codeReaderRef.current) {
-    try { codeReaderRef.current.reset(); } catch {}
-    codeReaderRef.current = null;
-  }
-  setCameraActive(false);
-  // Now process — single call guaranteed
   processCheckIn(ticketIdFromQR).finally(() => {
-    // Only allow next scan after 2 seconds
     setTimeout(() => { processingRef.current = false; }, 2000);
   });
 }
     );
-    console.log('[camera] decoder started');
   } catch (err: any) {
-    console.error('[camera] error:', err);
     setCameraActive(false);
     setResult({ success: false, message: `Camera error: ${err?.message ?? String(err)}` });
   }
