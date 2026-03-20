@@ -290,6 +290,7 @@ function CheckInTab() {
   const [isMobile, setIsMobile]         = useState(false);
   const videoRef                        = useRef<HTMLVideoElement>(null);
   const codeReaderRef                   = useRef<any>(null);
+const processingRef                   = useRef(false);
 
   useEffect(() => {
     setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
@@ -324,12 +325,13 @@ function CheckInTab() {
   };
 
   const stopCamera = () => {
-    if (codeReaderRef.current) {
-      try { codeReaderRef.current.reset(); } catch {}
-      codeReaderRef.current = null;
-    }
-    setCameraActive(false);
-  };
+  if (codeReaderRef.current) {
+    try { codeReaderRef.current.reset(); } catch {}
+    codeReaderRef.current = null;
+  }
+  processingRef.current = false;
+  setCameraActive(false);
+};
 
 const startCamera = async () => {
   console.log('[camera] startCamera called');
@@ -370,15 +372,18 @@ const initCamera = async () => {
     await codeReader.decodeFromVideoDevice(
       undefined,
       videoRef.current!,
-      async (result, _err) => {
-        if (result) {
-          const text = result.getText();
-          console.log('[camera] QR detected:', text);
-          const ticketIdFromQR = text.startsWith('ticket:') ? text.replace('ticket:', '') : text;
-          stopCamera();
-          await processCheckIn(ticketIdFromQR);
-        }
-      }
+    async (result, _err) => {
+  if (result && !processingRef.current) {
+    processingRef.current = true;
+    const text = result.getText();
+    console.log('[camera] QR detected:', text);
+    const ticketIdFromQR = text.startsWith('ticket:') ? text.replace('ticket:', '') : text;
+    stopCamera();
+    await processCheckIn(ticketIdFromQR);
+    // Reset lock after 3 seconds so organizer can scan another ticket
+    setTimeout(() => { processingRef.current = false; }, 3000);
+  }
+}
     );
     console.log('[camera] decoder started');
   } catch (err: any) {
