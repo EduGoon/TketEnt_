@@ -324,13 +324,13 @@ const processingRef                   = useRef(false);
     loadCheckIns(ev.id);
   };
 
-  const stopCamera = () => {
+const stopCamera = () => {
   if (codeReaderRef.current) {
     try { codeReaderRef.current.reset(); } catch {}
     codeReaderRef.current = null;
   }
-  processingRef.current = false;
   setCameraActive(false);
+  // DO NOT reset processingRef here — keep it true until scan is fully done
 };
 
 const startCamera = async () => {
@@ -372,17 +372,22 @@ const initCamera = async () => {
     await codeReader.decodeFromVideoDevice(
       undefined,
       videoRef.current!,
-    async (result, _err) => {
-  if (result && !processingRef.current) {
-    processingRef.current = true;
-    const text = result.getText();
-    console.log('[camera] QR detected:', text);
-    const ticketIdFromQR = text.startsWith('ticket:') ? text.replace('ticket:', '') : text;
-    stopCamera();
-    await processCheckIn(ticketIdFromQR);
-    // Reset lock after 3 seconds so organizer can scan another ticket
-    setTimeout(() => { processingRef.current = false; }, 3000);
+   (result, _err) => {
+  if (!result || processingRef.current) return;
+  processingRef.current = true;
+  const text = result.getText();
+  const ticketIdFromQR = text.startsWith('ticket:') ? text.replace('ticket:', '') : text;
+  // Stop camera immediately before any async work
+  if (codeReaderRef.current) {
+    try { codeReaderRef.current.reset(); } catch {}
+    codeReaderRef.current = null;
   }
+  setCameraActive(false);
+  // Now process — single call guaranteed
+  processCheckIn(ticketIdFromQR).finally(() => {
+    // Only allow next scan after 2 seconds
+    setTimeout(() => { processingRef.current = false; }, 2000);
+  });
 }
     );
     console.log('[camera] decoder started');
