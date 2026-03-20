@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fix Chrome 139+ corner-shape overriding border-radius on buttons */
+*, *::before, *::after {
+  corner-shape: round;
+}
+
 /* Custom styles */
 @layer base {
   html {
