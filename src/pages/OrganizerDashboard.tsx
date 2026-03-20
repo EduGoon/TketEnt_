@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
 import * as organizerService from '../services/organizerService';
@@ -279,20 +279,33 @@ function EventsTab() {
  
 // ── Check-in Tab ──────────────────────────────────────────────
 function CheckInTab() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents]             = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [ticketId, setTicketId] = useState('');
-  const [scanning, setScanning] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; message: string; attendee?: any } | null>(null);
-  const [checkIns, setCheckIns] = useState<any[]>([]);
+  const [ticketId, setTicketId]         = useState('');
+  const [scanning, setScanning]         = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [result, setResult]             = useState<{ success: boolean; message: string; attendee?: any } | null>(null);
+  const [checkIns, setCheckIns]         = useState<any[]>([]);
   const [loadingCheckIns, setLoadingCheckIns] = useState(false);
- 
+  const [isMobile, setIsMobile]         = useState(false);
+  const videoRef                        = useRef<HTMLVideoElement>(null);
+  const codeReaderRef                   = useRef<any>(null);
+
+  useEffect(() => {
+    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+  }, []);
+
   useEffect(() => {
     organizerService.getOrganizerEvents()
       .then(resp => setEvents((resp?.data ?? resp) || []))
       .catch(() => setEvents([]));
   }, []);
- 
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => { stopCamera(); };
+  }, []);
+
   const loadCheckIns = async (eventId: string) => {
     setLoadingCheckIns(true);
     try {
@@ -301,18 +314,58 @@ function CheckInTab() {
     } catch { setCheckIns([]); }
     finally { setLoadingCheckIns(false); }
   };
- 
+
   const handleSelectEvent = (ev: Event) => {
-    setSelectedEvent(ev); setResult(null); setTicketId('');
+    setSelectedEvent(ev);
+    setResult(null);
+    setTicketId('');
+    stopCamera();
     loadCheckIns(ev.id);
   };
- 
-  const handleScan = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedEvent || !ticketId.trim()) return;
-    setScanning(true); setResult(null);
+
+  const stopCamera = () => {
+    if (codeReaderRef.current) {
+      try { codeReaderRef.current.reset(); } catch {}
+      codeReaderRef.current = null;
+    }
+    setCameraActive(false);
+  };
+
+  const startCamera = async () => {
+    if (!videoRef.current) return;
     try {
-      const resp = await organizerService.scanTicket(ticketId.trim(), selectedEvent.id);
+      const { BrowserMultiFormatReader } = await import('@zxing/browser');
+      const codeReader = new BrowserMultiFormatReader();
+      codeReaderRef.current = codeReader;
+      setCameraActive(true);
+      setResult(null);
+
+      await codeReader.decodeFromVideoDevice(
+        undefined, // use default camera
+        videoRef.current,
+        async (result, _err) => {
+          if (result) {
+            const text = result.getText();
+            // QR codes are in format "ticket:TICKET_ID"
+            const ticketIdFromQR = text.startsWith('ticket:') ? text.replace('ticket:', '') : text;
+            stopCamera();
+            await processCheckIn(ticketIdFromQR);
+          }
+          // ignore err — it fires continuously when no QR in frame
+        }
+      );
+    } catch (err: any) {
+      setCameraActive(false);
+      setResult({ success: false, message: 'Could not access camera. Please allow camera permission.' });
+    }
+  };
+
+  const processCheckIn = async (id: string) => {
+    if (!selectedEvent || !id.trim()) return;
+    setScanning(true);
+    setResult(null);
+    try {
+      const resp = await organizerService.scanTicket(id.trim(), selectedEvent.id);
       setResult({ success: true, message: resp.message, attendee: resp.data });
       setTicketId('');
       loadCheckIns(selectedEvent.id);
@@ -320,11 +373,17 @@ function CheckInTab() {
       setResult({ success: false, message: err.message || 'Check-in failed' });
     } finally { setScanning(false); }
   };
- 
+
+  const handleManualScan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await processCheckIn(ticketId);
+  };
+
   return (
     <div>
       <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Check-In</h2>
- 
+
+      {/* Event selector */}
       <div style={{ ...S.card, marginBottom: 16 }}>
         <label style={S.label}>Select Event</label>
         <select style={{ ...S.input, background: '#0f1521' }} value={selectedEvent?.id ?? ''} onChange={e => { const ev = events.find(x => x.id === e.target.value); if (ev) handleSelectEvent(ev); }}>
@@ -332,22 +391,58 @@ function CheckInTab() {
           {events.filter(ev => ev.status === 'PUBLISHED').map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
         </select>
       </div>
- 
+
       {selectedEvent && (
         <>
+          {/* QR Scanner */}
           <div style={{ ...S.card, marginBottom: 16 }}>
-            <label style={S.label}>Scan Ticket ID</label>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 14, lineHeight: 1.6 }}>
-              Paste the ticket ID from the attendee's QR code and tap Check In.
-            </p>
-            <form onSubmit={handleScan} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <input style={{ ...S.input, flex: '1 1 160px', minWidth: 0 }} value={ticketId} onChange={e => setTicketId(e.target.value)} placeholder="Paste ticket ID…" autoFocus />
-              <button type="submit" style={{ ...S.btn, flex: '0 0 auto' }} disabled={scanning || !ticketId.trim()}>
-                {scanning ? 'Checking…' : 'Check In'}
-              </button>
-            </form>
+            <label style={S.label}>QR Code Scanner</label>
+
+            {isMobile ? (
+              <>
+                {!cameraActive ? (
+                  <button
+                    style={{ ...S.btn, width: '100%', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                    onClick={startCamera}
+                  >
+                    📷 Start Camera Scanner
+                  </button>
+                ) : (
+                  <div style={{ marginBottom: 12 }}>
+                    <video
+                      ref={videoRef}
+                      style={{ width: '100%', borderRadius: 12, background: '#000', display: 'block', maxHeight: 280, objectFit: 'cover' }}
+                      autoPlay
+                      playsInline
+                      muted
+                    />
+                    <button
+                      style={{ ...S.ghost, width: '100%', marginTop: 10, textAlign: 'center' as const }}
+                      onClick={stopCamera}
+                    >
+                      Stop Camera
+                    </button>
+                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono',monospace" }}>
+                      Point camera at a ticket QR code
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ background: 'rgba(240,192,64,0.06)', border: '1px solid rgba(240,192,64,0.15)', borderRadius: 10, padding: '14px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>📱</span>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 2 }}>Use your phone to scan</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono',monospace", lineHeight: 1.5 }}>
+                    Open the organizer dashboard on your mobile browser for camera scanning. Manual entry works here.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Result feedback */}
             {result && (
-              <div style={{ marginTop: 14, padding: '13px 16px', borderRadius: 10, background: result.success ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${result.success ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
+              <div style={{ marginBottom: 12, padding: '13px 16px', borderRadius: 10, background: result.success ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${result.success ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
                 <p style={{ fontSize: 13, fontWeight: 600, color: result.success ? '#22c55e' : '#ef4444', marginBottom: result.attendee ? 8 : 0 }}>
                   {result.success ? '✓' : '✕'} {result.message}
                 </p>
@@ -361,7 +456,27 @@ function CheckInTab() {
               </div>
             )}
           </div>
- 
+
+          {/* Manual entry — always visible */}
+          <div style={{ ...S.card, marginBottom: 16 }}>
+            <label style={S.label}>Manual Ticket ID Entry</label>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 14, lineHeight: 1.6 }}>
+              Paste or type the ticket ID manually.
+            </p>
+            <form onSubmit={handleManualScan} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <input
+                style={{ ...S.input, flex: '1 1 160px', minWidth: 0 }}
+                value={ticketId}
+                onChange={e => setTicketId(e.target.value)}
+                placeholder="Paste ticket ID…"
+              />
+              <button type="submit" style={{ ...S.btn, flex: '0 0 auto' }} disabled={scanning || !ticketId.trim()}>
+                {scanning ? 'Checking…' : 'Check In'}
+              </button>
+            </form>
+          </div>
+
+          {/* Check-ins list */}
           <div style={S.card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
               <p style={{ ...S.label, marginBottom: 0 }}>Checked In — {checkIns.length}</p>
