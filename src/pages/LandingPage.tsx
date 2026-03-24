@@ -392,10 +392,6 @@ const LandingPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <div className="mpesa-btn" style={{ display:'inline-flex', cursor:'default' }}>
-                <span style={{ width:10, height:10, borderRadius:'50%', background:'rgba(255,255,255,0.5)', display:'inline-block' }} />
-                M-Pesa Integrated
-              </div>
             </div>
           </div>
         </div>
@@ -433,12 +429,12 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="why-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20 }}>
             {[
-              { icon:'📱', title:'M-Pesa First', desc:'Every Kenyan has M-Pesa. We built payments around that reality, not around international card processors.', color:'#00a838', tag:'No card needed' },
+              { icon:'📱', title:'M-Pesa First', desc:'Every Kenyan has M-Pesa. We built payments around that reality, just a few clicks away from purchasing a ticket.', color:'#00a838', tag:'No card needed' },
               { icon:'🎟', title:'QR Check-In', desc:'Organizers scan tickets right from their phone. No printers, no lists, no chaos at the door.', color:'#f0c040', tag:'Instant scanning' },
               { icon:'📊', title:'Real Analytics', desc:'Live sales tracking, check-in counts, revenue dashboards. Know your numbers in real time.', color:'#60c8f0', tag:'For organizers' },
               { icon:'💰', title:'Fast Payouts', desc:'Request your earnings after the event. We release directly to your M-Pesa or bank account.', color:'#a78bfa', tag:'M-Pesa payouts' },
-              { icon:'🇰🇪', title:'Kenya-Built', desc:'Designed specifically for Kenyan venues, Kenyan pricing, Kenyan audience behavior. Not a foreign clone.', color:'#f87171', tag:'Local first' },
-              { icon:'🔐', title:'Secure & Reliable', desc:"Every transaction is verified through Safaricom's official API. No fake tickets, no fraud.", color:'#34d399', tag:'Official Daraja API' },
+              { icon:'🇰🇪', title:'Kenya-Built', desc:'Designed specifically for Kenyan venues, Kenyan pricing, Kenyan audience behavior.', color:'#f87171', tag:'Local first' },
+              { icon:'🔐', title:'Secure & Reliable', desc:"Every transaction is verified through Safaricom's official API. Valid tickets, secure transactions.", color:'#34d399', tag:'Official Daraja API' },
             ].map((w, i) => (
               <div key={w.title} className="why-card" style={{ animation:`fadeUp 0.5s ease ${i*0.08}s both` }}>
                 <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:14 }}>
@@ -587,7 +583,7 @@ const LandingPage: React.FC = () => {
               <Link to="/terms/organizer" className="footer-link">Organizer Terms</Link>
               {!user && <Link to="/signin" className="footer-link">Sign In</Link>}
             </div>
-            <p style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontFamily:"'DM Mono',monospace" }}>© {new Date().getFullYear()} TketEnt · Made in Kenya 🇰🇪</p>
+            <p style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontFamily:"'DM Mono',monospace" }}>© {new Date().getFullYear()} TketEnt</p>
           </div>
         </div>
       </footer>
