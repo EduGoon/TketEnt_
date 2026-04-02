@@ -1,9 +1,9 @@
 Frontend readme · MD
 Copy
 
-# TketEnt Frontend
+# Eventify Frontend
  
-React + TypeScript frontend for TketEnt — a full-stack events ticketing platform built for Kenya's event scene. Live at [tket-ent.vercel.app](https://tket-ent.vercel.app).
+React + TypeScript frontend for Eventify — a full-stack events ticketing platform built for Kenya's event scene. Live at [Eventify.vercel.app](https://Eventify.vercel.app).
  
 ## Tech Stack
  

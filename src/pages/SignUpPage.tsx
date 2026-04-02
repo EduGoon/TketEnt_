@@ -135,7 +135,7 @@ const SignUpPage: React.FC = () => {
         {/* Brand */}
         <div style={{ textAlign:'center', marginBottom:36 }}>
           <Link to="/" style={{ textDecoration:'none' }}>
-            <span style={{ fontFamily:"'Playfair Display', serif", fontSize:22, fontWeight:700, color:'#f0c040', letterSpacing:-0.5 }}>✦ TketEnt</span>
+            <span style={{ fontFamily:"'Playfair Display', serif", fontSize:22, fontWeight:700, color:'#f0c040', letterSpacing:-0.5 }}>✦ Eventify</span>
           </Link>
         </div>
 

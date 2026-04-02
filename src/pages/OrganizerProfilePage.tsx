@@ -75,7 +75,7 @@ export default function OrganizerProfilePage() {
       {/* Nav */}
       <header style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(10,13,20,0.96)', backdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display',serif", textDecoration: 'none' }}>✦ TketEnt</Link>
+          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display',serif", textDecoration: 'none' }}>✦ Eventify</Link>
           <Link to="/events" className="ghost-btn">← Events</Link>
         </div>
       </header>

@@ -181,7 +181,7 @@ const EventsPage: React.FC = () => {
       {/* Nav */}
       <header style={{ borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(10,13,20,0.96)', backdropFilter:'blur(14px)', position:'sticky', top:0, zIndex:100, animation:'headerIn 0.4s ease forwards' }}>
         <div style={{ maxWidth:1060, margin:'0 auto', padding:'0 24px', height:60, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <span style={{ fontSize:17, fontWeight:700, color:'#f0c040', fontFamily:"'Playfair Display',serif", letterSpacing:-0.3 }}>✦ TketEnt</span>
+          <span style={{ fontSize:17, fontWeight:700, color:'#f0c040', fontFamily:"'Playfair Display',serif", letterSpacing:-0.3 }}>✦ Eventify</span>
           <nav style={{ display:'flex', alignItems:'center', gap:10 }}>
             <Link to="/" className="ghost-btn">← Home</Link>
           </nav>

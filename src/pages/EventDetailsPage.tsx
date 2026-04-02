@@ -353,7 +353,7 @@ function ShareableTicket({ event, ticketType, userName }: { event: any; ticketTy
     ctx.beginPath(); ctx.arc(900, 180, 320, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(240,192,64,0.04)'; ctx.fill();
     ctx.fillStyle = '#f0c040'; ctx.fillRect(80, 260, 6, 80);
-    ctx.font = 'bold 36px serif'; ctx.fillStyle = '#f0c040'; ctx.fillText('✦ TketEnt', 80, 120);
+    ctx.font = 'bold 36px serif'; ctx.fillStyle = '#f0c040'; ctx.fillText('✦ Eventify', 80, 120);
     ctx.font = 'bold 72px serif'; ctx.fillStyle = '#ffffff';
     const words = (event.title ?? '').split(' ');
     let line = '', lines: string[] = [], y = 300;
@@ -376,7 +376,7 @@ function ShareableTicket({ event, ticketType, userName }: { event: any; ticketTy
     ctx.fillText(`Reserved for ${userName}`, 80, 920);
     ctx.fillStyle = '#f0c040'; ctx.fillRect(80, 960, 920, 3);
     ctx.font = '22px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.fillText('tketent.space', 80, 1010);
+    ctx.fillText('Eventify.space', 80, 1010);
     if (event.imageUrl) {
       const img = new Image(); img.crossOrigin = 'anonymous';
       img.onload  = () => { ctx.globalAlpha = 0.18; ctx.drawImage(img, 600, 0, 480, 480); ctx.globalAlpha = 1; setReady(true); };
@@ -388,7 +388,7 @@ function ShareableTicket({ event, ticketType, userName }: { event: any; ticketTy
   const download = () => {
     const canvas = canvasRef.current; if (!canvas) return;
     const link = document.createElement('a');
-    link.download = `${event.title?.replace(/\s+/g, '-') ?? 'ticket'}-tketent.png`;
+    link.download = `${event.title?.replace(/\s+/g, '-') ?? 'ticket'}-Eventify.png`;
     link.href = canvas.toDataURL('image/png'); link.click();
   };
 
@@ -628,7 +628,7 @@ const EventDetailsPage: React.FC = () => {
       {/* Nav */}
       <header style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(10,13,20,0.96)', backdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 100, animation: 'headerIn 0.4s ease forwards' }}>
         <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 16px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display', serif", letterSpacing: -0.3, textDecoration: 'none' }}>✦ TketEnt</Link>
+          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display', serif", letterSpacing: -0.3, textDecoration: 'none' }}>✦ Eventify</Link>
           <Link to="/events" className="ghost-btn">← Back</Link>
         </div>
       </header>

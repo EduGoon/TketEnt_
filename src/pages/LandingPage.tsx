@@ -111,7 +111,7 @@ const LandingPage: React.FC = () => {
       {/* ── NAV ── */}
       <header style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,13,20,0.97)', backdropFilter:'blur(16px)', position:'sticky', top:0, zIndex:200 }}>
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between', position:'relative' }}>
-          <span style={{ fontSize:20, fontWeight:700, color:'#f0c040', fontFamily:"'Playfair Display',serif", letterSpacing:-0.5 }}>✦ TketEnt</span>
+          <span style={{ fontSize:20, fontWeight:700, color:'#f0c040', fontFamily:"'Playfair Display',serif", letterSpacing:-0.5 }}>✦ Eventify</span>
           <nav className="desktop-nav" style={{ display:'flex', alignItems:'center', gap:4 }}>
             <Link to="/events" className="nav-link">Events</Link>
             <Link to="/the-hub" className="nav-link">The Hub</Link>
@@ -245,7 +245,7 @@ const LandingPage: React.FC = () => {
                 return (
                   <div key="info" style={{ ...baseStyle, border:'1px solid rgba(240,192,64,0.15)', cursor:'default' }} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
                     <div style={{ padding:'28px 24px 26px' }}>
-                      <p style={{ fontSize:9, letterSpacing:3, color:'rgba(240,192,64,0.55)', textTransform:'uppercase', fontFamily:"'DM Mono',monospace", marginBottom:18 }}>Why TketEnt</p>
+                      <p style={{ fontSize:9, letterSpacing:3, color:'rgba(240,192,64,0.55)', textTransform:'uppercase', fontFamily:"'DM Mono',monospace", marginBottom:18 }}>Why Eventify</p>
                       {[{ icon:'🎟', stat:'500+', label:'Events Listed' }, { icon:'👥', stat:'50K+', label:'Tickets Sold' }, { icon:'📍', stat:'20+', label:'Cities in Kenya' }].map(row => (
                         <div key={row.label} style={{ display:'flex', alignItems:'center', gap:14, marginBottom:16 }}>
                           <span style={{ fontSize:18, width:28, textAlign:'center', flexShrink:0 }}>{row.icon}</span>
@@ -281,7 +281,7 @@ const LandingPage: React.FC = () => {
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', position:'relative' }}>
           <div style={{ textAlign:'center', marginBottom:56 }}>
             <p className="eyebrow" style={{ justifyContent:'center' }}>Simple as it gets</p>
-            <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(28px,4vw,40px)', fontWeight:700, letterSpacing:-0.5 }}>How TketEnt Works<span style={{ color:'#f0c040' }}>.</span></h2>
+            <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(28px,4vw,40px)', fontWeight:700, letterSpacing:-0.5 }}>How Eventify Works<span style={{ color:'#f0c040' }}>.</span></h2>
             <p style={{ fontSize:14, color:'rgba(255,255,255,0.38)', marginTop:12, maxWidth:440, margin:'12px auto 0' }}>From discovery to check-in in under 2 minutes.</p>
           </div>
           <div className="steps-grid" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:20 }}>
@@ -330,7 +330,7 @@ const LandingPage: React.FC = () => {
                       <p style={{ fontFamily:"'DM Mono',monospace", fontSize:26, fontWeight:700, color:'#f0c040' }}>KSH 500</p>
                     </div>
                     <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:10, padding:'12px 14px', display:'flex', flexDirection:'column', gap:8 }}>
-                      {[{ label:'To', val:'TketEnt' }, { label:'Event', val:'Nairobi Jazz Night' }, { label:'Ticket', val:'VIP × 1' }].map(r => (
+                      {[{ label:'To', val:'Eventify' }, { label:'Event', val:'Nairobi Jazz Night' }, { label:'Ticket', val:'VIP × 1' }].map(r => (
                         <div key={r.label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                           <span style={{ fontSize:10, color:'rgba(255,255,255,0.3)', fontFamily:"'DM Mono',monospace" }}>{r.label}</span>
                           <span style={{ fontSize:11, color:'rgba(255,255,255,0.7)', fontWeight:600 }}>{r.val}</span>
@@ -418,7 +418,7 @@ const LandingPage: React.FC = () => {
         </>
       )}
  
-      {/* ── WHY TKETENT ── */}
+      {/* ── WHY Eventify ── */}
       <section style={{ padding:'88px 0', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', left:-200, top:'30%', width:500, height:500, borderRadius:'50%', background:'radial-gradient(ellipse,rgba(96,200,240,0.04) 0%,transparent 60%)', pointerEvents:'none' }} />
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', position:'relative' }}>
@@ -512,7 +512,7 @@ const LandingPage: React.FC = () => {
               <div>
                 <p style={{ fontSize:9, letterSpacing:4, color:'rgba(96,200,240,0.6)', textTransform:'uppercase', fontFamily:"'DM Mono',monospace", marginBottom:14, display:'flex', alignItems:'center', gap:12 }}>For Event Creators<span style={{ flex:'0 0 36px', height:1, background:'rgba(96,200,240,0.3)', display:'inline-block' }} /></p>
                 <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(24px,3.5vw,36px)', fontWeight:700, lineHeight:1.18, marginBottom:18 }}>Have an event idea?<br /><span style={{ color:'#60c8f0' }}>Let's make it happen.</span></h2>
-                <p style={{ fontSize:14, color:'rgba(255,255,255,0.42)', lineHeight:1.8, marginBottom:32, maxWidth:420 }}>TketEnt gives Kenyan event organizers a professional home. Create your event, sell tickets, check in attendees, and receive your payout — all in one place.</p>
+                <p style={{ fontSize:14, color:'rgba(255,255,255,0.42)', lineHeight:1.8, marginBottom:32, maxWidth:420 }}>Eventify gives Kenyan event organizers a professional home. Create your event, sell tickets, check in attendees, and receive your payout — all in one place.</p>
                 <Link to="/apply-organizer" style={{ display:'inline-flex', alignItems:'center', gap:10, background:'rgba(96,200,240,0.1)', border:'1px solid rgba(96,200,240,0.3)', color:'#60c8f0', borderRadius:12, padding:'14px 28px', fontSize:14, fontWeight:700, textDecoration:'none', fontFamily:"'DM Sans',sans-serif", transition:'all 0.2s' }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.background='rgba(96,200,240,0.18)'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.background='rgba(96,200,240,0.1)'}>Apply to be an Organizer →</Link>
                 <p style={{ fontSize:11, color:'rgba(255,255,255,0.2)', marginTop:14, fontFamily:"'DM Mono',monospace" }}>Free to apply · Reviewed within 48 hours</p>
               </div>
@@ -550,21 +550,21 @@ const LandingPage: React.FC = () => {
         <div style={{ maxWidth:1100, margin:'0 auto' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:32, marginBottom:32, paddingBottom:28, borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
             <div>
-              <span style={{ fontFamily:"'Playfair Display',serif", fontSize:20, color:'#f0c040', fontWeight:700, display:'block', marginBottom:8 }}>✦ TketEnt</span>
+              <span style={{ fontFamily:"'Playfair Display',serif", fontSize:20, color:'#f0c040', fontWeight:700, display:'block', marginBottom:8 }}>✦ Eventify</span>
               <p style={{ fontSize:12, color:'rgba(255,255,255,0.25)', lineHeight:1.7, maxWidth:220 }}>Kenya's events ticketing platform. Discover, book, experience.</p>
             </div>
             <div>
               <p style={{ fontSize:9, letterSpacing:3, color:'rgba(255,255,255,0.25)', textTransform:'uppercase', fontFamily:"'DM Mono',monospace", marginBottom:14 }}>Follow Us</p>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-                <a href="https://twitter.com/tketent" target="_blank" rel="noopener noreferrer" className="social-link">
+                <a href="https://twitter.com/Eventify" target="_blank" rel="noopener noreferrer" className="social-link">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                   Twitter / X
                 </a>
-                <a href="https://instagram.com/tketent" target="_blank" rel="noopener noreferrer" className="social-link">
+                <a href="https://instagram.com/Eventify" target="_blank" rel="noopener noreferrer" className="social-link">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                   Instagram
                 </a>
-                <a href="https://tiktok.com/@tketent" target="_blank" rel="noopener noreferrer" className="social-link">
+                <a href="https://tiktok.com/@Eventify" target="_blank" rel="noopener noreferrer" className="social-link">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.78a4.85 4.85 0 01-1.01-.09z"/></svg>
                   TikTok
                 </a>
@@ -583,7 +583,7 @@ const LandingPage: React.FC = () => {
               <Link to="/terms/organizer" className="footer-link">Organizer Terms</Link>
               {!user && <Link to="/signin" className="footer-link">Sign In</Link>}
             </div>
-            <p style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontFamily:"'DM Mono',monospace" }}>© {new Date().getFullYear()} TketEnt</p>
+            <p style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontFamily:"'DM Mono',monospace" }}>© {new Date().getFullYear()} Eventify</p>
           </div>
         </div>
       </footer>

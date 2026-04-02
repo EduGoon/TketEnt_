@@ -60,18 +60,18 @@ export default function ApplyOrganizerPage() {
       {/* Nav */}
       <header style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(10,13,20,0.97)', backdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link to="/" style={{ fontSize: 18, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display',serif", textDecoration: 'none' }}>✦ TketEnt</Link>
+          <Link to="/" style={{ fontSize: 18, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display',serif", textDecoration: 'none' }}>✦ Eventify</Link>
           <Link to="/account" style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>← My Account</Link>
         </div>
       </header>
 
       <main style={{ maxWidth: 720, margin: '0 auto', padding: '52px 24px 80px' }}>
-        <p style={{ fontSize: 10, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 10 }}>Grow on TketEnt</p>
+        <p style={{ fontSize: 10, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 10 }}>Grow on Eventify</p>
         <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 36, fontWeight: 700, marginBottom: 12, lineHeight: 1.1 }}>
           Become an Organizer<span style={{ color: '#f0c040' }}>.</span>
         </h1>
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.45)', lineHeight: 1.75, marginBottom: 40, maxWidth: 520 }}>
-          Create and sell tickets for your events directly on TketEnt. Fill in the form below and our team will review your application.
+          Create and sell tickets for your events directly on Eventify. Fill in the form below and our team will review your application.
         </p>
 
         {loading ? (
