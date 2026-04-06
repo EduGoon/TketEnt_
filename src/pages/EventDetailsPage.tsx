@@ -105,8 +105,9 @@ function ReviewsSection({ eventId, user }: { eventId: string; user: any }) {
 
 /* ── Map Directions Card ─────────────────────────────────────────────────── */
 function MapDirectionsCard({ event }: { event: any }) {
-  const hasLocation = event.address || (event.latitude && event.longitude);
-  if (!hasLocation) return null;
+const hasLocation = event.address || (event.latitude != null && event.longitude != null);
+
+if (!hasLocation) return null;
 
   const query = event.address
     ? encodeURIComponent(event.address)
@@ -117,9 +118,9 @@ function MapDirectionsCard({ event }: { event: any }) {
     : `https://www.google.com/maps?q=${event.latitude},${event.longitude}`;
 
   // Fallback: use OpenStreetMap embed which needs no API key
-  const osmEmbedUrl = event.latitude && event.longitude
-    ? `https://www.openstreetmap.org/export/embed.html?bbox=${event.longitude - 0.01},${event.latitude - 0.01},${event.longitude + 0.01},${event.latitude + 0.01}&layer=mapnik&marker=${event.latitude},${event.longitude}`
-    : null;
+ const osmEmbedUrl = event.latitude != null && event.longitude != null
+  ? `https://www.openstreetmap.org/export/embed.html?bbox=${event.longitude - 0.01},${event.latitude - 0.01},${event.longitude + 0.01},${event.latitude + 0.01}&layer=mapnik&marker=${event.latitude},${event.longitude}`
+  : null;
 
   return (
     <div style={{ marginBottom: 32 }}>
