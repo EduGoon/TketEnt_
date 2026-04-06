@@ -135,9 +135,13 @@ payload.longitude = form.longitude ? parseFloat(form.longitude) : undefined;
     <button type="button" style={{ ...S.ghost, padding: '8px 14px', fontSize: 12, flexShrink: 0 }}
       onClick={() => {
         if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(pos => {
-          setForm(p => ({ ...p, latitude: String(pos.coords.latitude), longitude: String(pos.coords.longitude) }));
-        });
+       navigator.geolocation.getCurrentPosition(pos => {
+  setForm(p => ({
+    ...p,
+    latitude: pos.coords.latitude.toFixed(6),
+    longitude: pos.coords.longitude.toFixed(6),
+  }));
+}, undefined, { enableHighAccuracy: true, timeout: 10000 });
       }}>
       📍 Use My Location
     </button>
