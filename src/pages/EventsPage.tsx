@@ -48,30 +48,21 @@ const EventsPage: React.FC = () => {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+   navigator.geolocation.getCurrentPosition(
       async pos => {
         try {
           const { latitude, longitude } = pos.coords;
-          
           const resp = await eventService.getNearbyEvents(latitude, longitude);
-
-          // Handle the { success: true, data: [...] } format
           const nearbyArray = resp?.data || (Array.isArray(resp) ? resp : []);
-          
-          if (!Array.isArray(nearbyArray)) {
-            return;
-          }
-
+          if (!Array.isArray(nearbyArray)) return;
           const ids = new Set<string>();
           const distances: Record<string, number> = {};
-          
-          nearbyArray.forEach((e: any) => { 
+          nearbyArray.forEach((e: any) => {
             if (e && e.id) {
-              ids.add(e.id); 
-              distances[e.id] = e.distanceKm; 
+              ids.add(e.id);
+              distances[e.id] = e.distanceKm;
             }
           });
-
           setNearbyIds(ids);
           setNearbyDist(distances);
         } catch (err) {
@@ -81,7 +72,7 @@ const EventsPage: React.FC = () => {
       (err) => {
         console.warn("Location access denied by user:", err.message);
       },
-      { timeout: 10000 } // 10 second timeout for GPS
+      { timeout: 15000, enableHighAccuracy: true, maximumAge: 60000 }
     );
   }, [events]);
 
@@ -330,7 +321,12 @@ const EventsPage: React.FC = () => {
                           🗓 {eventStart ? new Date(eventStart).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Date TBD'}
                         </p>
                         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, marginTop:'auto', paddingTop:14, borderTop:'1px solid rgba(255,255,255,0.06)', flexWrap:'wrap' }}>
-                          {firstPrice != null && !isSoldOut ? (
+                          {!event.ticketTypes?.length ? (
+                            <div>
+                              <p style={{ fontSize:8, letterSpacing:2, color:'rgba(52,211,153,0.5)', fontFamily:"'DM Mono',monospace", marginBottom:2 }}>ENTRY</p>
+                              <p style={{ fontSize:17, fontWeight:700, color:'#34d399', fontFamily:"'DM Mono',monospace" }}>Free</p>
+                            </div>
+                          ) : firstPrice != null && !isSoldOut ? (
                             <div>
                               <p style={{ fontSize:8, letterSpacing:2, color:'rgba(255,255,255,0.25)', fontFamily:"'DM Mono',monospace", marginBottom:2 }}>FROM</p>
                               <p style={{ fontSize:17, fontWeight:700, color:'#f0c040', fontFamily:"'DM Mono',monospace" }}>
