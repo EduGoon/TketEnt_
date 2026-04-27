@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
 
-const GOOGLE_CLIENT_ID = '749314434069-dl7t8s3aaihq8pa4bfhlrfejhapk9fks.apps.googleusercontent.com';
+// Use environment variable for client ID security
+// Add VITE_GOOGLE_CLIENT_ID to your .env file
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '403800080245-m9d3i7u2p2avn7ghs3t16i7hv4pjksi6.apps.googleusercontent.com';
 
 const SignInPage: React.FC = () => {
   const [email, setEmail]       = useState('');
@@ -14,23 +16,39 @@ const SignInPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || '/';
+  const initialized = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple initializations
+    if (initialized.current) return;
+    
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
+    script.defer = true;
     document.head.appendChild(script);
+    
     script.onload = () => {
-      (window as any).google?.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleResponse,
-      });
-      (window as any).google?.accounts.id.renderButton(
-        document.getElementById('google-btn-signin'),
-        { theme: 'outline', size: 'large', width: 356, text: 'signin_with', shape: 'rectangular' }
-      );
+      // Check if google global exists and hasn't been initialized
+      if ((window as any).google?.accounts?.id && !initialized.current) {
+        initialized.current = true;
+        (window as any).google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+          ux_mode: 'popup',
+          auto_select: false,
+          cancel_on_tap_outside: false,
+        });
+        (window as any).google.accounts.id.renderButton(
+          document.getElementById('google-btn-signin'),
+          { theme: 'outline', size: 'large', width: 356, text: 'signin_with', shape: 'rectangular' }
+        );
+      }
     };
-    return () => { if (document.head.contains(script)) document.head.removeChild(script); };
+    
+    return () => {
+      // Cleanup: don't remove the script as it may be needed by other components
+    };
   }, []);
 
   const handleGoogleResponse = async (response: any) => {

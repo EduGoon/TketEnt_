@@ -1,4 +1,4 @@
-import { apiFetch, setToken } from './api';
+import { apiFetch, setToken, API_BASE } from './api';
 import { User } from '../utilities/types';
 
 interface SignupPayload {
@@ -54,12 +54,18 @@ export const clearToken = () => {
 };
 
 export const googleAuth = async (credential: string) => {
-  const resp = await fetch(`/api/v1/auth/google`, {
+  // Use the API_BASE from api.ts to ensure correct endpoint
+  const resp = await fetch(`${API_BASE}/auth/google`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({ credential }),
   });
+  
   const data = await resp.json();
-  if (!resp.ok) throw new Error(data.error || 'Google auth failed');
+  if (!resp.ok) {
+    throw new Error(data.error || `Google auth failed: ${resp.status} ${resp.statusText}`);
+  }
   return data.data;
 };
