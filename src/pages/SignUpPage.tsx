@@ -140,17 +140,18 @@ const SignUpPage: React.FC = () => {
           </div>
 
           {/* Google Sign Up */}
-          {gLoading ? (
-            <div className="g-loading">
-              <div className="g-loading-dot" />
-              <div className="g-loading-dot" />
-              <div className="g-loading-dot" />
-              <span style={{ fontSize:13, color:'rgba(255,255,255,0.6)', fontFamily:"'DM Sans',sans-serif" }}>Signing up with Google…</span>
-            </div>
-          ) : (
-            <div id="google-btn-signup" />
-          )}
-
+   <div style={{ position:'relative', minHeight:50 }}>
+            <div id="google-btn-signup" style={{ visibility: gLoading ? 'hidden' : 'visible' }} />
+            {gLoading && (
+              <div style={{ position:'absolute', inset:0, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(66,133,244,0.3)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', gap:12 }}>
+                <div className="g-loading-dot" />
+                <div className="g-loading-dot" />
+                <div className="g-loading-dot" />
+                <span style={{ fontSize:13, color:'rgba(255,255,255,0.6)', fontFamily:"'DM Sans',sans-serif" }}>Signing up with Google…</span>
+              </div>
+            )}
+          </div>
+          
           <div className="or-divider"><span>OR</span></div>
 
           <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:18 }}>
