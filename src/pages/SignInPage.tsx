@@ -90,6 +90,11 @@ const SignInPage: React.FC = () => {
         *{box-sizing:border-box;margin:0;padding:0;}
         @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        .g-loading{width:100%;height:50px;background:rgba(255,255,255,0.03);border:1px solid rgba(66,133,244,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:12px;}
+        .g-loading-dot{width:8px;height:8px;background:#4285f4;border-radius:50%;animation:pulse 1.2s ease-in-out infinite;}
+        .g-loading-dot:nth-child(2){animation-delay:0.2s;}
+        .g-loading-dot:nth-child(3){animation-delay:0.4s;}
         .auth-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#fff;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.25s,box-shadow 0.25s;}
         .auth-input::placeholder{color:rgba(255,255,255,0.22);}
         .auth-input:focus{border-color:rgba(240,192,64,0.5);box-shadow:0 0 0 3px rgba(240,192,64,0.07);}
@@ -126,9 +131,11 @@ const SignInPage: React.FC = () => {
 
           {/* Google Sign In */}
           {gLoading ? (
-            <div style={{ width:'100%', height:44, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:11, display:'flex', alignItems:'center', justifyContent:'center', gap:10 }}>
-              <div style={{ width:16, height:16, border:'2px solid rgba(255,255,255,0.15)', borderTop:'2px solid #fff', borderRadius:'50%', animation:'spin 1s linear infinite' }} />
-              <span style={{ fontSize:13, color:'rgba(255,255,255,0.5)' }}>Signing in with Google…</span>
+            <div className="g-loading">
+              <div className="g-loading-dot" />
+              <div className="g-loading-dot" />
+              <div className="g-loading-dot" />
+              <span style={{ fontSize:13, color:'rgba(255,255,255,0.6)', fontFamily:"'DM Sans',sans-serif" }}>Signing in with Google…</span>
             </div>
           ) : (
             <div id="google-btn-signin" />
