@@ -52,3 +52,14 @@ export const storeToken = (token: string) => {
 export const clearToken = () => {
   setToken(null);
 };
+
+export const googleAuth = async (credential: string) => {
+  const resp = await fetch(`/api/v1/auth/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credential }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || 'Google auth failed');
+  return data.data;
+};
