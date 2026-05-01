@@ -12,7 +12,6 @@ import {
   GlobeAltIcon,
   ClipboardDocumentCheckIcon,
   BanknotesIcon,
-  ArrowUpTrayIcon,
   CreditCardIcon,
 } from '@heroicons/react/24/outline';
 
@@ -27,28 +26,16 @@ import AdminSponsorManager from './AdminSponsorManager';
 import AdminApplicationsManager from './AdminApplicationsManager';
 import AdminPayoutsManager from './AdminPayoutsManager';
 import AdminTermsManager from './AdminTermsManager';
-import AdminListingManager from './AdminListingManager'; // Corrected import path
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import AdminPaymentsManager from './AdminPaymentsManager';
-import * as adminService from '../services/adminService';
-import { useState, useEffect } from 'react';
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
-  const [pendingListings, setPendingListings] = useState(0);
-
-  useEffect(() => {
-    adminService.getListingPayments().then(res => {
-      const pending = (res?.data || []).filter((p: any) => p.status === 'PENDING').length;
-      setPendingListings(pending);
-    });
-  }, []);
 
   const navItems = [
     { path: '/admin/analytics',    label: 'Analytics',         icon: ChartBarIcon },
     { path: '/admin/events',       label: 'Events',            icon: TicketIcon },
-    { path: '/admin/listings',     label: 'Listing Requests',  icon: ArrowUpTrayIcon, badge: pendingListings },
     { path: '/admin/payments', label: 'Payments', icon: CreditCardIcon },
     { path: '/admin/payouts', label: 'Payouts', icon: BanknotesIcon },
     { path: '/admin/applications', label: 'Applications',      icon: ClipboardDocumentCheckIcon },
@@ -123,7 +110,6 @@ const AdminDashboard: React.FC = () => {
                       >
                         <Icon className={`h-5 w-5 mr-3 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                         {item.label}
-                        {!!item.badge && <span className="ml-auto bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{item.badge}</span>}
                       </Link>
                     </li>
                   );
@@ -137,7 +123,6 @@ const AdminDashboard: React.FC = () => {
               <Route index element={<Navigate to="/admin/analytics" replace />} />
               <Route path="/analytics"    element={<AdminAnalyticsManager />} />
               <Route path="/events"       element={<EventManagement />} />
-              <Route path="/listings"     element={<AdminListingManager />} />
               <Route path="/applications" element={<AdminApplicationsManager />} />
               <Route path="/sponsors"     element={<AdminSponsorManager />} />
               <Route path="/reviews"      element={<AdminReviewManager />} />

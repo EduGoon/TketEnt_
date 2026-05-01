@@ -116,8 +116,9 @@ payload.longitude = form.longitude ? parseFloat(form.longitude) : undefined;
         {field('End Time', <input type="time" style={S.input} value={form.endTime} onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} />)}
         {field('Status', (
           <select style={sel} value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value as any }))}>
-            <option value="DRAFT">Draft (Unlisted)</option>
-            <option value="CANCELLED">Cancelled / Hidden</option>
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="CANCELLED">Cancelled</option>
           </select>
         ))}
       </div>
@@ -180,70 +181,7 @@ payload.longitude = form.longitude ? parseFloat(form.longitude) : undefined;
     </form>
   );
 }
-
-
-// ── Listing Fee Form ──────────────────────────────────────────
-function ListingFeeForm({ event, onPaid }: { event: Event; onPaid: () => void }) {
-  const [transactionCode, setCode] = useState('');
-  const [phoneUsed, setPhone] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  const calcListingFee = (ticketTypes: any[]) => {
-    const projected = ticketTypes.reduce((sum, t) => sum + (t.price * (t.quantity || 0)), 0);
-    return Math.round(projected * 0.05);
-  };
-
-  const fee = calcListingFee(event.ticketTypes || []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!transactionCode || !phoneUsed) return;
-    setSubmitting(true);
-    try {
-      await organizerService.submitListingPayment({ eventId: event.id, transactionCode, phoneUsed });
-      onPaid();
-    } catch (err: any) {
-      alert(err.message || 'Failed to submit payment proof');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div style={{ marginTop: 16, padding: 20, border: '1px solid rgba(240,192,64,0.3)', borderRadius: 14, background: 'rgba(240,192,64,0.03)' }}>
-      <h4 style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, color: '#f0c040', marginBottom: 4 }}>Get This Event Listed</h4>
-      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 16 }}>Listing fee: <span style={{ color: '#f0c040', fontWeight: 700, fontFamily: "'DM Mono',monospace" }}>KSH {fee.toLocaleString()}</span></p>
-      
-      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 20 }}>
-        <p>1. Send <strong>KSH {fee.toLocaleString()}</strong> to M-Pesa <strong>0706672014</strong> (Eventify)</p>
-        <p>2. Enter your transaction code below</p>
-        <p>3. Submit for admin review (24hr turnaround)</p>
-      </div>
-
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <input 
-          style={S.input} 
-          placeholder="M-Pesa Transaction Code (e.g. QHX7...)" 
-          value={transactionCode} 
-          onChange={e => setCode(e.target.value.toUpperCase())} 
-          required 
-        />
-        <input 
-          style={S.input} 
-          placeholder="Phone Number Used to Pay" 
-          value={phoneUsed} 
-          onChange={e => setPhone(e.target.value)} 
-          required 
-        />
-        <button type="submit" style={{ ...S.btn, width: '100%' }} disabled={submitting}>
-          {submitting ? 'Submitting...' : 'Submit Payment Proof'}
-        </button>
-      </form>
-    </div>
-  );
-}
-
-
+ 
 // ── Events Tab ────────────────────────────────────────────────
 function EventsTab() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -328,41 +266,13 @@ function EventsTab() {
                     {ev.startTime ? new Date(ev.startTime).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date TBD'}
                     {ev.venue ? ` · ${ev.venue}` : ''}
                   </p>
-                  <span style={{
-                    fontSize: 9,
-                    letterSpacing: 1.5,
-                    color: STATUS_COLOR[ev.status] ?? '#fff',
-                    background: `${STATUS_COLOR[ev.status] ?? '#ffffff'}18`,
-                    border: `1px solid ${STATUS_COLOR[ev.status] ?? '#ffffff'}44`,
-                    borderRadius: 20, padding: '2px 8px',
-                    fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', display: 'inline-block', marginTop: 6
-                  }}>{ev.status}</span>
+                  <span style={{ fontSize: 9, letterSpacing: 1.5, color: STATUS_COLOR[ev.status] ?? '#fff', background: `${STATUS_COLOR[ev.status]}18`, border: `1px solid ${STATUS_COLOR[ev.status]}44`, borderRadius: 20, padding: '2px 8px', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', display: 'inline-block', marginTop: 6 }}>{ev.status}</span>
                 </div>
               </div>
-              
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <button style={{ ...S.ghost, padding: '7px 14px', fontSize: 12, flex: 1, textAlign: 'center' as const }} onClick={() => { setEditing(ev); setShowForm(true); }}>Edit</button>
                 <button style={{ ...S.danger, padding: '7px 14px', fontSize: 12, flex: 1, textAlign: 'center' as const }} onClick={() => handleDelete(ev.id)}>Delete</button>
               </div>
-
-              {(ev.status === 'DRAFT' || ev.status === 'AWAITING_REVIEW') && (
-                <div style={{ marginTop: 16 }}>
-                  {ev.status === 'DRAFT' && (
-                    <ListingFeeForm event={ev} onPaid={() => {
-                      showToast('Payment submitted! Your event is under review.');
-                      loadEvents();
-                    }} />
-                  )}
-
-                  {ev.status === 'AWAITING_REVIEW' && (
-                    <div style={{ padding: '12px 16px', background: 'rgba(96,200,240,0.08)', border: '1px solid rgba(96,200,240,0.2)', borderRadius: 10 }}>
-                      <p style={{ fontSize: 12, color: '#60c8f0', fontWeight: 500 }}>
-                        ⏳ Payment submitted — under admin review. We'll publish within 24 hours.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -770,7 +680,7 @@ function PayoutsTab() {
 // ── Profile Tab ───────────────────────────────────────────────
 function ProfileTab() {
   const [_profile, setProfile] = useState<OrganizerProfile | null>(null);
-  const [form, setForm] = useState({ organizationName: '', bio: '', mpesaPhone: '', paybillNumber: '', accountNumber: '', paymentType: 'SEND_MONEY' as any, paymentNumber: '', paymentAccountName: '' });
+  const [form, setForm] = useState({ organizationName: '', bio: '', mpesaPhone: '', paybillNumber: '', accountNumber: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
@@ -780,16 +690,7 @@ function ProfileTab() {
       .then(resp => {
         const p = resp?.data ?? resp;
         setProfile(p);
-        setForm({ 
-          organizationName: p.organizationName ?? '', 
-          bio: p.bio ?? '', 
-          mpesaPhone: p.mpesaPhone ?? '', 
-          paybillNumber: p.paybillNumber ?? '', 
-          accountNumber: p.accountNumber ?? '',
-          paymentType: p.paymentType ?? 'SEND_MONEY',
-          paymentNumber: p.paymentNumber ?? '',
-          paymentAccountName: p.paymentAccountName ?? ''
-        });
+        setForm({ organizationName: p.organizationName ?? '', bio: p.bio ?? '', mpesaPhone: p.mpesaPhone ?? '', paybillNumber: p.paybillNumber ?? '', accountNumber: p.accountNumber ?? '' });
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -815,30 +716,6 @@ function ProfileTab() {
       <form onSubmit={handleSave} style={{ ...S.card, display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div><label style={S.label}>Organization Name</label><input style={S.input} value={form.organizationName} onChange={e => setForm(p => ({ ...p, organizationName: e.target.value }))} /></div>
         <div><label style={S.label}>Bio</label><textarea style={{ ...S.input, minHeight: 80, resize: 'vertical' } as any} value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} /></div>
-
-        <div style={{ paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <p style={{ ...S.label, marginBottom: 12, color: 'rgba(240,192,64,0.8)' }}>Ticket Payment Settings</p>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 14, lineHeight: 1.6 }}>
-            Define how attendees will pay for tickets. These details will be shown on your event pages.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
-              <label style={S.label}>Payment Method</label>
-              <select style={{ ...S.input, background: '#141927' }} value={form.paymentType} onChange={e => setForm(p => ({ ...p, paymentType: e.target.value as any }))}>
-                <option value="SEND_MONEY">Send Money</option>
-                <option value="TILL">Till Number</option>
-                <option value="PAYBILL">Paybill</option>
-              </select>
-            </div>
-            <div>
-              <label style={S.label}>M-Pesa Number / Till / Paybill Number</label>
-              <input style={S.input} value={form.paymentNumber} onChange={e => setForm(p => ({ ...p, paymentNumber: e.target.value }))} placeholder="e.g. 0712345678" />
-            </div>
-            {form.paymentType === 'PAYBILL' && (
-              <div><label style={S.label}>Account Name</label><input style={S.input} value={form.paymentAccountName} onChange={e => setForm(p => ({ ...p, paymentAccountName: e.target.value }))} /></div>
-            )}
-          </div>
-        </div>
  
         <div style={{ paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <p style={{ ...S.label, marginBottom: 12, color: 'rgba(240,192,64,0.8)' }}>Payout Details</p>
