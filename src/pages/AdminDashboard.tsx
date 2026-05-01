@@ -27,7 +27,7 @@ import AdminSponsorManager from './AdminSponsorManager';
 import AdminApplicationsManager from './AdminApplicationsManager';
 import AdminPayoutsManager from './AdminPayoutsManager';
 import AdminTermsManager from './AdminTermsManager';
-import AdminListingManager from './AdminListingManager';
+import AdminListingManager from './AdminListingManager'; // Corrected import path
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import AdminPaymentsManager from './AdminPaymentsManager';
 import * as adminService from '../services/adminService';

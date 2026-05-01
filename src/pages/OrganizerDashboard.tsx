@@ -116,9 +116,8 @@ payload.longitude = form.longitude ? parseFloat(form.longitude) : undefined;
         {field('End Time', <input type="time" style={S.input} value={form.endTime} onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} />)}
         {field('Status', (
           <select style={sel} value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value as any }))}>
-            <option value="DRAFT">Draft</option>
-            <option value="PUBLISHED">Published</option>
-            <option value="CANCELLED">Cancelled</option>
+            <option value="DRAFT">Draft (Unlisted)</option>
+            <option value="CANCELLED">Cancelled / Hidden</option>
           </select>
         ))}
       </div>
@@ -329,37 +328,41 @@ function EventsTab() {
                     {ev.startTime ? new Date(ev.startTime).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date TBD'}
                     {ev.venue ? ` · ${ev.venue}` : ''}
                   </p>
-                  <span style={{ 
-                    fontSize: 9, 
-                    letterSpacing: 1.5, 
-                    color: STATUS_COLOR[ev.status] ?? '#fff', 
-                    background: `${STATUS_COLOR[ev.status] ?? '#ffffff'}18`, 
-                    border: `1px solid ${STATUS_COLOR[ev.status] ?? '#ffffff'}44`, 
-                    borderRadius: 20, padding: '2px 8px', 
-                    fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', display: 'inline-block', marginTop: 6 
+                  <span style={{
+                    fontSize: 9,
+                    letterSpacing: 1.5,
+                    color: STATUS_COLOR[ev.status] ?? '#fff',
+                    background: `${STATUS_COLOR[ev.status] ?? '#ffffff'}18`,
+                    border: `1px solid ${STATUS_COLOR[ev.status] ?? '#ffffff'}44`,
+                    borderRadius: 20, padding: '2px 8px',
+                    fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', display: 'inline-block', marginTop: 6
                   }}>{ev.status}</span>
                 </div>
               </div>
               
-              {ev.status === 'DRAFT' && (
-                <ListingFeeForm event={ev} onPaid={() => {
-                  showToast('Payment submitted! Your event is under review.');
-                  loadEvents();
-                }} />
-              )}
-
-              {ev.status === 'AWAITING_REVIEW' && (
-                <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(96,200,240,0.08)', border: '1px solid rgba(96,200,240,0.2)', borderRadius: 10 }}>
-                  <p style={{ fontSize: 12, color: '#60c8f0', fontWeight: 500 }}>
-                    ⏳ Payment submitted — under admin review. We'll publish within 24 hours.
-                  </p>
-                </div>
-              )}
-
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <button style={{ ...S.ghost, padding: '7px 14px', fontSize: 12, flex: 1, textAlign: 'center' as const }} onClick={() => { setEditing(ev); setShowForm(true); }}>Edit</button>
                 <button style={{ ...S.danger, padding: '7px 14px', fontSize: 12, flex: 1, textAlign: 'center' as const }} onClick={() => handleDelete(ev.id)}>Delete</button>
               </div>
+
+              {(ev.status === 'DRAFT' || ev.status === 'AWAITING_REVIEW') && (
+                <div style={{ marginTop: 16 }}>
+                  {ev.status === 'DRAFT' && (
+                    <ListingFeeForm event={ev} onPaid={() => {
+                      showToast('Payment submitted! Your event is under review.');
+                      loadEvents();
+                    }} />
+                  )}
+
+                  {ev.status === 'AWAITING_REVIEW' && (
+                    <div style={{ padding: '12px 16px', background: 'rgba(96,200,240,0.08)', border: '1px solid rgba(96,200,240,0.2)', borderRadius: 10 }}>
+                      <p style={{ fontSize: 12, color: '#60c8f0', fontWeight: 500 }}>
+                        ⏳ Payment submitted — under admin review. We'll publish within 24 hours.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
