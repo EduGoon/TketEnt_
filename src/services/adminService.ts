@@ -165,3 +165,11 @@ export const confirmPayment = async (id: string, note?: string) =>
 
 export const refundPayment = async (id: string, note?: string) =>
   apiFetch(`/admin/payments/${id}/refund`, { method: 'PUT', body: { note } });
+
+export const getListingPayments = async () => {
+  return apiFetch('/admin/listing-payments');
+};
+
+export const reviewListingPayment = async (id: string, action: 'APPROVE' | 'REJECT', adminNote?: string) => {
+  return apiFetch(`/admin/listing-payments/${id}`, { method: 'PATCH', body: { action, adminNote } });
+};

@@ -78,3 +78,11 @@ export const updateTerms = async (type: 'USER' | 'ORGANIZER', content: string, v
 
 export const getOrganizerAnalytics = async () =>
   apiFetch('/organizer/analytics');
+
+export const submitListingPayment = async (data: { eventId: string; transactionCode: string; phoneUsed: string }) => {
+  return apiFetch('/organizer/listing-payment', { method: 'POST', body: data });
+};
+
+export const getMyListingPayments = async () => {
+  return apiFetch('/organizer/listing-payments');
+};

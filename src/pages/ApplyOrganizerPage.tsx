@@ -10,7 +10,16 @@ export default function ApplyOrganizerPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ organizationName: '', bio: '', phone: user?.phone ?? '', socialLink: '', experience: '' });
+  const [form, setForm] = useState({ 
+    organizationName: '', 
+    bio: '', 
+    phone: user?.phone ?? '', 
+    socialLink: '', 
+    experience: '',
+    paymentType: 'SEND_MONEY',
+    paymentNumber: '',
+    paymentAccountName: ''
+  });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -118,6 +127,31 @@ export default function ApplyOrganizerPage() {
             <div>
               <label style={S.label}>Past Experience</label>
               <textarea style={{ ...S.input, minHeight: 80, resize: 'vertical' } as any} value={form.experience} onChange={e => setForm(p => ({ ...p, experience: e.target.value }))} placeholder="Describe any events you've organized before (optional)" />
+            </div>
+
+            <div style={{ paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+              <p style={{ ...S.label, color: '#f0c040', marginBottom: 16 }}>Attendee Payment Details</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div>
+                  <label style={S.label}>Payment Method</label>
+                  <select style={{ ...S.input, background: '#141927' }} value={form.paymentType} onChange={e => setForm(p => ({ ...p, paymentType: e.target.value }))}>
+                    <option value="SEND_MONEY">Send Money (Personal Number)</option>
+                    <option value="TILL">Till Number (Buy Goods)</option>
+                    <option value="PAYBILL">Paybill</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={S.label}>M-Pesa Number / Till / Paybill Number *</label>
+                  <input style={S.input} value={form.paymentNumber} onChange={e => setForm(p => ({ ...p, paymentNumber: e.target.value }))} placeholder="e.g. 0712345678 or 512345" />
+                </div>
+                {form.paymentType === 'PAYBILL' && (
+                  <div>
+                    <label style={S.label}>Account Name *</label>
+                    <input style={S.input} value={form.paymentAccountName} onChange={e => setForm(p => ({ ...p, paymentAccountName: e.target.value }))} placeholder="e.g. TICKETS" />
+                  </div>
+                )}
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>This is how your attendees will pay for tickets.</p>
+              </div>
             </div>
 
             {error && <p style={{ fontSize: 13, color: '#ef4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 14px' }}>{error}</p>}

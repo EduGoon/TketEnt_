@@ -81,7 +81,7 @@ export interface Event {
   venue?: string;
   category: string;
   imageUrl: string;
-  status: 'DRAFT' | 'PUBLISHED' | 'CANCELLED';
+  status: 'DRAFT' | 'PUBLISHED' | 'CANCELLED' | 'AWAITING_REVIEW' | 'ENDED';
   organizerId: string;
   createdAt: string;
   updatedAt: string;
@@ -151,6 +151,9 @@ export interface OrganizerApplication {
   organizationName: string;
   bio: string;
   phone: string;
+  paymentType?: 'SEND_MONEY' | 'TILL' | 'PAYBILL';
+  paymentNumber?: string;
+  paymentAccountName?: string;
   socialLink?: string;
   experience?: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -175,8 +178,25 @@ export interface OrganizerProfile {
   mpesaPhone?: string;
   paybillNumber?: string;
   accountNumber?: string;
+  paymentType?: 'SEND_MONEY' | 'TILL' | 'PAYBILL';
+  paymentNumber?: string;
+  paymentAccountName?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ListingPayment {
+  id: string;
+  eventId: string;
+  organizerId: string;
+  transactionCode: string;
+  phoneUsed: string;
+  amount: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  adminNote?: string;
+  createdAt: string;
+  event?: Event;
+  organizer?: User & { organizerProfile: OrganizerProfile };
 }
 
 export interface Payout {

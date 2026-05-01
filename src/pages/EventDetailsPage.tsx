@@ -191,8 +191,67 @@ if (!hasLocation) return null;
   );
 }
 
+/* ── Manual Payment Instructions ─────────────────────────────────────────── */
+function ManualPaymentInstructions({ organizer, event, totalPrice }: any) {
+  const profile = organizer?.organizerProfile;
+  const name = profile?.organizationName || `${organizer?.firstName || 'the organizer'}`;
+  
+  if (!profile?.paymentNumber) {
+    return (
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: 18, textAlign: 'center' }}>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>
+          Payment details not yet set up by organizer.<br />Contact organizer for payment information.
+        </p>
+      </div>
+    );
+  }
+
+  const steps = [];
+  if (profile.paymentType === 'SEND_MONEY') {
+    steps.push('Open M-Pesa on your phone', 'Go to Send Money', `Enter number: ${profile.paymentNumber}`, `Enter amount: KSH ${totalPrice.toLocaleString()}`, 'Use your name as reference', 'Screenshot your confirmation and contact the organizer');
+  } else if (profile.paymentType === 'TILL') {
+    steps.push('Open M-Pesa on your phone', 'Go to Buy Goods (Lipa na M-Pesa)', `Enter Till Number: ${profile.paymentNumber}`, `Enter amount: KSH ${totalPrice.toLocaleString()}`, 'Screenshot your confirmation');
+  } else if (profile.paymentType === 'PAYBILL') {
+    steps.push('Open M-Pesa on your phone', 'Go to Pay Bill (Lipa na M-Pesa)', `Enter Business No: ${profile.paymentNumber}`, `Enter Account: ${profile.paymentAccountName || 'TICKETS'}`, `Enter amount: KSH ${totalPrice.toLocaleString()}`, 'Screenshot your confirmation');
+  }
+
+  // Normalize phone for WhatsApp
+  let waPhone = organizer.phone || profile.paymentNumber;
+  if (waPhone?.startsWith('0')) waPhone = '254' + waPhone.slice(1);
+
+  return (
+    <div style={{ marginTop: 24 }}>
+      <p style={{ fontSize: 10, letterSpacing: 2, color: '#f0c040', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 12 }}>How to Pay</p>
+      <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: '20px 22px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {steps.map((step, i) => (
+            <div key={i} style={{ display: 'flex', gap: 12 }}>
+              <span style={{ color: '#f0c040', fontFamily: "'DM Mono', monospace", fontSize: 13, fontWeight: 700 }}>{i + 1}.</span>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>{step}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {waPhone && (
+        <a 
+          href={`https://wa.me/${waPhone.replace(/\+/g, '')}?text=${encodeURIComponent(`Hi ${name}, I just paid KSH ${totalPrice.toLocaleString()} for ${event.title} tickets.`)}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 16, background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.25)', color: '#25d366', borderRadius: 11, padding: '12px 20px', textDecoration: 'none', fontSize: 13, fontWeight: 700, transition: 'all 0.2s' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(37,211,102,0.15)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(37,211,102,0.1)')}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.787 23.213l4.287-1.373A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.322 0-4.476-.703-6.272-1.904l-.449-.267-3.093.99.897-3.282-.292-.476A9.955 9.955 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          Message Organizer
+        </a>
+      )}
+    </div>
+  );
+}
+
 /* ── Ticket Panel ────────────────────────────────────────────────────────── */
-function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, phoneNumber, setPhoneNumber, purchasing, paymentState }: any) {
+function TicketPanel({ event, ticketTypes, selectedTickets, handleTicketChange, totalPrice, user, /*handlePurchase, phoneNumber, setPhoneNumber, paymentState,*/ purchasing }: any) {
   const isFree = !ticketTypes || ticketTypes.length === 0;
   const allSoldOut = !isFree && ticketTypes.every((t: any) => (t.available ?? 0) === 0);
 
@@ -259,7 +318,7 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
               <p style={{ fontSize: 22, fontWeight: 700, color: '#f0c040', fontFamily: "'DM Mono', monospace" }}>KSH {(totalPrice ?? 0).toLocaleString()}</p>
             </div>
           )}
-
+          {/* 
           {user && totalPrice > 0 && (
             <div style={{ marginBottom: 14 }}>
               <p style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 6 }}>M-Pesa Number</p>
@@ -292,6 +351,12 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
             style={{ width: '100%', background: allSoldOut ? 'rgba(255,255,255,0.04)' : (!user || totalPrice === 0 || !phoneNumber) ? 'rgba(255,255,255,0.06)' : purchasing ? 'rgba(240,192,64,0.6)' : '#f0c040', color: allSoldOut || !user || totalPrice === 0 || !phoneNumber ? 'rgba(255,255,255,0.25)' : '#0a0d14', border: 'none', borderRadius: 11, padding: '14px 24px', fontSize: 14, fontWeight: 700, cursor: (!user || allSoldOut || totalPrice === 0 || purchasing || !phoneNumber) ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s' }}>
             {purchasing ? 'Processing…' : allSoldOut ? 'No Tickets Available' : !user ? 'Sign In to Buy' : totalPrice === 0 ? 'Select Tickets Above' : !phoneNumber ? 'Enter M-Pesa Number' : 'Pay with M-Pesa'}
           </button>
+          */}
+
+          {totalPrice > 0 && (
+            <ManualPaymentInstructions organizer={event.organizer} event={event} totalPrice={totalPrice} />
+          )}
+
           {!user && !allSoldOut && (
             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', textAlign: 'center', marginTop: 10, fontFamily: "'DM Mono', monospace" }}>Sign in to complete your purchase</p>
           )}
@@ -301,7 +366,7 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
   );
 }
 
-function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, phoneNumber, setPhoneNumber, purchasing, paymentState }: any) {
+function MobileTicketPanel({ event, ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, phoneNumber, setPhoneNumber, purchasing, paymentState }: any) {
   const [expanded, setExpanded] = useState(false);
   const isFree = !ticketTypes || ticketTypes.length === 0;
   const allSoldOut = !isFree && ticketTypes.every((t: any) => (t.available ?? 0) === 0);
@@ -314,23 +379,17 @@ function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, t
           {isFree
             ? <p style={{ fontSize: 16, fontWeight: 700, color: '#34d399', fontFamily: "'DM Mono', monospace" }}>Free Entry</p>
             : totalPrice > 0
-              ? <p style={{ fontSize: 16, fontWeight: 700, color: '#f0c040', fontFamily: "'DM Mono', monospace" }}>KSH {totalPrice.toLocaleString()}</p>
+              ? <p style={{ fontSize: 16, fontWeight: 700, color: '#f0c040', fontFamily: "'DM Mono', monospace" }}>Total: KSH {totalPrice.toLocaleString()}</p>
               : <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono', monospace" }}>{allSoldOut ? 'Sold out' : 'Tap to select tickets'}</p>
           }
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {!isFree && totalPrice > 0 && phoneNumber && !purchasing && (
-            <button onClick={e => { e.stopPropagation(); handlePurchase(); }}
-              style={{ background: '#f0c040', color: '#0a0d14', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-              Pay Now
-            </button>
-          )}
           <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.4)', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block', lineHeight: 1 }}>⌃</span>
         </div>
       </div>
       {expanded && (
         <div style={{ padding: '0 16px 28px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
+          <TicketPanel event={event} ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
         </div>
       )}
     </div>
@@ -725,7 +784,7 @@ const EventDetailsPage: React.FC = () => {
 
           {/* Right — desktop only */}
           <div className="ticket-panel-desktop" style={{ position: 'sticky', top: 76, animation: 'fadeUp 0.5s ease 0.12s both' }}>
-            <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
+            <TicketPanel event={event} ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
           </div>
         </div>
 
@@ -778,7 +837,7 @@ const EventDetailsPage: React.FC = () => {
       </div>
 
       {/* Mobile bottom drawer */}
-      <MobileTicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
+      <MobileTicketPanel event={event} ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
     </div>
   );
 };
