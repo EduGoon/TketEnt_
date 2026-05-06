@@ -115,6 +115,7 @@ export default function AdminPayoutsManager() {
       {/* Detail modal */}
       {selected && (() => {
         const profile = selected.organizer?.organizerProfile;
+        console.log('Organizer profile:', profile); // Debug: check if paystackRecipientCode is present
         const hasRecipient = !!profile?.paystackRecipientCode;
         const hasPaymentDetails = hasRecipient;
 
