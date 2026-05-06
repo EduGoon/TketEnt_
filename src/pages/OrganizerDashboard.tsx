@@ -7,6 +7,37 @@ import { Event, Payout, OrganizerProfile } from '../utilities/types';
  
 type Tab = 'events' | 'checkin' | 'payouts' | 'profile' | 'analytics';
 
+const BANK_OPTIONS = [
+  { code: '044', name: 'Access Bank' },
+  { code: '063', name: 'Access Bank (Diamond)' },
+  { code: '035', name: 'ALAT by WEMA' },
+  { code: '401', name: 'ASO Savings and Loans' },
+  { code: '023', name: 'Citibank Nigeria' },
+  { code: '050', name: 'Ecobank Nigeria' },
+  { code: '562', name: 'Ekondo Microfinance Bank' },
+  { code: '084', name: 'Enterprise Bank Limited' },
+  { code: '070', name: 'Fidelity Bank' },
+  { code: '011', name: 'First Bank of Nigeria' },
+  { code: '214', name: 'First City Monument Bank' },
+  { code: '058', name: 'Guaranty Trust Bank' },
+  { code: '030', name: 'Heritage Bank' },
+  { code: '301', name: 'Jaiz Bank' },
+  { code: '082', name: 'Keystone Bank Limited' },
+  { code: '014', name: 'MainStreet Bank' },
+  { code: '526', name: 'Parallex Bank' },
+  { code: '076', name: 'Polaris Bank' },
+  { code: '101', name: 'Providus Bank' },
+  { code: '221', name: 'Stanbic IBTC Bank' },
+  { code: '068', name: 'Standard Chartered Bank' },
+  { code: '232', name: 'Sterling Bank' },
+  { code: '100', name: 'Suntrust Bank' },
+  { code: '032', name: 'Union Bank of Nigeria' },
+  { code: '033', name: 'United Bank for Africa' },
+  { code: '215', name: 'Unity Bank' },
+  { code: '035', name: 'WEMA Bank' },
+  { code: '057', name: 'Zenith Bank' },
+];
+
 
 const S = {
   page:   { minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: 'hidden' as const },
@@ -662,7 +693,12 @@ function PayoutsTab() {
             <form onSubmit={savePaymentAndRequest} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div><label style={S.label}>Phone Number</label><input style={S.input} value={paymentForm.mpesaPhone} onChange={e => setPaymentForm(p => ({ ...p, mpesaPhone: e.target.value }))} placeholder="e.g. 0712345678" /></div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><label style={S.label}>Bank Code</label><input style={S.input} value={paymentForm.paybillNumber} onChange={e => setPaymentForm(p => ({ ...p, paybillNumber: e.target.value }))} placeholder="e.g. 044" /></div>
+                <div><label style={S.label}>Bank</label>
+                  <select style={{ ...S.input, background: '#141927' }} value={paymentForm.paybillNumber} onChange={e => setPaymentForm(p => ({ ...p, paybillNumber: e.target.value }))}>
+                    <option value="">Select Bank</option>
+                    {BANK_OPTIONS.map(bank => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
+                  </select>
+                </div>
                 <div><label style={S.label}>Account Number</label><input style={S.input} value={paymentForm.accountNumber} onChange={e => setPaymentForm(p => ({ ...p, accountNumber: e.target.value }))} placeholder="e.g. 1234567890" /></div>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
@@ -725,7 +761,12 @@ function ProfileTab() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div><label style={S.label}>Phone Number</label><input style={S.input} value={form.mpesaPhone} onChange={e => setForm(p => ({ ...p, mpesaPhone: e.target.value }))} placeholder="e.g. 0712345678" /></div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: 10 }}>
-              <div><label style={S.label}>Bank Code</label><input style={S.input} value={form.paybillNumber} onChange={e => setForm(p => ({ ...p, paybillNumber: e.target.value }))} placeholder="e.g. 044" /></div>
+              <div><label style={S.label}>Bank</label>
+                <select style={{ ...S.input, background: '#141927' }} value={form.paybillNumber} onChange={e => setForm(p => ({ ...p, paybillNumber: e.target.value }))}>
+                  <option value="">Select Bank</option>
+                  {BANK_OPTIONS.map(bank => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
+                </select>
+              </div>
               <div><label style={S.label}>Account Number</label><input style={S.input} value={form.accountNumber} onChange={e => setForm(p => ({ ...p, accountNumber: e.target.value }))} placeholder="e.g. 1234567890" /></div>
             </div>
           </div>

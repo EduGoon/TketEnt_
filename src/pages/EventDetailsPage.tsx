@@ -290,10 +290,10 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
 
           <button onClick={handlePurchase} disabled={!user || allSoldOut || totalPrice === 0 || purchasing || !email}
             style={{ width: '100%', background: allSoldOut ? 'rgba(255,255,255,0.04)' : (!user || totalPrice === 0 || !email) ? 'rgba(255,255,255,0.06)' : purchasing ? 'rgba(240,192,64,0.6)' : '#f0c040', color: allSoldOut || !user || totalPrice === 0 || !email ? 'rgba(255,255,255,0.25)' : '#0a0d14', border: 'none', borderRadius: 11, padding: '14px 24px', fontSize: 14, fontWeight: 700, cursor: (!user || allSoldOut || totalPrice === 0 || purchasing || !email) ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s' }}>
-            {purchasing ? 'Processing…' : allSoldOut ? 'No Tickets Available' : !user ? 'Sign In to Buy' : totalPrice === 0 ? 'Select Tickets Above' : !email ? 'Enter Email Address' : 'Pay with Paystack'}
+            {purchasing ? 'Processing…' : allSoldOut ? 'No Tickets Available' : !user ? 'Sign In to Buy' : totalPrice === 0 ? 'Select Tickets Above' : !email ? 'Enter Email Address' : 'Purchase Ticket'}
           </button>
-          {!user && !allSoldOut && (
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', textAlign: 'center', marginTop: 10, fontFamily: "'DM Mono', monospace" }}>Sign in to complete your purchase</p>
+          {user && totalPrice > 0 && email && !purchasing && !allSoldOut && (
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono', monospace" }}>powered by Paystack</p>
           )}
         </div>
       </div>
