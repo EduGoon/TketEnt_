@@ -8,34 +8,33 @@ import { Event, Payout, OrganizerProfile } from '../utilities/types';
 type Tab = 'events' | 'checkin' | 'payouts' | 'profile' | 'analytics';
 
 const BANK_OPTIONS = [
-  { code: '044', name: 'Access Bank' },
-  { code: '063', name: 'Access Bank (Diamond)' },
-  { code: '035', name: 'ALAT by WEMA' },
-  { code: '401', name: 'ASO Savings and Loans' },
-  { code: '023', name: 'Citibank Nigeria' },
-  { code: '050', name: 'Ecobank Nigeria' },
-  { code: '562', name: 'Ekondo Microfinance Bank' },
-  { code: '084', name: 'Enterprise Bank Limited' },
-  { code: '070', name: 'Fidelity Bank' },
-  { code: '011', name: 'First Bank of Nigeria' },
-  { code: '214', name: 'First City Monument Bank' },
-  { code: '058', name: 'Guaranty Trust Bank' },
-  { code: '030', name: 'Heritage Bank' },
-  { code: '301', name: 'Jaiz Bank' },
-  { code: '082', name: 'Keystone Bank Limited' },
-  { code: '014', name: 'MainStreet Bank' },
-  { code: '526', name: 'Parallex Bank' },
-  { code: '076', name: 'Polaris Bank' },
-  { code: '101', name: 'Providus Bank' },
-  { code: '221', name: 'Stanbic IBTC Bank' },
-  { code: '068', name: 'Standard Chartered Bank' },
-  { code: '232', name: 'Sterling Bank' },
-  { code: '100', name: 'Suntrust Bank' },
-  { code: '032', name: 'Union Bank of Nigeria' },
-  { code: '033', name: 'United Bank for Africa' },
-  { code: '215', name: 'Unity Bank' },
-  { code: '035', name: 'WEMA Bank' },
-  { code: '057', name: 'Zenith Bank' },
+  { code: '001', name: 'Kenya Commercial Bank' },
+  { code: '068', name: 'Equity Bank' },
+  { code: '011', name: 'Co-operative Bank' },
+  { code: '031', name: 'Standard Chartered Bank' },
+  { code: '003', name: 'Absa Bank Kenya' },
+  { code: '063', name: 'Diamond Trust Bank' },
+  { code: '012', name: 'National Bank of Kenya' },
+  { code: '070', name: 'Family Bank' },
+  { code: '081', name: 'Sidian Bank' },
+  { code: '057', name: 'I&M Bank' },
+  { code: '019', name: 'Bank of Africa' },
+  { code: '023', name: 'Consolidated Bank' },
+  { code: '061', name: 'Credit Bank' },
+  { code: '066', name: 'Development Bank' },
+  { code: '043', name: 'Ecobank Kenya' },
+  { code: '053', name: 'Guaranty Trust Bank' },
+  { code: '050', name: 'Habib Bank' },
+  { code: '061', name: 'Housing Finance' },
+  { code: '070', name: 'K-Rep Bank' },
+  { code: '041', name: 'NIC Bank' },
+  { code: '096', name: 'Oriental Commercial Bank' },
+  { code: '080', name: 'Paramount Universal Bank' },
+  { code: '050', name: 'Prime Bank' },
+  { code: '031', name: 'Stanbic Bank' },
+  { code: '026', name: 'Trans National Bank' },
+  { code: '025', name: 'UBA Kenya' },
+  { code: '078', name: 'Victoria Commercial Bank' },
 ];
 
 
@@ -716,7 +715,7 @@ function PayoutsTab() {
 // ── Profile Tab ───────────────────────────────────────────────
 function ProfileTab() {
   const [_profile, setProfile] = useState<OrganizerProfile | null>(null);
-  const [form, setForm] = useState({ organizationName: '', bio: '', mpesaPhone: '', paybillNumber: '', accountNumber: '' });
+  const [form, setForm] = useState({ organizationName: '', bio: '', mpesaPhone: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
@@ -726,7 +725,7 @@ function ProfileTab() {
       .then(resp => {
         const p = resp?.data ?? resp;
         setProfile(p);
-        setForm({ organizationName: p.organizationName ?? '', bio: p.bio ?? '', mpesaPhone: p.mpesaPhone ?? '', paybillNumber: p.paybillNumber ?? '', accountNumber: p.accountNumber ?? '' });
+        setForm({ organizationName: p.organizationName ?? '', bio: p.bio ?? '', mpesaPhone: p.mpesaPhone ?? '' });
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -756,19 +755,10 @@ function ProfileTab() {
         <div style={{ paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <p style={{ ...S.label, marginBottom: 12, color: 'rgba(240,192,64,0.8)' }}>Payout Details</p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 14, lineHeight: 1.6 }}>
-            Add the payout details used to configure your Paystack recipient. This ensures funds can be sent automatically once a payout is released.
+            Provide your phone number for payout setup. Bank details are handled separately through the payout request process.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div><label style={S.label}>Phone Number</label><input style={S.input} value={form.mpesaPhone} onChange={e => setForm(p => ({ ...p, mpesaPhone: e.target.value }))} placeholder="e.g. 0712345678" /></div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: 10 }}>
-              <div><label style={S.label}>Bank</label>
-                <select style={{ ...S.input, background: '#141927' }} value={form.paybillNumber} onChange={e => setForm(p => ({ ...p, paybillNumber: e.target.value }))}>
-                  <option value="">Select Bank</option>
-                  {BANK_OPTIONS.map(bank => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
-                </select>
-              </div>
-              <div><label style={S.label}>Account Number</label><input style={S.input} value={form.accountNumber} onChange={e => setForm(p => ({ ...p, accountNumber: e.target.value }))} placeholder="e.g. 1234567890" /></div>
-            </div>
           </div>
         </div>
 
