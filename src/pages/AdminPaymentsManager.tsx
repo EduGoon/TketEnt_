@@ -183,9 +183,9 @@ export default function AdminPaymentsManager() {
                   { label: 'Status',       value: selected.status },
                   { label: 'Event',        value: selected.ticket?.event?.title ?? '—' },
                   { label: 'Ticket Type',  value: selected.ticket?.ticketType?.name ?? '—' },
-                  { label: 'M-Pesa Ref',   value: selected.transactionId ?? '—' },
-                  { label: 'Checkout ID',  value: selected.checkoutRequestId ?? '—' },
-                  { label: 'Result Code',  value: selected.resultCode !== null ? String(selected.resultCode) : '—' },
+                  { label: 'Paystack Reference', value: selected.transactionId ?? '—' },
+                  { label: 'Checkout ID',     value: selected.checkoutRequestId ?? '—' },
+                  { label: 'Result Code',     value: selected.resultCode !== null ? String(selected.resultCode) : '—' },
                   { label: 'Result',       value: selected.resultDesc ?? '—' },
                   { label: 'Date',         value: new Date(selected.createdAt).toLocaleString() },
                 ].map(row => (
@@ -210,7 +210,7 @@ export default function AdminPaymentsManager() {
                 {(selected.status === 'PENDING' || selected.status === 'FAILED') && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                     <p className="text-xs font-bold text-green-700 mb-1">Manually Confirm</p>
-                    <p className="text-xs text-green-600 mb-3">Use this ONLY if you can confirm money was received in your M-Pesa paybill but the ticket is still pending. This activates the ticket.</p>
+                    <p className="text-xs text-green-600 mb-3">Use this ONLY if you can confirm the payment was received via Paystack but the ticket is still pending. This activates the ticket.</p>
                     <button onClick={() => handleConfirm(selected.id)} disabled={acting}
                       className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all">
                       {acting ? 'Processing…' : '✓ Confirm & Activate Ticket'}
@@ -223,9 +223,8 @@ export default function AdminPaymentsManager() {
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                     <p className="text-xs font-bold text-blue-700 mb-1">Issue Refund</p>
                     <p className="text-xs text-blue-600 mb-3">
-                      This marks the payment as refunded and deactivates the ticket. You will need to manually send{' '}
-                      <strong>KSH {selected.amount.toLocaleString()}</strong> to{' '}
-                      <strong>{selected.ticket?.user?.phone ?? selected.phoneNumber ?? 'customer phone'}</strong> via M-Pesa.
+                      This marks the payment as refunded and deactivates the ticket. You will need to manually refund{' '}
+                      <strong>KSH {selected.amount.toLocaleString()}</strong> to the customer via Paystack or their preferred payment method.
                     </p>
                     <button onClick={() => handleRefund(selected.id)} disabled={acting}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all">

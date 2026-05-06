@@ -34,7 +34,7 @@ export default function AdminPayoutsManager() {
     setActing(true);
     try {
       await organizerService.releasePayout(id, adminNote);
-      showToast('Payout marked as released — email sent to organizer');
+      showToast('Payout approved — automated transfer initiated, email sent to organizer');
       setSelected(null); setAdminNote(''); loadPayouts();
     } catch { showToast('Failed to release payout'); }
     finally { setActing(false); }
@@ -62,7 +62,7 @@ export default function AdminPayoutsManager() {
       <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
         <div>
           <h2 className="text-3xl font-bold text-gray-800">Payout Requests</h2>
-          <p className="text-gray-500 text-sm mt-1">Review and release organizer payouts manually via M-Pesa</p>
+          <p className="text-gray-500 text-sm mt-1">Review and release organizer payouts via automated Paystack Transfer</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           {['PENDING', 'RELEASED', 'REJECTED', 'ALL'].map(s => (
@@ -115,9 +115,8 @@ export default function AdminPayoutsManager() {
       {/* Detail modal */}
       {selected && (() => {
         const profile = selected.organizer?.organizerProfile;
-        const hasMpesa   = !!profile?.mpesaPhone;
-        const hasPaybill = !!profile?.paybillNumber;
-        const hasPaymentDetails = hasMpesa || hasPaybill;
+        const hasRecipient = !!profile?.paystackRecipientCode;
+        const hasPaymentDetails = hasRecipient;
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
@@ -152,34 +151,18 @@ export default function AdminPayoutsManager() {
                 {/* WHERE TO SEND THE MONEY — the critical section */}
                 <div className={`rounded-2xl p-4 mb-5 border ${hasPaymentDetails ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}>
                   <p className={`text-xs font-black uppercase tracking-wider mb-3 ${hasPaymentDetails ? 'text-blue-700' : 'text-red-700'}`}>
-                    {hasPaymentDetails ? '📲 Send Money To' : '⚠️ No Payment Details'}
+                    {hasPaymentDetails ? '✅ Paystack Transfer Ready' : '⚠️ No Paystack Recipient'}
                   </p>
                   {hasPaymentDetails ? (
                     <div className="space-y-2">
-                      {hasMpesa && (
-                        <div className="flex justify-between items-center py-2 border-b border-blue-200 text-sm">
-                          <span className="text-blue-600 font-semibold">M-Pesa Number</span>
-                          <span className="font-black text-blue-900 text-base font-mono">{profile.mpesaPhone}</span>
-                        </div>
-                      )}
-                      {hasPaybill && (
-                        <>
-                          <div className="flex justify-between items-center py-2 border-b border-blue-200 text-sm">
-                            <span className="text-blue-600 font-semibold">Paybill Number</span>
-                            <span className="font-black text-blue-900 text-base font-mono">{profile.paybillNumber}</span>
-                          </div>
-                          {profile.accountNumber && (
-                            <div className="flex justify-between items-center py-2 text-sm">
-                              <span className="text-blue-600 font-semibold">Account Number</span>
-                              <span className="font-black text-blue-900 font-mono">{profile.accountNumber}</span>
-                            </div>
-                          )}
-                        </>
-                      )}
+                      <div className="flex justify-between items-center py-2 border-b border-blue-200 text-sm">
+                        <span className="text-blue-600 font-semibold">Recipient Code</span>
+                        <span className="font-black text-blue-900 text-base font-mono">{profile.paystackRecipientCode}</span>
+                      </div>
                     </div>
                   ) : (
                     <p className="text-sm text-red-600">
-                      This organizer has not provided M-Pesa or Paybill details. Contact them at <strong>{selected.organizer?.email}</strong> or <strong>{selected.organizer?.phone ?? 'no phone on file'}</strong> before releasing.
+                      This organizer has not set up their Paystack recipient. Contact them at <strong>{selected.organizer?.email}</strong> or <strong>{selected.organizer?.phone ?? 'no phone on file'}</strong> before releasing.
                     </p>
                   )}
                 </div>
@@ -204,7 +187,7 @@ export default function AdminPayoutsManager() {
                     <div className="mb-5 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                       <p className="text-xs font-black text-yellow-700 uppercase tracking-wider mb-1">Before you proceed</p>
                       <p className="text-sm text-yellow-700">
-                        Send <strong>KSH {selected.netAmount.toLocaleString()}</strong> manually via M-Pesa to the details above, then click <strong>"Mark as Released"</strong> below. An email will be sent to the organizer confirming the payout.
+                        Approve this payout to trigger an automated Paystack transfer of <strong>KSH {selected.netAmount.toLocaleString()}</strong> to the organizer's account. An email will be sent to the organizer confirming the payout.
                       </p>
                     </div>
 
@@ -213,14 +196,14 @@ export default function AdminPayoutsManager() {
                         Note <span className="font-normal text-gray-400">(required for rejection, optional for release)</span>
                       </label>
                       <textarea value={adminNote} onChange={e => setAdminNote(e.target.value)} rows={2}
-                        placeholder="e.g. Sent via M-Pesa at 2:30pm..."
+                        placeholder="e.g. Approved for automated transfer..."
                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none" />
                     </div>
 
                     <div className="flex gap-3">
-                      <button onClick={() => handleRelease(selected.id)} disabled={acting}
+                      <button onClick={() => handleRelease(selected.id)} disabled={acting || !hasPaymentDetails}
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all">
-                        {acting ? 'Processing…' : '✓ Mark as Released'}
+                        {acting ? 'Processing…' : '✓ Approve Transfer'}
                       </button>
                       <button onClick={() => handleReject(selected.id)} disabled={acting}
                         className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all border border-red-200">

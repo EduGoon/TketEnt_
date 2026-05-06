@@ -575,7 +575,7 @@ function PayoutsTab() {
  
   const savePaymentAndRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!paymentForm.mpesaPhone && !paymentForm.paybillNumber) { showToast('Please provide at least an M-Pesa number or Paybill'); return; }
+    if (!paymentForm.mpesaPhone && !paymentForm.paybillNumber) { showToast('Please provide at least a phone number or bank details'); return; }
     setSavingPayment(true);
     try {
       await organizerService.updateOrganizerProfile(paymentForm);
@@ -658,12 +658,12 @@ function PayoutsTab() {
           <div style={{ background: '#0f1521', border: '1px solid rgba(240,192,64,0.2)', borderRadius: '20px 20px 0 0', padding: '28px 24px 40px', width: '100%', maxWidth: 520 }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
             <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Payment Details Required</h3>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 20, lineHeight: 1.65 }}>Provide your M-Pesa details so we know where to send your payout.</p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 20, lineHeight: 1.65 }}>Provide the payout details needed to configure your Paystack recipient for automated transfers.</p>
             <form onSubmit={savePaymentAndRequest} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div><label style={S.label}>M-Pesa Phone Number</label><input style={S.input} value={paymentForm.mpesaPhone} onChange={e => setPaymentForm(p => ({ ...p, mpesaPhone: e.target.value }))} placeholder="e.g. 0712345678" /></div>
+              <div><label style={S.label}>Phone Number</label><input style={S.input} value={paymentForm.mpesaPhone} onChange={e => setPaymentForm(p => ({ ...p, mpesaPhone: e.target.value }))} placeholder="e.g. 0712345678" /></div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><label style={S.label}>Paybill</label><input style={S.input} value={paymentForm.paybillNumber} onChange={e => setPaymentForm(p => ({ ...p, paybillNumber: e.target.value }))} placeholder="e.g. 522522" /></div>
-                <div><label style={S.label}>Account No.</label><input style={S.input} value={paymentForm.accountNumber} onChange={e => setPaymentForm(p => ({ ...p, accountNumber: e.target.value }))} placeholder="e.g. Name" /></div>
+                <div><label style={S.label}>Bank Code</label><input style={S.input} value={paymentForm.paybillNumber} onChange={e => setPaymentForm(p => ({ ...p, paybillNumber: e.target.value }))} placeholder="e.g. 044" /></div>
+                <div><label style={S.label}>Account Number</label><input style={S.input} value={paymentForm.accountNumber} onChange={e => setPaymentForm(p => ({ ...p, accountNumber: e.target.value }))} placeholder="e.g. 1234567890" /></div>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                 <button type="submit" style={{ ...S.btn, flex: 1 }} disabled={savingPayment}>{savingPayment ? 'Saving…' : 'Save & Request'}</button>
@@ -720,17 +720,17 @@ function ProfileTab() {
         <div style={{ paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <p style={{ ...S.label, marginBottom: 12, color: 'rgba(240,192,64,0.8)' }}>Payout Details</p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 14, lineHeight: 1.6 }}>
-            Where your revenue will be sent after admin releases your payout.
+            Add the payout details used to configure your Paystack recipient. This ensures funds can be sent automatically once a payout is released.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div><label style={S.label}>M-Pesa Phone Number</label><input style={S.input} value={form.mpesaPhone} onChange={e => setForm(p => ({ ...p, mpesaPhone: e.target.value }))} placeholder="e.g. 0712345678" /></div>
+            <div><label style={S.label}>Phone Number</label><input style={S.input} value={form.mpesaPhone} onChange={e => setForm(p => ({ ...p, mpesaPhone: e.target.value }))} placeholder="e.g. 0712345678" /></div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: 10 }}>
-              <div><label style={S.label}>Paybill Number</label><input style={S.input} value={form.paybillNumber} onChange={e => setForm(p => ({ ...p, paybillNumber: e.target.value }))} placeholder="e.g. 522522" /></div>
-              <div><label style={S.label}>Account Number</label><input style={S.input} value={form.accountNumber} onChange={e => setForm(p => ({ ...p, accountNumber: e.target.value }))} placeholder="e.g. Business name" /></div>
+              <div><label style={S.label}>Bank Code</label><input style={S.input} value={form.paybillNumber} onChange={e => setForm(p => ({ ...p, paybillNumber: e.target.value }))} placeholder="e.g. 044" /></div>
+              <div><label style={S.label}>Account Number</label><input style={S.input} value={form.accountNumber} onChange={e => setForm(p => ({ ...p, accountNumber: e.target.value }))} placeholder="e.g. 1234567890" /></div>
             </div>
           </div>
         </div>
- 
+
         <button type="submit" style={S.btn} disabled={saving}>{saving ? 'Saving…' : 'Save Profile'}</button>
       </form>
     </div>

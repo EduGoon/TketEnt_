@@ -16,6 +16,7 @@ import LiveChatWidget from './components/LiveChatWidget';
 import PageTransition from './components/PageTransition';
 import TermsPage from './pages/TermsPage';
 import OrganizerProfilePage from './pages/OrganizerProfilePage';
+import VerifyPaymentPage from './pages/VerifyPaymentPage';
 
 function App() {
   const location = useLocation();
@@ -30,6 +31,7 @@ function App() {
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/terms/:type" element={<TermsPage />} />
+            <Route path="/verify-payment" element={<VerifyPaymentPage />} />
             <Route path="/account" element={
               <PrivateRoute>
                 <UserAccountPage />

@@ -172,6 +172,7 @@ export interface OrganizerProfile {
   userId: string;
   organizationName: string;
   bio?: string;
+  paystackRecipientCode?: string;
   mpesaPhone?: string;
   paybillNumber?: string;
   accountNumber?: string;

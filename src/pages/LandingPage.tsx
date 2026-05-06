@@ -171,7 +171,7 @@ const LandingPage: React.FC = () => {
               <em style={{ fontStyle:'italic', color:'rgba(255,255,255,0.55)' }}>story.</em>
             </h1>
             <p style={{ fontSize:16, color:'rgba(255,255,255,0.48)', lineHeight:1.8, maxWidth:400, marginBottom:36 }}>
-              Discover concerts, festivals and experiences across Kenya. Book your seat with M-Pesa in seconds. Live the moment.
+              Discover concerts, festivals and experiences across Kenya. Book your seat with Paystack in seconds. Live the moment.
             </p>
             <div style={{ display:'flex', gap:14, flexWrap:'wrap', marginBottom:32 }}>
               <Link to="/events" className="cta-primary">Explore Events →</Link>
@@ -180,7 +180,7 @@ const LandingPage: React.FC = () => {
             <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
               <span className="mpesa-pill">
                 <span style={{ width:8, height:8, borderRadius:'50%', background:'#00a838', display:'inline-block' }} />
-                M-Pesa Payments
+                Paystack Payments
               </span>
               <span style={{ fontSize:11, color:'rgba(255,255,255,0.25)', fontFamily:"'DM Mono',monospace" }}>Instant · Secure · No card needed</span>
             </div>
@@ -288,7 +288,7 @@ const LandingPage: React.FC = () => {
             {[
               { step:'01', icon:<svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="17" stroke="rgba(240,192,64,0.3)" strokeWidth="1"/><path d="M11 18l4 4 10-10" stroke="#f0c040" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="24" cy="11" r="3" fill="rgba(240,192,64,0.15)" stroke="#f0c040" strokeWidth="1"/></svg>, title:'Discover Events', desc:'Browse concerts, festivals and experiences happening near you across Kenya.', color:'#f0c040' },
               { step:'02', icon:<svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="17" stroke="rgba(96,200,240,0.3)" strokeWidth="1"/><rect x="10" y="10" width="16" height="16" rx="3" stroke="#60c8f0" strokeWidth="1.5" fill="rgba(96,200,240,0.08)"/><path d="M14 18h8M18 14v8" stroke="#60c8f0" strokeWidth="1.5" strokeLinecap="round"/></svg>, title:'Select Your Tickets', desc:'Choose ticket type and quantity. See real-time availability and pricing.', color:'#60c8f0' },
-              { step:'03', icon:<svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="17" stroke="rgba(0,168,56,0.4)" strokeWidth="1"/><rect x="9" y="13" width="18" height="12" rx="2" fill="rgba(0,168,56,0.1)" stroke="#00a838" strokeWidth="1.5"/><path d="M13 18h4M13 21h6" stroke="#00a838" strokeWidth="1.5" strokeLinecap="round"/><circle cx="23" cy="18" r="2.5" fill="#00a838" opacity="0.8"/></svg>, title:'Pay with M-Pesa', desc:'Enter your Safaricom number. Confirm the STK push prompt. Done.', color:'#00a838' },
+              { step:'03', icon:<svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="17" stroke="rgba(0,168,56,0.4)" strokeWidth="1"/><rect x="9" y="13" width="18" height="12" rx="2" fill="rgba(0,168,56,0.1)" stroke="#00a838" strokeWidth="1.5"/><path d="M13 18h4M13 21h6" stroke="#00a838" strokeWidth="1.5" strokeLinecap="round"/><circle cx="23" cy="18" r="2.5" fill="#00a838" opacity="0.8"/></svg>, title:'Pay with Paystack', desc:'Complete secure checkout with Paystack and return to your ticket.', color:'#00a838' },
               { step:'04', icon:<svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="17" stroke="rgba(167,139,250,0.3)" strokeWidth="1"/><rect x="11" y="8" width="14" height="20" rx="2" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" strokeWidth="1.5"/><rect x="14" y="12" width="8" height="8" rx="1" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" strokeWidth="1"/><path d="M14 23h8" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round"/></svg>, title:'Get Your QR Ticket', desc:'Your ticket lands in your account instantly. Show the QR at the door.', color:'#a78bfa' },
             ].map((s, i) => (
               <div key={s.step} className="step-card" style={{ animation:`fadeUp 0.5s ease ${i*0.1}s both` }}>
@@ -307,7 +307,7 @@ const LandingPage: React.FC = () => {
  
       <div className="divider" />
  
-      {/* ── M-PESA SECTION ── */}
+      {/* ── Payments Section ── */}
       <section style={{ padding:'88px 0', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 50% 60% at 50% 50%,rgba(0,168,56,0.05) 0%,transparent 60%)', pointerEvents:'none' }} />
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', position:'relative' }}>
@@ -321,7 +321,7 @@ const LandingPage: React.FC = () => {
                     <div style={{ background:'linear-gradient(135deg,#00a838,#007a2a)', borderRadius:12, padding:'12px 14px', display:'flex', alignItems:'center', gap:10, marginTop:8 }}>
                       <div style={{ width:32, height:32, borderRadius:'50%', background:'rgba(255,255,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>📱</div>
                       <div>
-                        <p style={{ fontSize:9, color:'rgba(255,255,255,0.7)', fontFamily:"'DM Mono',monospace", letterSpacing:1 }}>M-PESA</p>
+                        <p style={{ fontSize:9, color:'rgba(255,255,255,0.7)', fontFamily:"'DM Mono',monospace", letterSpacing:1 }}>PAYSTACK</p>
                         <p style={{ fontSize:13, fontWeight:700, color:'#fff' }}>Payment Request</p>
                       </div>
                     </div>
@@ -338,7 +338,7 @@ const LandingPage: React.FC = () => {
                       ))}
                     </div>
                     <div style={{ background:'rgba(0,168,56,0.08)', border:'1px solid rgba(0,168,56,0.25)', borderRadius:10, padding:'12px 14px' }}>
-                      <p style={{ fontSize:10, color:'rgba(0,168,56,0.8)', fontFamily:"'DM Mono',monospace", letterSpacing:1, marginBottom:8 }}>ENTER M-PESA PIN</p>
+                      <p style={{ fontSize:10, color:'rgba(0,168,56,0.8)', fontFamily:"'DM Mono',monospace", letterSpacing:1, marginBottom:8 }}>AUTHORIZE PAYMENT</p>
                       <div style={{ display:'flex', gap:8, justifyContent:'center' }}>
                         {[1,2,3,4].map(d => (
                           <div key={d} style={{ width:28, height:28, borderRadius:6, background:'rgba(0,168,56,0.15)', border:'1px solid rgba(0,168,56,0.3)', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -375,13 +375,13 @@ const LandingPage: React.FC = () => {
             {/* Copy */}
             <div style={{ animation:'fadeUp 0.6s ease 0.15s both' }}>
               <p className="eyebrow">Payments</p>
-              <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(26px,3.5vw,38px)', fontWeight:700, lineHeight:1.18, marginBottom:20 }}>Pay with M-Pesa.<br /><span style={{ color:'#00a838' }}>The Kenyan way.</span></h2>
-              <p style={{ fontSize:14, color:'rgba(255,255,255,0.42)', lineHeight:1.8, marginBottom:32, maxWidth:420 }}>No bank cards. No international fees. No complicated checkout. Just enter your Safaricom number, confirm the prompt, and your ticket is secured.</p>
+              <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(26px,3.5vw,38px)', fontWeight:700, lineHeight:1.18, marginBottom:20 }}>Pay with Paystack.<br /><span style={{ color:'#00a838' }}>Fast, secure checkout.</span></h2>
+              <p style={{ fontSize:14, color:'rgba(255,255,255,0.42)', lineHeight:1.8, marginBottom:32, maxWidth:420 }}>No bank cards. No international fees. No complicated checkout. Use Paystack to authorize payment and your ticket is secured instantly.</p>
               <div style={{ display:'flex', flexDirection:'column', gap:14, marginBottom:36 }}>
                 {[
                   { icon:'⚡', title:'Instant confirmation', desc:'Your ticket activates the moment payment goes through' },
-                  { icon:'🔒', title:'Fully secure', desc:'Payments processed via official Safaricom Daraja API' },
-                  { icon:'📲', title:'No app needed', desc:'Works on any Safaricom line — no smartphone required' },
+                  { icon:'🔒', title:'Fully secure', desc:'Payments processed via Paystack checkout' },
+                  { icon:'📲', title:'No app needed', desc:'One-click checkout on any device with your email and phone.' },
                 ].map(f => (
                   <div key={f.title} style={{ display:'flex', gap:14, alignItems:'flex-start' }}>
                     <div style={{ width:36, height:36, borderRadius:10, background:'rgba(0,168,56,0.1)', border:'1px solid rgba(0,168,56,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, flexShrink:0 }}>{f.icon}</div>
@@ -429,12 +429,12 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="why-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20 }}>
             {[
-              { icon:'📱', title:'M-Pesa First', desc:'Every Kenyan has M-Pesa. We built payments around that reality, just a few clicks away from purchasing a ticket.', color:'#00a838', tag:'No card needed' },
+              { icon:'📱', title:'Paystack First', desc:'Paystack checkout works with phone and bank details so attendees pay quickly and securely.', color:'#00a838', tag:'No card needed' },
               { icon:'🎟', title:'QR Check-In', desc:'Organizers scan tickets right from their phone. No printers, no lists, no chaos at the door.', color:'#f0c040', tag:'Instant scanning' },
               { icon:'📊', title:'Real Analytics', desc:'Live sales tracking, check-in counts, revenue dashboards. Know your numbers in real time.', color:'#60c8f0', tag:'For organizers' },
-              { icon:'💰', title:'Fast Payouts', desc:'Request your earnings after the event. We release directly to your M-Pesa or bank account.', color:'#a78bfa', tag:'M-Pesa payouts' },
+              { icon:'💰', title:'Fast Payouts', desc:'Request your earnings after the event. We release directly to your Paystack account.', color:'#a78bfa', tag:'Paystack payouts' },
               { icon:'🇰🇪', title:'Kenya-Built', desc:'Designed specifically for Kenyan venues, Kenyan pricing, Kenyan audience behavior.', color:'#f87171', tag:'Local first' },
-              { icon:'🔐', title:'Secure & Reliable', desc:"Every transaction is verified through Safaricom's official API. Valid tickets, secure transactions.", color:'#34d399', tag:'Official Daraja API' },
+              { icon:'🔐', title:'Secure & Reliable', desc:'Every transaction is verified through Paystack checkout. Valid tickets, secure transactions.', color:'#34d399', tag:'Paystack API' },
             ].map((w, i) => (
               <div key={w.title} className="why-card" style={{ animation:`fadeUp 0.5s ease ${i*0.08}s both` }}>
                 <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:14 }}>
@@ -517,7 +517,7 @@ const LandingPage: React.FC = () => {
                 <p style={{ fontSize:11, color:'rgba(255,255,255,0.2)', marginTop:14, fontFamily:"'DM Mono',monospace" }}>Free to apply · Reviewed within 48 hours</p>
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
-                {[{ icon:'🎟', title:'Sell Tickets', desc:'Multiple ticket tiers with real-time availability tracking' }, { icon:'📊', title:'Live Analytics', desc:'Track sales, check-ins, revenue and audience ratings' }, { icon:'✅', title:'Easy Check-in', desc:'QR code scanning at the door, right from your phone' }, { icon:'💰', title:'Fast Payouts', desc:'Request your earnings anytime via M-Pesa' }].map(f => (
+                {[{ icon:'🎟', title:'Sell Tickets', desc:'Multiple ticket tiers with real-time availability tracking' }, { icon:'📊', title:'Live Analytics', desc:'Track sales, check-ins, revenue and audience ratings' }, { icon:'✅', title:'Easy Check-in', desc:'QR code scanning at the door, right from your phone' }, { icon:'💰', title:'Fast Payouts', desc:'Request your earnings anytime via Paystack' }].map(f => (
                   <div key={f.title} style={{ background:'linear-gradient(160deg,#141927,#0f1521)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:'20px 18px' }}>
                     <span style={{ fontSize:22, display:'block', marginBottom:10 }}>{f.icon}</span>
                     <p style={{ fontSize:13, fontWeight:700, color:'#fff', marginBottom:6 }}>{f.title}</p>

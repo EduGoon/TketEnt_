@@ -17,20 +17,26 @@ export const listTickets = async (): Promise<ListResponse<Ticket>> => {
   return apiFetch<ListResponse<Ticket>>('/user/tickets/');
 };
 
-// Initiate M-Pesa purchase — returns checkoutRequestId for polling
+// Initiate Paystack purchase — returns authorization_url and reference
 export const purchaseTickets = async (
   eventId: string,
   ticketTypeId: string,
   quantity: number,
-  phoneNumber: string,
-): Promise<{ checkoutRequestId: string; paymentId: string; ticketIds: string[]; amount: number; message: string }> => {
+  email: string,
+): Promise<{ authorization_url: string; reference: string }> => {
   return apiFetch('/user/tickets/purchase', {
     method: 'POST',
-    body: { eventId, ticketTypeId, quantity, phoneNumber },
+    body: { eventId, ticketTypeId, quantity, email },
   });
 };
 
-// Poll payment status
+export const verifyPayment = async (
+  reference: string,
+): Promise<{ status: 'success' | 'pending' | 'failed'; message?: string; tickets?: any[] }> => {
+  return apiFetch(`/payments/verify/${reference}`);
+};
+
+// Legacy polling helper
 export const pollPaymentStatus = async (
   checkoutRequestId: string,
 ): Promise<{ status: 'PENDING' | 'COMPLETED' | 'FAILED'; message: string }> => {

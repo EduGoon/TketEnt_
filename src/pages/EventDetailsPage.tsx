@@ -192,7 +192,7 @@ if (!hasLocation) return null;
 }
 
 /* ── Ticket Panel ────────────────────────────────────────────────────────── */
-function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, phoneNumber, setPhoneNumber, purchasing, paymentState }: any) {
+function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, email, setEmail, purchasing, paymentState }: any) {
   const isFree = !ticketTypes || ticketTypes.length === 0;
   const allSoldOut = !isFree && ticketTypes.every((t: any) => (t.available ?? 0) === 0);
 
@@ -262,10 +262,10 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
 
           {user && totalPrice > 0 && (
             <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 6 }}>M-Pesa Number</p>
-              <input type="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="e.g. 0712345678" disabled={purchasing}
+              <p style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 6 }}>Email Address</p>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="e.g. user@example.com" disabled={purchasing}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 9, padding: '10px 14px', fontSize: 13, color: '#fff', fontFamily: "'DM Mono', monospace", outline: 'none', boxSizing: 'border-box' as const }} />
-              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 5, fontFamily: "'DM Mono', monospace" }}>You'll receive an M-Pesa prompt on this number</p>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 5, fontFamily: "'DM Mono', monospace" }}>We'll send payment confirmation to this email</p>
             </div>
           )}
 
@@ -274,8 +274,8 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 16, height: 16, border: '2px solid rgba(240,192,64,0.3)', borderTop: '2px solid #f0c040', borderRadius: '50%', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 2 }}>Check your phone</p>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono', monospace" }}>Enter your M-Pesa PIN to complete payment</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 2 }}>Processing Payment</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono', monospace" }}>Redirecting to Paystack...</p>
                 </div>
               </div>
             </div>
@@ -288,9 +288,9 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
             </div>
           )}
 
-          <button onClick={handlePurchase} disabled={!user || allSoldOut || totalPrice === 0 || purchasing || !phoneNumber}
-            style={{ width: '100%', background: allSoldOut ? 'rgba(255,255,255,0.04)' : (!user || totalPrice === 0 || !phoneNumber) ? 'rgba(255,255,255,0.06)' : purchasing ? 'rgba(240,192,64,0.6)' : '#f0c040', color: allSoldOut || !user || totalPrice === 0 || !phoneNumber ? 'rgba(255,255,255,0.25)' : '#0a0d14', border: 'none', borderRadius: 11, padding: '14px 24px', fontSize: 14, fontWeight: 700, cursor: (!user || allSoldOut || totalPrice === 0 || purchasing || !phoneNumber) ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s' }}>
-            {purchasing ? 'Processing…' : allSoldOut ? 'No Tickets Available' : !user ? 'Sign In to Buy' : totalPrice === 0 ? 'Select Tickets Above' : !phoneNumber ? 'Enter M-Pesa Number' : 'Pay with M-Pesa'}
+          <button onClick={handlePurchase} disabled={!user || allSoldOut || totalPrice === 0 || purchasing || !email}
+            style={{ width: '100%', background: allSoldOut ? 'rgba(255,255,255,0.04)' : (!user || totalPrice === 0 || !email) ? 'rgba(255,255,255,0.06)' : purchasing ? 'rgba(240,192,64,0.6)' : '#f0c040', color: allSoldOut || !user || totalPrice === 0 || !email ? 'rgba(255,255,255,0.25)' : '#0a0d14', border: 'none', borderRadius: 11, padding: '14px 24px', fontSize: 14, fontWeight: 700, cursor: (!user || allSoldOut || totalPrice === 0 || purchasing || !email) ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s' }}>
+            {purchasing ? 'Processing…' : allSoldOut ? 'No Tickets Available' : !user ? 'Sign In to Buy' : totalPrice === 0 ? 'Select Tickets Above' : !email ? 'Enter Email Address' : 'Pay with Paystack'}
           </button>
           {!user && !allSoldOut && (
             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', textAlign: 'center', marginTop: 10, fontFamily: "'DM Mono', monospace" }}>Sign in to complete your purchase</p>
@@ -301,7 +301,7 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
   );
 }
 
-function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, phoneNumber, setPhoneNumber, purchasing, paymentState }: any) {
+function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPrice, handlePurchase, user, email, setEmail, purchasing, paymentState }: any) {
   const [expanded, setExpanded] = useState(false);
   const isFree = !ticketTypes || ticketTypes.length === 0;
   const allSoldOut = !isFree && ticketTypes.every((t: any) => (t.available ?? 0) === 0);
@@ -319,7 +319,7 @@ function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, t
           }
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {!isFree && totalPrice > 0 && phoneNumber && !purchasing && (
+          {!isFree && totalPrice > 0 && email && !purchasing && (
             <button onClick={e => { e.stopPropagation(); handlePurchase(); }}
               style={{ background: '#f0c040', color: '#0a0d14', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
               Pay Now
@@ -330,7 +330,7 @@ function MobileTicketPanel({ ticketTypes, selectedTickets, handleTicketChange, t
       </div>
       {expanded && (
         <div style={{ padding: '0 16px 28px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
+          <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} email={email} setEmail={setEmail} purchasing={purchasing} paymentState={paymentState} />
         </div>
       )}
     </div>
@@ -418,14 +418,13 @@ const EventDetailsPage: React.FC = () => {
   const [event, setEvent] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
-  const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+  const [purchaseSuccess, _setPurchaseSuccess] = useState(false);
   const [shareMeta, setShareMeta] = useState<any>(null);
-  const [phoneNumber, setPhoneNumber] = useState(user?.phone ?? '');
+  const [email, setEmail] = useState(user?.email ?? '');
   const [purchasing, setPurchasing] = useState(false);
   const [paymentState, setPaymentState] = useState<'idle' | 'waiting' | 'failed'>('idle');
-  const [_checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
   const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
-  const [lastPurchasedTicketType, setLastPurchasedTicketType] = useState('');
+  const [lastPurchasedTicketType, _setLastPurchasedTicketType] = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -460,40 +459,20 @@ const EventDetailsPage: React.FC = () => {
   }, 0);
 
   const handlePurchase = async () => {
-    if (!user || !event || !phoneNumber) return;
+    if (!user || !event || !email) return;
     setPurchasing(true);
     setPaymentState('idle');
     try {
       const results = await Promise.all(
         Object.entries(selectedTickets)
           .filter(([, qty]) => qty > 0)
-          .map(([ticketTypeId, qty]) => ticketService.purchaseTickets(event.id, ticketTypeId, qty, phoneNumber))
+          .map(([ticketTypeId, qty]) => ticketService.purchaseTickets(event.id, ticketTypeId, qty, email))
       );
       const firstResult = results[0];
-      setCheckoutRequestId(firstResult.checkoutRequestId);
       setPaymentState('waiting');
-      const firstEntry = Object.entries(selectedTickets).find(([, qty]) => qty > 0);
-      if (firstEntry) {
-        const tt = ticketTypes.find((t: any) => t.id === firstEntry[0]);
-        setLastPurchasedTicketType(tt?.type ?? '');
-      }
       setSelectedTickets({});
-      let attempts = 0;
-      const maxAttempts = 40;
-      const poll = async () => {
-        attempts++;
-        try {
-          const status = await ticketService.pollPaymentStatus(firstResult.checkoutRequestId);
-          if (status.status === 'COMPLETED') { setPurchaseSuccess(true); setPaymentState('idle'); setPurchasing(false); return; }
-          if (status.status === 'FAILED') { setPaymentState('failed'); setPurchasing(false); return; }
-          if (attempts < maxAttempts) setTimeout(poll, 3000);
-          else { setPaymentState('failed'); setPurchasing(false); }
-        } catch {
-          if (attempts < maxAttempts) setTimeout(poll, 3000);
-          else { setPaymentState('failed'); setPurchasing(false); }
-        }
-      };
-      setTimeout(poll, 3000);
+      // Redirect to Paystack
+      window.location.href = firstResult.authorization_url;
     } catch (err: any) {
       console.error('Purchase failed', err);
       setPaymentState('failed');
@@ -725,7 +704,7 @@ const EventDetailsPage: React.FC = () => {
 
           {/* Right — desktop only */}
           <div className="ticket-panel-desktop" style={{ position: 'sticky', top: 76, animation: 'fadeUp 0.5s ease 0.12s both' }}>
-            <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
+            <TicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} email={email} setEmail={setEmail} purchasing={purchasing} paymentState={paymentState} />
           </div>
         </div>
 
@@ -778,7 +757,7 @@ const EventDetailsPage: React.FC = () => {
       </div>
 
       {/* Mobile bottom drawer */}
-      <MobileTicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} purchasing={purchasing} paymentState={paymentState} />
+      <MobileTicketPanel ticketTypes={ticketTypes} selectedTickets={selectedTickets} handleTicketChange={handleTicketChange} totalPrice={totalPrice} handlePurchase={handlePurchase} user={user} email={email} setEmail={setEmail} purchasing={purchasing} paymentState={paymentState} />
     </div>
   );
 };
