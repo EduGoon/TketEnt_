@@ -463,23 +463,25 @@ const EventDetailsPage: React.FC = () => {
     setPurchasing(true);
     setPaymentState('idle');
     try {
-      // Collect all selected tickets with quantities
-      const tickets = Object.entries(selectedTickets)
-        .filter(([, qty]) => qty > 0)
-        .map(([ticketTypeId, qty]) => ({ ticketTypeId, quantity: qty }));
+      // Call purchaseTickets for each selected ticket type
+      const results = await Promise.all(
+        Object.entries(selectedTickets)
+          .filter(([, qty]) => qty > 0)
+          .map(([ticketTypeId, qty]) => ticketService.purchaseTickets(event.id, ticketTypeId, qty, email))
+      );
       
-      if (tickets.length === 0) {
+      if (results.length === 0) {
         setPaymentState('failed');
         setPurchasing(false);
         return;
       }
       
-      // Send all tickets in a single request
-      const result = await ticketService.purchaseMultipleTickets(event.id, tickets, email);
+      // Use the first result for payment authorization
+      const firstResult = results[0];
       setPaymentState('waiting');
       setSelectedTickets({});
       // Redirect to Paystack
-      window.location.href = result.authorization_url;
+      window.location.href = firstResult.authorization_url;
     } catch (err: any) {
       console.error('Purchase failed', err);
       setPaymentState('failed');
