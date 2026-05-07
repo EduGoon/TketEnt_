@@ -43,6 +43,18 @@ export const pollPaymentStatus = async (
   return apiFetch(`/user/tickets/poll/${checkoutRequestId}`);
 };
 
+// Bulk purchase for multiple ticket types in a single transaction
+export const purchaseMultipleTickets = async (
+  eventId: string,
+  tickets: { ticketTypeId: string; quantity: number }[],
+  email: string,
+): Promise<{ authorization_url: string; reference: string }> => {
+  return apiFetch('/user/tickets/purchase', {
+    method: 'POST',
+    body: { eventId, tickets, email },
+  });
+};
+
 export const refundTicket = async (id: string): Promise<{ message: string }> => {
   return apiFetch<{ message: string }>(`/user/tickets/${id}/refund`, {
     method: 'POST',
