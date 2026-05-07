@@ -208,6 +208,7 @@ function EventDetailModal({ event, onClose, onEdit, onDelete }: {
 }
  
 // ── Main Component ────────────────────────────────────────────
+const isInternalStorageUrl = (url: string) => /(?:firebasestorage\.googleapis\.com|storage\.googleapis\.com|appspot\.com\/o\/)/i.test(url);
 const EventManagement: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -223,6 +224,7 @@ const EventManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [originalImageStoredInternally, setOriginalImageStoredInternally] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 const [searchQuery, setSearchQuery] = useState('');
 const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -289,8 +291,8 @@ const [loadingEvents, setLoadingEvents] = useState(true);
         });
         payload = { ...payload, imageBase64, imageName: imageFile.name };
         delete payload.imageUrl;
-      } catch { alert('Error processing image.'); setSubmitLoading(false); return; }
-    }
+      } catch { alert('Error processing image.'); setSubmitLoading(false); return; }    } else if (!payload.imageUrl && originalImageStoredInternally) {
+      delete payload.imageUrl;    }
     try {
       if (editingEvent) {
         const updated = await adminService.updateEvent(editingEvent.id, payload);
@@ -310,8 +312,14 @@ const [loadingEvents, setLoadingEvents] = useState(true);
   };
  
   const editEvent = (event: Event) => {
-    setFormData(event); setEditingEvent(event); setShowForm(true);
-    setImagePreview(event.imageUrl || ''); setImageFile(null);
+    const currentImageUrl = event.imageUrl || '';
+    const currentImageInternal = currentImageUrl ? isInternalStorageUrl(currentImageUrl) : false;
+    setFormData({ ...event, imageUrl: currentImageInternal ? '' : currentImageUrl });
+    setOriginalImageStoredInternally(currentImageInternal);
+    setEditingEvent(event);
+    setShowForm(true);
+    setImagePreview(currentImageUrl);
+    setImageFile(null);
     setSelectedEvent(null);
   };
  
@@ -421,6 +429,9 @@ const [loadingEvents, setLoadingEvents] = useState(true);
                 <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-1.5">Or Image URL</label>
                 <input type="url" name="imageUrl" value={formData.imageUrl || ''} onChange={handleInputChange} disabled={!!imageFile}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-40" />
+                {originalImageStoredInternally && !imageFile && (
+                  <p className="text-xs text-gray-500 mt-2">Current event image is stored internally; leave this field blank to keep it.</p>
+                )}
               </div>
             </div>
  

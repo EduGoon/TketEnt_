@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
 import * as ticketService from '../services/ticketService';
 import * as eventService from '../services/historyService';
+import { useSeo } from '../utilities/seo';
+import { buildEventUrl } from '../utilities/url';
 
 /* ── Reviews Section ─────────────────────────────────────────────────────── */
 function ReviewsSection({ eventId, user }: { eventId: string; user: any }) {
@@ -413,7 +415,7 @@ function ShareableTicket({ event, ticketType, userName }: { event: any; ticketTy
 
 /* ── Main Page ───────────────────────────────────────────────────────────── */
 const EventDetailsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string; slug?: string }>();
   const { user } = useAuth();
   const [event, setEvent] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -426,6 +428,51 @@ const EventDetailsPage: React.FC = () => {
   const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
   const [lastPurchasedTicketType, _setLastPurchasedTicketType] = useState('');
 
+  const canonicalUrl = event ? buildEventUrl(event.id, event.title) : (typeof window !== 'undefined' ? window.location.href : 'https://eventify.space');
+  const eventTitle = event?.title || 'Event Details';
+  const eventDescription = event?.description
+    ? event.description.slice(0, 160)
+    : 'Discover this event on Eventify. Browse tickets, schedule details, venue information and secure checkout for live experiences.';
+
+  useSeo({
+    title: event ? `${eventTitle} | Eventify` : 'Eventify Event Details',
+    description: event ? `${event.description?.substring(0, 155) ?? eventDescription}` : eventDescription,
+    keywords: event ? `event tickets,${event.category ?? 'events'},${eventTitle},buy tickets,live events` : 'event tickets,events,live tickets,book events',
+    url: canonicalUrl,
+    image: event?.imageUrl || undefined,
+    type: 'event',
+    jsonLd: event ? {
+      '@context': 'https://schema.org',
+      '@type': 'Event',
+      name: eventTitle,
+      description: eventDescription,
+      startDate: event.startTime || event.date || undefined,
+      endDate: event.endTime || undefined,
+      url: canonicalUrl,
+      eventStatus: event.status || 'https://schema.org/EventScheduled',
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      location: {
+        '@type': 'Place',
+        name: event.venue || event.location || 'Event venue',
+        address: event.address || event.location || undefined,
+      },
+      image: event?.imageUrl ? [event.imageUrl] : undefined,
+      organizer: {
+        '@type': 'Organization',
+        name: event.organizerName || (event.organizer?.name ?? 'Eventify'),
+        url: 'https://eventify.space',
+      },
+      offers: event?.ticketTypes?.length ? {
+        '@type': 'Offer',
+        url: canonicalUrl,
+        availability: 'https://schema.org/InStock',
+        priceCurrency: 'KES',
+        price: event.ticketTypes[0]?.price,
+      } : undefined,
+      performer: event.organizer ? { '@type': 'Organization', name: event.organizer.name || event.organizer } : undefined,
+    } : undefined,
+  });
+
   useEffect(() => {
     const load = async () => {
       if (id) {
@@ -433,7 +480,12 @@ const EventDetailsPage: React.FC = () => {
           const e = await eventService.getEvent(id);
           setEvent(e);
           const meta = await eventService.getEventShareMeta(id);
-          setShareMeta(meta?.data ?? meta);
+          setShareMeta(meta?.data ?? meta ?? {
+            title: e.title,
+            url: buildEventUrl(id, e.title),
+            description: e.description?.slice(0, 160),
+            image: e.imageUrl,
+          });
           eventService.incrementEventView(id).catch(() => {});
           eventService.getRelatedEvents(id).then(resp => setRelatedEvents(resp?.data ?? [])).catch(() => {});
         } catch (err) { console.error('Failed to load event', err); }
@@ -533,9 +585,10 @@ const EventDetailsPage: React.FC = () => {
   );
 
   // Share links with real social logos
+  const shareUrl = shareMeta?.url || (event ? buildEventUrl(event.id, event.title) : window.location.href);
   const shareLinks = shareMeta ? [
     {
-      href: `https://wa.me/?text=${encodeURIComponent(shareMeta.title + ' ' + shareMeta.url)}`,
+      href: `https://wa.me/?text=${encodeURIComponent(shareMeta.title + ' ' + shareUrl)}`,
       label: 'WhatsApp',
       bg: 'rgba(37,211,102,0.12)',
       color: '#25d366',

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import * as eventService from '../services/historyService';
 import { Event } from '../utilities/types';
+import { buildEventPath } from '../utilities/url';
 
 const FeaturedEvents: React.FC = () => {
   const [events, setEvents] = React.useState<Event[]>([]);
@@ -46,7 +47,7 @@ const FeaturedEvents: React.FC = () => {
           return (
             <Link
               key={event.id}
-              to={`/events/${event.id}`}
+              to={buildEventPath(event.id, event.title)}
               style={{
                 textDecoration: 'none', display: 'flex', flexDirection: 'column',
                 background: 'linear-gradient(160deg,#141927,#0f1521)',

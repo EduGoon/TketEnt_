@@ -36,9 +36,10 @@ Create a `.env` file in the root:
  
 ```env
 VITE_API_URL=http://localhost:4000/api/v1
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
  
-For production this points to the Cloud Run backend URL.
+For production this points to the Cloud Run backend URL. On Vercel, add `VITE_GOOGLE_CLIENT_ID` to your project environment variables so the client ID is available during build and runtime.
  
 ## Available Scripts
  

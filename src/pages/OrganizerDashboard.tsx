@@ -65,6 +65,10 @@ function EventForm({ initial, onSave, onCancel, saving }: {
   onCancel: () => void;
   saving: boolean;
 }) {
+  const isInternalStorageUrl = (url: string) => /(?:firebasestorage\.googleapis\.com|storage\.googleapis\.com|appspot\.com\/o\/)/i.test(url);
+  const initialImageUrl = initial?.imageUrl ?? '';
+  const initialImageStoredInternally = initialImageUrl ? isInternalStorageUrl(initialImageUrl) : false;
+
   const [form, setForm] = useState({
     title: initial?.title ?? '',
     description: initial?.description ?? '',
@@ -75,13 +79,14 @@ function EventForm({ initial, onSave, onCancel, saving }: {
     location: initial?.location ?? '',
     category: initial?.category ?? '',
     status: initial?.status ?? 'DRAFT',
-    imageUrl: initial?.imageUrl ?? '',
+    imageUrl: initialImageStoredInternally ? '' : initialImageUrl,
     address:   (initial as any)?.address   ?? '',
   latitude:  (initial as any)?.latitude  ?? '',
   longitude: (initial as any)?.longitude ?? '',
   });
+  const [originalImageStoredInternally] = useState(initialImageStoredInternally);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState(initial?.imageUrl ?? '');
+  const [imagePreview, setImagePreview] = useState(initialImageUrl);
   const [tickets, setTickets] = useState<any[]>(
     initial?.ticketTypes?.length
       ? initial.ticketTypes.map(t => ({ name: t.name, price: t.price, quantity: t.quantity }))
@@ -115,6 +120,8 @@ payload.longitude = form.longitude ? parseFloat(form.longitude) : undefined;
       });
       payload.imageBase64 = base64;
       payload.imageName   = imageFile.name;
+      delete payload.imageUrl;
+    } else if (!form.imageUrl && originalImageStoredInternally) {
       delete payload.imageUrl;
     }
     onSave(payload);
@@ -186,6 +193,11 @@ payload.longitude = form.longitude ? parseFloat(form.longitude) : undefined;
         <div style={{ marginTop: 8 }}>
           <label style={{ ...S.label, marginBottom: 4 }}>Or Image URL</label>
           <input style={S.input} value={form.imageUrl} onChange={e => setForm(p => ({ ...p, imageUrl: e.target.value }))} disabled={!!imageFile} placeholder="https://..." />
+          {originalImageStoredInternally && !imageFile && (
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginTop: 6 }}>
+              Current image is stored internally; leave this field blank to keep it.
+            </p>
+          )}
         </div>
       </div>
  

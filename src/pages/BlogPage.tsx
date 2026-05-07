@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as eventService from '../services/historyService';
+import { useSeo } from '../utilities/seo';
 
 /* ── Article Reader Modal ───────────────────────────────────────────────── */
 const ArticleModal: React.FC<{ post: any; onClose: () => void }> = ({ post, onClose }) => {
@@ -270,6 +271,14 @@ const BlogPage: React.FC = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [activePost, setActivePost] = useState<any | null>(null);
+
+  useSeo({
+    title: 'Eventify Blog - Events, Ticketing Tips & Organizer Guides',
+    description: 'Read the latest event planning tips, ticketing guides, and ideas for organizers and attendees on Eventify.',
+    keywords: 'event blog,event tips,ticketing guide,organizer guides,event planning,live events',
+    url: typeof window !== 'undefined' ? window.location.href : 'https://eventify.space/the-hub',
+    type: 'website',
+  });
 
   useEffect(() => {
     const fetchBlogs = async () => {

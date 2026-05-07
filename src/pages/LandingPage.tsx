@@ -2,6 +2,7 @@ import React from 'react';
 import FeaturedEvents from './FeaturedEvents';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
+import { useSeo } from '../utilities/seo';
  
 const LandingPage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -26,6 +27,14 @@ const LandingPage: React.FC = () => {
   }, []);
  
   const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  useSeo({
+    title: 'Eventify - Discover & Book Events Online',
+    description: 'Eventify makes it easy to find concerts, festivals, workshops and more. Discover events, buy tickets, and experience live entertainment.',
+    keywords: 'events,tickets,concerts,festivals,book tickets,online events,event platform',
+    url: window.location.href,
+    type: 'website',
+  });
  
   return (
     <div style={{ minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", overflowX: 'hidden' }}>

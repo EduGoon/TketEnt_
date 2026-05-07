@@ -3,6 +3,7 @@ import { useAuth } from '../utilities/AuthContext';
 import * as ticketService from '../services/ticketService';
 import { Ticket } from '../utilities/types';
 import { Link } from 'react-router-dom';
+import { buildEventUrl } from '../utilities/url';
 import * as historyService from '../services/historyService';
  
 const TYPE_COLOR = { ACTIVE: "#22c55e", USED: "#fbbf24", REFUNDED: "#ef4444" };
@@ -217,8 +218,20 @@ async function downloadTicketAsPng(ticket: Ticket) {
 async function shareTicket(ticket: Ticket): Promise<string | undefined> {
   const d = new Date(ticket.eventStartTime ?? ticket.startTime ?? ticket.purchaseDate);
   const dateStr = d.toLocaleDateString("default", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const text = "I'm going to " + ticket.eventName + "!\nVenue: " + (ticket.eventVenue ?? 'TBD') + "\nDate: " + dateStr + "\n\nBooked via Eventify";
-  if (navigator.share) { try { await navigator.share({ title: ticket.eventName, text }); return; } catch {} }
+  const eventUrl = buildEventUrl(ticket.eventId, ticket.eventName);
+  const text = `I'm going to ${ticket.eventName}!\nVenue: ${ticket.eventVenue ?? 'TBD'}\nDate: ${dateStr}\n\nGrab tickets and join me at:\n${eventUrl}\n\nBooked via Eventify`;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: ticket.eventName || 'Eventify ticket',
+        text,
+        url: eventUrl,
+      });
+      return;
+    } catch {
+      // fallback to clipboard
+    }
+  }
   await navigator.clipboard.writeText(text);
   return "copied";
 }

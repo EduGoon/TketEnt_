@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Event } from '../utilities/types';
 import * as eventService from '../services/historyService';
 import { useAuth } from '../utilities/AuthContext';
+import { useSeo } from '../utilities/seo';
+import { buildEventPath } from '../utilities/url';
 
 const EventsPage: React.FC = () => {
   const [events, setEvents]               = useState<Event[]>([]);
@@ -115,6 +117,14 @@ const EventsPage: React.FC = () => {
   };
 
   const categories = ['All', ...Array.from(new Set(events.map(e => e.category).filter(Boolean)))];
+
+  useSeo({
+    title: 'Eventify Events - Browse Upcoming Tickets',
+    description: 'Browse upcoming concerts, festivals, workshops and conferences. Filter by category, date or keyword to find the best events.',
+    keywords: 'events,upcoming events,event tickets,concerts,festivals,workshops,conference tickets',
+    url: window.location.href,
+    type: 'website',
+  });
 
   const handleKeyword     = (v: string) => { setKeyword(v);        setFiltered(applyFilters(events, v, categoryFilter, dateFilter)); };
   const handleCategory    = (v: string) => { setCategoryFilter(v); setFiltered(applyFilters(events, keyword, v, dateFilter)); };
@@ -337,7 +347,7 @@ const EventsPage: React.FC = () => {
                           ) : isSoldOut ? (
                             <p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', fontFamily:"'DM Mono',monospace" }}>Sold Out</p>
                           ) : null}
-                          <Link to={`/events/${event.id}`} className="view-btn">View Details <span className="ev-arrow">→</span></Link>
+                          <Link to={buildEventPath(event.id, event.title)} className="view-btn">View Details <span className="ev-arrow">→</span></Link>
                         </div>
                       </div>
                     </div>

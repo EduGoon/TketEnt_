@@ -27,7 +27,7 @@ function App() {
           <Routes location={location}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/events" element={<EventsPage />} />
-            <Route path="/events/:id" element={<EventDetailsPage />} />
+            <Route path="/events/:id/:slug?" element={<EventDetailsPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/terms/:type" element={<TermsPage />} />

@@ -4,7 +4,7 @@ import { useAuth } from '../utilities/AuthContext';
 
 // Use environment variable for client ID security
 // Add VITE_GOOGLE_CLIENT_ID to your .env file
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '403800080245-m9d3i7u2p2avn7ghs3t16i7hv4pjksi6.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 const SignInPage: React.FC = () => {
   const [email, setEmail]       = useState('');
@@ -29,6 +29,10 @@ const SignInPage: React.FC = () => {
     document.head.appendChild(script);
     
     script.onload = () => {
+      if (!GOOGLE_CLIENT_ID) {
+        console.error('Missing VITE_GOOGLE_CLIENT_ID. Set it in .env or Vercel environment settings.');
+        return;
+      }
       // Check if google global exists and hasn't been initialized
       if ((window as any).google?.accounts?.id && !initialized.current) {
         initialized.current = true;
@@ -41,7 +45,7 @@ const SignInPage: React.FC = () => {
         });
         (window as any).google.accounts.id.renderButton(
           document.getElementById('google-btn-signin'),
-          { theme: 'outline', size: 'large', width: 356, text: 'signin_with', shape: 'rectangular' }
+          { theme: 'outline', size: 'large', width: '100%', text: 'signin_with', shape: 'rectangular' }
         );
       }
     };
@@ -95,6 +99,7 @@ const SignInPage: React.FC = () => {
         .g-loading-dot{width:8px;height:8px;background:#4285f4;border-radius:50%;animation:pulse 1.2s ease-in-out infinite;}
         .g-loading-dot:nth-child(2){animation-delay:0.2s;}
         .g-loading-dot:nth-child(3){animation-delay:0.4s;}
+        #google-btn-signin, #google-btn-signin > div { width: 100% !important; max-width: 100% !important; }
         .auth-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#fff;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.25s,box-shadow 0.25s;}
         .auth-input::placeholder{color:rgba(255,255,255,0.22);}
         .auth-input:focus{border-color:rgba(240,192,64,0.5);box-shadow:0 0 0 3px rgba(240,192,64,0.07);}
@@ -130,8 +135,8 @@ const SignInPage: React.FC = () => {
           </div>
 
           {/* Google Sign In */}
-         <div style={{ position:'relative', minHeight:50 }}>
-            <div id="google-btn-signin" style={{ visibility: gLoading ? 'hidden' : 'visible' }} />
+         <div style={{ position:'relative', minHeight:50, width:'100%', maxWidth:'100%', overflow:'hidden' }}>
+            <div id="google-btn-signin" style={{ visibility: gLoading ? 'hidden' : 'visible', width:'100%' }} />
             {gLoading && (
               <div style={{ position:'absolute', inset:0, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(66,133,244,0.3)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', gap:12 }}>
                 <div className="g-loading-dot" />
