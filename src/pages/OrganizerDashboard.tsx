@@ -4,7 +4,7 @@ import { useAuth } from '../utilities/AuthContext';
 import * as organizerService from '../services/organizerService';
 import { Event, Payout, OrganizerProfile } from '../utilities/types';
 
- 
+
 type Tab = 'events' | 'checkin' | 'payouts' | 'profile' | 'analytics';
 
 const BANK_OPTIONS = [

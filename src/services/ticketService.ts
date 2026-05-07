@@ -30,6 +30,18 @@ export const purchaseTickets = async (
   });
 };
 
+// Bulk purchase for multiple ticket types — returns authorization_url and reference
+export const purchaseMultipleTickets = async (
+  eventId: string,
+  tickets: { ticketTypeId: string; quantity: number }[],
+  email: string,
+): Promise<{ authorization_url: string; reference: string }> => {
+  return apiFetch('/user/tickets/purchase', {
+    method: 'POST',
+    body: { eventId, tickets, email },
+  });
+};
+
 export const verifyPayment = async (
   reference: string,
 ): Promise<{ status: 'success' | 'pending' | 'failed'; message?: string; tickets?: any[] }> => {
