@@ -422,6 +422,7 @@ const EventDetailsPage: React.FC = () => {
   const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
   const [purchaseSuccess, _setPurchaseSuccess] = useState(false);
   const [shareMeta, setShareMeta] = useState<any>(null);
+  const [shareStatus, setShareStatus] = useState<string>('');
   const [email, setEmail] = useState(user?.email ?? '');
   const [purchasing, setPurchasing] = useState(false);
   const [paymentState, setPaymentState] = useState<'idle' | 'waiting' | 'failed'>('idle');
@@ -539,6 +540,53 @@ const EventDetailsPage: React.FC = () => {
     }
   };
 
+  const loadShareImageFile = async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) return undefined;
+      const blob = await response.blob();
+      const extension = blob.type?.split('/')?.[1] || 'jpg';
+      return new File([blob], `event-image.${extension}`, { type: blob.type || 'image/jpeg' });
+    } catch {
+      return undefined;
+    }
+  };
+
+  const shareUrl = shareMeta?.url || (event ? buildEventUrl(event.id, event.title) : typeof window !== 'undefined' ? window.location.href : '');
+  const shareTitle = shareMeta?.title || event?.title || 'Eventify event';
+  const shareText = `${shareMeta?.description || event?.description || 'Check out this event on Eventify.'}\n\n${shareUrl}`;
+
+  const handleShareEvent = async () => {
+    if (!shareUrl) return;
+    setShareStatus('');
+
+    const shareData: ShareData = { title: shareTitle, text: shareText, url: shareUrl };
+
+    if (navigator.share) {
+      try {
+        if (event?.imageUrl && navigator.canShare) {
+          const imageFile = await loadShareImageFile(event.imageUrl);
+          if (imageFile && navigator.canShare({ files: [imageFile] })) {
+            shareData.files = [imageFile];
+          }
+        }
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        console.warn('Native share failed, falling back to clipboard', err);
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${shareTitle}\n${shareText}`);
+      setShareStatus('Copied share details to clipboard.');
+      window.setTimeout(() => setShareStatus(''), 3000);
+    } catch {
+      setShareStatus('Unable to share automatically. Please copy the link manually.');
+      window.setTimeout(() => setShareStatus(''), 3000);
+    }
+  };
+
   const sharedStyles = `
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; corner-shape: round; }
@@ -585,10 +633,9 @@ const EventDetailsPage: React.FC = () => {
   );
 
   // Share links with real social logos
-  const shareUrl = shareMeta?.url || (event ? buildEventUrl(event.id, event.title) : window.location.href);
   const shareLinks = shareMeta ? [
     {
-      href: `https://wa.me/?text=${encodeURIComponent(shareMeta.title + ' ' + shareUrl)}`,
+      href: `https://wa.me/?text=${encodeURIComponent(`${shareTitle}\n\n${shareText}`)}`,
       label: 'WhatsApp',
       bg: 'rgba(37,211,102,0.12)',
       color: '#25d366',
@@ -747,7 +794,13 @@ const EventDetailsPage: React.FC = () => {
             {shareMeta && (
               <div style={{ marginBottom: 40 }}>
                 <p style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 14 }}>Share this event</p>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+                  <button onClick={handleShareEvent} className="share-btn" style={{ background: 'rgba(240,192,64,0.12)', color: '#f0c040', borderColor: 'rgba(240,192,64,0.25)' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <span>↗</span>
+                      Native Share
+                    </span>
+                  </button>
                   {shareLinks.map(link => (
                     <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" className="share-btn"
                       style={{ background: link.bg, color: link.color, borderColor: link.border }}>
@@ -756,6 +809,7 @@ const EventDetailsPage: React.FC = () => {
                     </a>
                   ))}
                 </div>
+                {shareStatus && <p style={{ fontSize: 11, color: '#22c55e', marginTop: 6, fontFamily: "'DM Mono', monospace" }}>{shareStatus}</p>}
               </div>
             )}
 

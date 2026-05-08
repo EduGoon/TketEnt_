@@ -219,11 +219,16 @@ async function shareTicket(ticket: Ticket): Promise<string | undefined> {
   const d = new Date(ticket.eventStartTime ?? ticket.startTime ?? ticket.purchaseDate);
   const dateStr = d.toLocaleDateString("default", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const eventUrl = buildEventUrl(ticket.eventId, ticket.eventName);
-  const text = `I'm going to ${ticket.eventName}!\nVenue: ${ticket.eventVenue ?? 'TBD'}\nDate: ${dateStr}\n\nGrab tickets and join me at:\n${eventUrl}\n\nBooked via Eventify`;
+  const text = `I have a ticket for ${ticket.eventName} (${ticket.ticketTypeName ?? 'General Admission'}) on ${dateStr} at ${ticket.eventVenue ?? 'TBD'}.`
+    + `\nTicket ID: ${ticket.id}`
+    + `\nSeat: ${ticket.ticketNote ?? 'General Admission'}`
+    + `\nStatus: ${ticket.status ?? 'ACTIVE'}`
+    + `\n\nJoin me: ${eventUrl}`;
+
   if (navigator.share) {
     try {
       await navigator.share({
-        title: ticket.eventName || 'Eventify ticket',
+        title: `${ticket.eventName || 'Eventify ticket'} — Ticket Details`,
         text,
         url: eventUrl,
       });
@@ -232,6 +237,7 @@ async function shareTicket(ticket: Ticket): Promise<string | undefined> {
       // fallback to clipboard
     }
   }
+
   await navigator.clipboard.writeText(text);
   return "copied";
 }
@@ -265,7 +271,7 @@ function TicketDetailContent({ ticket, accent, downloading, sharing, shareMsg, o
       </div>
       {shareMsg && <p style={{ fontSize: 11, color: "#22c55e", marginTop: 10, fontFamily: "'DM Mono',monospace", letterSpacing: 1 }}>✓ {shareMsg}</p>}
       <p style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", marginTop: 14, lineHeight: 1.6, fontFamily: "'DM Mono',monospace" }}>
-        Download saves the ticket as an image. Share sends event details as text.
+        Download saves the ticket as an image. Share sends ticket details and event access info.
       </p>
     </div>
   );
