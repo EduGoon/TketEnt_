@@ -284,6 +284,25 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
  
+      {/* ── FEATURED EVENTS — only when content exists ── */}
+      {!loadingEvents && trendingEvents.length > 0 && (
+        <>
+          <section style={{ padding:'72px 0' }}>
+            <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px' }}>
+              <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:36, flexWrap:'wrap', gap:16 }}>
+                <div>
+                  <p className="eyebrow">Curated for you</p>
+                  <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:30, fontWeight:700, letterSpacing:-0.5 }}>Featured Events<span style={{ color:'#f0c040' }}>.</span></h2>
+                </div>
+                <Link to="/events" className="view-all">View all →</Link>
+              </div>
+              <FeaturedEvents />
+            </div>
+          </section>
+          <div className="divider" />
+        </>
+      )}
+
       {/* ── HOW IT WORKS ── */}
       <section style={{ padding:'88px 0', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', right:-200, top:'20%', width:600, height:600, borderRadius:'50%', background:'radial-gradient(ellipse,rgba(240,192,64,0.04) 0%,transparent 60%)', pointerEvents:'none' }} />
@@ -407,25 +426,6 @@ const LandingPage: React.FC = () => {
       </section>
  
       <div className="divider" />
- 
-      {/* ── FEATURED EVENTS — only when content exists ── */}
-      {!loadingEvents && trendingEvents.length > 0 && (
-        <>
-          <section style={{ padding:'72px 0' }}>
-            <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px' }}>
-              <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:36, flexWrap:'wrap', gap:16 }}>
-                <div>
-                  <p className="eyebrow">Curated for you</p>
-                  <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:30, fontWeight:700, letterSpacing:-0.5 }}>Featured Events<span style={{ color:'#f0c040' }}>.</span></h2>
-                </div>
-                <Link to="/events" className="view-all">View all →</Link>
-              </div>
-              <FeaturedEvents />
-            </div>
-          </section>
-          <div className="divider" />
-        </>
-      )}
  
       {/* ── WHY Eventify ── */}
       <section style={{ padding:'88px 0', position:'relative', overflow:'hidden' }}>
