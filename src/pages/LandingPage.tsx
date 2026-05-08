@@ -355,7 +355,7 @@ const LandingPage: React.FC = () => {
                     </div>
                     <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:'14px', textAlign:'center' }}>
                       <p style={{ fontSize:10, color:'rgba(255,255,255,0.35)', fontFamily:"'DM Mono',monospace", letterSpacing:1, marginBottom:4 }}>AMOUNT</p>
-                      <p style={{ fontFamily:"'DM Mono',monospace", fontSize:26, fontWeight:700, color:'#f0c040' }}>$50</p>
+                      <p style={{ fontFamily:"'DM Mono',monospace", fontSize:26, fontWeight:700, color:'#f0c040' }}>50/=</p>
                     </div>
                     <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:10, padding:'12px 14px', display:'flex', flexDirection:'column', gap:8 }}>
                       {[{ label:'To', val:'Eventify' }, { label:'Event', val:'Jazz Night' }, { label:'Ticket', val:'VIP × 1' }].map(r => (
