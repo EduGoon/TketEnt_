@@ -303,6 +303,58 @@ const LandingPage: React.FC = () => {
         </>
       )}
 
+      {/* ── BLOG — only when content exists ── */}
+      {!loadingBlogs && blogs.length > 0 && (
+        <>
+          <section style={{ padding:'72px 0', position:'relative' }}>
+            <div style={{ position:'absolute', left:'5%', top:'30%', width:380, height:280, background:'radial-gradient(ellipse,rgba(96,200,240,0.04) 0%,transparent 70%)', pointerEvents:'none' }} />
+            <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', position:'relative' }}>
+              <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40, flexWrap:'wrap', gap:16 }}>
+                <div>
+                  <p className="eyebrow">Stories & Guides</p>
+                  <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:30, fontWeight:700, letterSpacing:-0.5 }}>From The Hub<span style={{ color:'#f0c040' }}>.</span></h2>
+                </div>
+                <Link to="/the-hub" className="view-all">All articles →</Link>
+              </div>
+              <div className="blog-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, alignItems:'start' }}>
+                {blogs[0] && (
+                  <div className="blog-featured">
+                    <div style={{ overflow:'hidden', height:260 }}>
+                      <img src={blogs[0].imageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80'} alt={blogs[0].title} className="b-img" style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.72)', display:'block' }} />
+                    </div>
+                    <div style={{ padding:'24px 26px 28px' }}>
+                      {blogs[0].category && <span style={{ fontSize:9, letterSpacing:2, background:'#f0c040', color:'#0a0d14', padding:'3px 10px', borderRadius:4, fontWeight:800, fontFamily:"'DM Mono',monospace", textTransform:'uppercase', marginBottom:14, display:'inline-block' }}>{blogs[0].category}</span>}
+                      <p className="b-title" style={{ fontSize:22, marginBottom:10 }}>{blogs[0].title}</p>
+                      <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', lineHeight:1.65 }}>{blogs[0].summary || blogs[0].content?.substring(0,110) + '…'}</p>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:18, flexWrap:'wrap', gap:10 }}>
+                        <span style={{ fontSize:10, color:'rgba(255,255,255,0.22)', fontFamily:"'DM Mono',monospace" }}>{new Date(blogs[0].createdAt || Date.now()).toLocaleDateString('default',{day:'numeric',month:'short',year:'numeric'})}</span>
+                        {blogs[0].event && <Link to={`/events/${blogs[0].event.id}`} style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(240,192,64,0.1)', border:'1px solid rgba(240,192,64,0.25)', borderRadius:8, padding:'8px 14px', textDecoration:'none' }}><span style={{ fontSize:11, color:'#f0c040', fontFamily:"'DM Mono',monospace", fontWeight:600 }}>🎟 Get tickets → {blogs[0].event.title}</span></Link>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                  {blogs.slice(1,4).map((post, i) => (
+                    <div key={post.id} className="blog-side" style={{ animation:`fadeUp 0.45s ease ${i*0.08+0.1}s both` }}>
+                      <div style={{ width:108, flexShrink:0, overflow:'hidden', background:'#1a1f2e' }}>
+                        <img src={post.imageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=300&q=70'} alt={post.title} className="b-img" style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.7)', display:'block', minHeight:100 }} />
+                      </div>
+                      <div style={{ padding:'14px 16px', flex:1, display:'flex', flexDirection:'column', justifyContent:'center', gap:6 }}>
+                        {post.category && <span style={{ fontSize:8, letterSpacing:2, color:'#f0c040', textTransform:'uppercase', fontFamily:"'DM Mono',monospace" }}>{post.category}</span>}
+                        <p className="b-title" style={{ fontSize:14 }}>{post.title}</p>
+                        <p style={{ fontSize:10, color:'rgba(255,255,255,0.22)', fontFamily:"'DM Mono',monospace" }}>{new Date(post.createdAt || Date.now()).toLocaleDateString('default',{day:'numeric',month:'short'})}</p>
+                        {post.event && <Link to={`/events/${post.event.id}`} style={{ fontSize:9, color:'#f0c040', fontFamily:"'DM Mono',monospace", textDecoration:'none', display:'block', marginTop:4 }}>🎟 {post.event.title}</Link>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+          <div className="divider" />
+        </>
+      )}
+
       {/* ── HOW IT WORKS ── */}
       <section style={{ padding:'88px 0', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', right:-200, top:'20%', width:600, height:600, borderRadius:'50%', background:'radial-gradient(ellipse,rgba(240,192,64,0.04) 0%,transparent 60%)', pointerEvents:'none' }} />
@@ -459,58 +511,6 @@ const LandingPage: React.FC = () => {
       </section>
  
       <div className="divider" />
- 
-      {/* ── BLOG — only when content exists ── */}
-      {!loadingBlogs && blogs.length > 0 && (
-        <>
-          <section style={{ padding:'72px 0', position:'relative' }}>
-            <div style={{ position:'absolute', left:'5%', top:'30%', width:380, height:280, background:'radial-gradient(ellipse,rgba(96,200,240,0.04) 0%,transparent 70%)', pointerEvents:'none' }} />
-            <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 28px', position:'relative' }}>
-              <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40, flexWrap:'wrap', gap:16 }}>
-                <div>
-                  <p className="eyebrow">Stories & Guides</p>
-                  <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:30, fontWeight:700, letterSpacing:-0.5 }}>From The Hub<span style={{ color:'#f0c040' }}>.</span></h2>
-                </div>
-                <Link to="/the-hub" className="view-all">All articles →</Link>
-              </div>
-              <div className="blog-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, alignItems:'start' }}>
-                {blogs[0] && (
-                  <div className="blog-featured">
-                    <div style={{ overflow:'hidden', height:260 }}>
-                      <img src={blogs[0].imageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80'} alt={blogs[0].title} className="b-img" style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.72)', display:'block' }} />
-                    </div>
-                    <div style={{ padding:'24px 26px 28px' }}>
-                      {blogs[0].category && <span style={{ fontSize:9, letterSpacing:2, background:'#f0c040', color:'#0a0d14', padding:'3px 10px', borderRadius:4, fontWeight:800, fontFamily:"'DM Mono',monospace", textTransform:'uppercase', marginBottom:14, display:'inline-block' }}>{blogs[0].category}</span>}
-                      <p className="b-title" style={{ fontSize:22, marginBottom:10 }}>{blogs[0].title}</p>
-                      <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', lineHeight:1.65 }}>{blogs[0].summary || blogs[0].content?.substring(0,110) + '…'}</p>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:18, flexWrap:'wrap', gap:10 }}>
-                        <span style={{ fontSize:10, color:'rgba(255,255,255,0.22)', fontFamily:"'DM Mono',monospace" }}>{new Date(blogs[0].createdAt || Date.now()).toLocaleDateString('default',{day:'numeric',month:'short',year:'numeric'})}</span>
-                        {blogs[0].event && <Link to={`/events/${blogs[0].event.id}`} style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(240,192,64,0.1)', border:'1px solid rgba(240,192,64,0.25)', borderRadius:8, padding:'8px 14px', textDecoration:'none' }}><span style={{ fontSize:11, color:'#f0c040', fontFamily:"'DM Mono',monospace", fontWeight:600 }}>🎟 Get tickets → {blogs[0].event.title}</span></Link>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-                  {blogs.slice(1,4).map((post, i) => (
-                    <div key={post.id} className="blog-side" style={{ animation:`fadeUp 0.45s ease ${i*0.08+0.1}s both` }}>
-                      <div style={{ width:108, flexShrink:0, overflow:'hidden', background:'#1a1f2e' }}>
-                        <img src={post.imageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=300&q=70'} alt={post.title} className="b-img" style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.7)', display:'block', minHeight:100 }} />
-                      </div>
-                      <div style={{ padding:'14px 16px', flex:1, display:'flex', flexDirection:'column', justifyContent:'center', gap:6 }}>
-                        {post.category && <span style={{ fontSize:8, letterSpacing:2, color:'#f0c040', textTransform:'uppercase', fontFamily:"'DM Mono',monospace" }}>{post.category}</span>}
-                        <p className="b-title" style={{ fontSize:14 }}>{post.title}</p>
-                        <p style={{ fontSize:10, color:'rgba(255,255,255,0.22)', fontFamily:"'DM Mono',monospace" }}>{new Date(post.createdAt || Date.now()).toLocaleDateString('default',{day:'numeric',month:'short'})}</p>
-                        {post.event && <Link to={`/events/${post.event.id}`} style={{ fontSize:9, color:'#f0c040', fontFamily:"'DM Mono',monospace", textDecoration:'none', display:'block', marginTop:4 }}>🎟 {post.event.title}</Link>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-          <div className="divider" />
-        </>
-      )}
  
       {/* ── ORGANIZER CTA ── */}
       {(!user?.role || user.role === 'USER') && (
