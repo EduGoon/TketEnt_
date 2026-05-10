@@ -24,7 +24,7 @@ export const purchaseTickets = async (
   quantity: number,
   email: string,
 ): Promise<{ authorization_url: string; reference: string }> => {
-  return apiFetch('/user/tickets/purchase', {
+  return apiFetch('/tickets/purchase', {
     method: 'POST',
     body: { eventId, ticketTypeId, quantity, email },
   });
@@ -49,7 +49,7 @@ export const purchaseMultipleTickets = async (
   tickets: { ticketTypeId: string; quantity: number }[],
   email: string,
 ): Promise<{ authorization_url: string; reference: string }> => {
-  return apiFetch('/user/tickets/purchase', {
+  return apiFetch('/tickets/purchase', {
     method: 'POST',
     body: { eventId, tickets, email },
   });

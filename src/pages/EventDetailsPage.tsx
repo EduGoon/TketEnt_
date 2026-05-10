@@ -262,12 +262,12 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
             </div>
           )}
 
-          {user && totalPrice > 0 && (
+          {totalPrice > 0 && (
             <div style={{ marginBottom: 14 }}>
               <p style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono', monospace", marginBottom: 6 }}>Email Address</p>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="e.g. user@example.com" disabled={purchasing}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 9, padding: '10px 14px', fontSize: 13, color: '#fff', fontFamily: "'DM Mono', monospace", outline: 'none', boxSizing: 'border-box' as const }} />
-              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 5, fontFamily: "'DM Mono', monospace" }}>We'll send payment confirmation to this email</p>
+                style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 9, padding: '10px 14px', fontSize: 13, color: '#fff', fontFamily: "'DM Mono', monospace", outline: 'none', boxSizing: 'border-box' }} />
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 5, fontFamily: "'DM Mono', monospace" }}>We'll send payment confirmation and digital tickets to this email</p>
             </div>
           )}
 
@@ -290,11 +290,11 @@ function TicketPanel({ ticketTypes, selectedTickets, handleTicketChange, totalPr
             </div>
           )}
 
-          <button onClick={handlePurchase} disabled={!user || allSoldOut || totalPrice === 0 || purchasing || !email}
-            style={{ width: '100%', background: allSoldOut ? 'rgba(255,255,255,0.04)' : (!user || totalPrice === 0 || !email) ? 'rgba(255,255,255,0.06)' : purchasing ? 'rgba(240,192,64,0.6)' : '#f0c040', color: allSoldOut || !user || totalPrice === 0 || !email ? 'rgba(255,255,255,0.25)' : '#0a0d14', border: 'none', borderRadius: 11, padding: '14px 24px', fontSize: 14, fontWeight: 700, cursor: (!user || allSoldOut || totalPrice === 0 || purchasing || !email) ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s' }}>
-            {purchasing ? 'Processing…' : allSoldOut ? 'No Tickets Available' : !user ? 'Sign In to Buy' : totalPrice === 0 ? 'Select Tickets Above' : !email ? 'Enter Email Address' : 'Purchase Ticket'}
+          <button onClick={handlePurchase} disabled={allSoldOut || totalPrice === 0 || purchasing || !email}
+            style={{ width: '100%', background: allSoldOut ? 'rgba(255,255,255,0.04)' : (totalPrice === 0 || !email) ? 'rgba(255,255,255,0.06)' : purchasing ? 'rgba(240,192,64,0.6)' : '#f0c040', color: allSoldOut || totalPrice === 0 || !email ? 'rgba(255,255,255,0.25)' : '#0a0d14', border: 'none', borderRadius: 11, padding: '14px 24px', fontSize: 14, fontWeight: 700, cursor: (allSoldOut || totalPrice === 0 || purchasing || !email) ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", transition: 'all 0.2s' }}>
+            {purchasing ? 'Processing…' : allSoldOut ? 'No Tickets Available' : totalPrice === 0 ? 'Select Tickets Above' : !email ? 'Enter Email Address' : 'Purchase Ticket'}
           </button>
-          {user && totalPrice > 0 && email && !purchasing && !allSoldOut && (
+          {totalPrice > 0 && email && !purchasing && !allSoldOut && (
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono', monospace" }}>powered by Paystack</p>
           )}
         </div>
@@ -511,7 +511,7 @@ const EventDetailsPage: React.FC = () => {
   }, 0);
 
   const handlePurchase = async () => {
-    if (!user || !event || !email) return;
+    if (!event || !email) return;
     setPurchasing(true);
     setPaymentState('idle');
     try {
@@ -519,13 +519,13 @@ const EventDetailsPage: React.FC = () => {
       const tickets = Object.entries(selectedTickets)
         .filter(([, qty]) => qty > 0)
         .map(([ticketTypeId, qty]) => ({ ticketTypeId, quantity: qty }));
-      
+
       if (tickets.length === 0) {
         setPaymentState('failed');
         setPurchasing(false);
         return;
       }
-      
+
       // Send all tickets in a single request to calculate correct total
       const result = await ticketService.purchaseMultipleTickets(event.id, tickets, email);
       setPaymentState('waiting');
