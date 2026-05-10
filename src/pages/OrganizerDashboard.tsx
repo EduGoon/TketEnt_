@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
 import * as organizerService from '../services/organizerService';
 import { Event, Payout, OrganizerProfile } from '../utilities/types';
- 
+
 type Tab = 'events' | 'checkin' | 'payouts' | 'profile' | 'analytics';
- 
+
 const BANK_OPTIONS = [
   { code: '001', name: 'Kenya Commercial Bank' },
   { code: '068', name: 'Equity Bank' },
@@ -27,7 +27,7 @@ const BANK_OPTIONS = [
   { code: '070', name: 'K-Rep Bank' },
   { code: '041', name: 'NIC Bank' },
 ];
- 
+
 // ── SVG Icons ─────────────────────────────────────────────────
 const Icon = {
   qr: () => (
@@ -95,7 +95,7 @@ const Icon = {
     </svg>
   ),
 };
- 
+
 // ── Shared styles ─────────────────────────────────────────────
 const S = {
   page:  { minHeight: '100vh', background: '#080b12', color: '#fff', fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: 'hidden' as const },
@@ -107,7 +107,7 @@ const S = {
   card:  { background: 'linear-gradient(160deg,#141927,#0f1521)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 20 } as React.CSSProperties,
   divider: { height: 1, background: 'rgba(255,255,255,0.06)', border: 'none', margin: '0' } as React.CSSProperties,
 };
- 
+
 // ── Toast ─────────────────────────────────────────────────────
 function Toast({ msg }: { msg: string }) {
   if (!msg) return null;
@@ -117,7 +117,7 @@ function Toast({ msg }: { msg: string }) {
     </div>
   );
 }
- 
+
 // ── Section Header ─────────────────────────────────────────────
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
@@ -127,7 +127,7 @@ function SectionHeader({ title, action }: { title: string; action?: React.ReactN
     </div>
   );
 }
- 
+
 // ── Status Badge ──────────────────────────────────────────────
 function Badge({ status }: { status: string }) {
   const colors: any = { PUBLISHED: '#22c55e', DRAFT: '#f0c040', CANCELLED: '#ef4444', PENDING: '#f0c040', RELEASED: '#22c55e', REJECTED: '#ef4444', ENDED: 'rgba(255,255,255,0.3)' };
@@ -138,7 +138,7 @@ function Badge({ status }: { status: string }) {
     </span>
   );
 }
- 
+
 // ── Event Form ────────────────────────────────────────────────
 function EventForm({ initial, onSave, onCancel, saving }: {
   initial?: Partial<Event>;
@@ -149,7 +149,7 @@ function EventForm({ initial, onSave, onCancel, saving }: {
   const isInternalStorageUrl = (url: string) => /(?:firebasestorage\.googleapis\.com|storage\.googleapis\.com|appspot\.com\/o\/)/i.test(url);
   const initialImageUrl = initial?.imageUrl ?? '';
   const initialImageStoredInternally = initialImageUrl ? isInternalStorageUrl(initialImageUrl) : false;
- 
+
   const [form, setForm] = useState({
     title: initial?.title ?? '',
     description: initial?.description ?? '',
@@ -173,14 +173,14 @@ function EventForm({ initial, onSave, onCancel, saving }: {
       ? initial.ticketTypes.map(t => ({ name: t.name, price: t.price, quantity: t.quantity }))
       : [{ name: '', price: 0, quantity: 0 }]
   );
- 
+
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   };
- 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let payload: any = { ...form, ticketTypes: tickets };
@@ -207,17 +207,17 @@ function EventForm({ initial, onSave, onCancel, saving }: {
     }
     onSave(payload);
   };
- 
+
   const sel = { ...S.input, background: 'rgba(255,255,255,0.03)' };
   const rowGap = { display: 'flex', flexDirection: 'column' as const, gap: 5 };
- 
+
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div style={rowGap}>
         <label style={S.label}>Title *</label>
         <input style={S.input} value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} required />
       </div>
- 
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div style={rowGap}>
           <label style={S.label}>Category</label>
@@ -235,23 +235,23 @@ function EventForm({ initial, onSave, onCancel, saving }: {
           </select>
         </div>
       </div>
- 
+
       <div style={rowGap}>
         <label style={S.label}>Description</label>
         <textarea style={{ ...S.input, minHeight: 80, resize: 'vertical' } as any} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
       </div>
- 
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: 12 }}>
         <div style={rowGap}><label style={S.label}>Date *</label><input type="date" style={S.input} value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} required /></div>
         <div style={rowGap}><label style={S.label}>Start Time</label><input type="time" style={S.input} value={form.startTime} onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))} /></div>
         <div style={rowGap}><label style={S.label}>End Time</label><input type="time" style={S.input} value={form.endTime} onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} /></div>
       </div>
- 
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div style={rowGap}><label style={S.label}>Venue</label><input style={S.input} value={form.venue} onChange={e => setForm(p => ({ ...p, venue: e.target.value }))} /></div>
         <div style={rowGap}><label style={S.label}>Location</label><input style={S.input} value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} /></div>
       </div>
- 
+
       <div style={rowGap}>
         <label style={S.label}>Map Address</label>
         <input style={S.input} value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} placeholder="Full address e.g. KICC, Harambee Ave, Nairobi" />
@@ -264,7 +264,7 @@ function EventForm({ initial, onSave, onCancel, saving }: {
           </button>
         </div>
       </div>
- 
+
       <div style={rowGap}>
         <label style={S.label}>Event Image</label>
         {imagePreview && <img src={imagePreview} alt="preview" style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 8, filter: 'brightness(0.8)', marginBottom: 8 }} />}
@@ -275,7 +275,7 @@ function EventForm({ initial, onSave, onCancel, saving }: {
           {originalImageStoredInternally && !imageFile && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Current image stored internally — leave blank to keep it.</p>}
         </div>
       </div>
- 
+
       <div style={rowGap}>
         <label style={S.label}>Ticket Types</label>
         {tickets.map((t, i) => (
@@ -288,7 +288,7 @@ function EventForm({ initial, onSave, onCancel, saving }: {
         ))}
         <button type="button" onClick={() => setTickets(prev => [...prev, { name: '', price: 0, quantity: 0 }])} style={{ ...S.ghost, padding: '8px 14px', fontSize: 12, width: 'fit-content' }}><Icon.plus /><span>Add Ticket Type</span></button>
       </div>
- 
+
       <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
         <button type="submit" style={S.btn} disabled={saving}>{saving ? 'Saving…' : initial?.id ? 'Update Event' : 'Create Event'}</button>
         <button type="button" style={S.ghost} onClick={onCancel}>Cancel</button>
@@ -296,7 +296,7 @@ function EventForm({ initial, onSave, onCancel, saving }: {
     </form>
   );
 }
- 
+
 // ── Events Tab ────────────────────────────────────────────────
 function EventsTab() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -305,18 +305,18 @@ function EventsTab() {
   const [editing, setEditing] = useState<Event | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
- 
+
   useEffect(() => { loadEvents(); }, []);
- 
+
   const loadEvents = async () => {
     setLoading(true);
     try { const resp = await organizerService.getOrganizerEvents(); setEvents((resp?.data ?? resp) || []); }
     catch { setEvents([]); }
     finally { setLoading(false); }
   };
- 
+
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
- 
+
   const handleSave = async (data: any) => {
     setSaving(true);
     try {
@@ -326,15 +326,15 @@ function EventsTab() {
     } catch { showToast('Failed to save event'); }
     finally { setSaving(false); }
   };
- 
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this event?')) return;
     try { await organizerService.deleteOrganizerEvent(id); showToast('Event deleted'); loadEvents(); }
     catch { showToast('Failed to delete'); }
   };
- 
+
   const STATUS_COLOR: any = { PUBLISHED: '#22c55e', DRAFT: '#f0c040', CANCELLED: '#ef4444' };
- 
+
   return (
     <div>
       <Toast msg={toast} />
@@ -346,7 +346,7 @@ function EventsTab() {
           </button>
         }
       />
- 
+
       {showForm && (
         <div style={{ marginBottom: 36 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -359,7 +359,7 @@ function EventsTab() {
           </div>
         </div>
       )}
- 
+
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {[1,2,3].map(i => <div key={i} style={{ height: 56, background: 'rgba(255,255,255,0.02)', borderRadius: 4, marginBottom: 1, opacity: 0.6 }} />)}
@@ -412,7 +412,7 @@ function EventsTab() {
     </div>
   );
 }
- 
+
 // ── Check-in Tab ──────────────────────────────────────────────
 function CheckInTab() {
   const [events, setEvents]               = useState<Event[]>([]);
@@ -427,29 +427,29 @@ function CheckInTab() {
   const videoRef                          = useRef<HTMLVideoElement>(null);
   const codeReaderRef                     = useRef<any>(null);
   const processingRef                     = useRef(false);
- 
+
   useEffect(() => { setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)); }, []);
   useEffect(() => {
     organizerService.getOrganizerEvents().then(resp => setEvents((resp?.data ?? resp) || [])).catch(() => setEvents([]));
   }, []);
   useEffect(() => { return () => { stopCamera(); }; }, []);
- 
+
   const loadCheckIns = async (eventId: string) => {
     setLoadingCheckIns(true);
     try { const resp = await organizerService.getEventCheckIns(eventId); setCheckIns(resp?.data ?? []); }
     catch { setCheckIns([]); }
     finally { setLoadingCheckIns(false); }
   };
- 
+
   const handleSelectEvent = (ev: Event) => {
     setSelectedEvent(ev); setResult(null); setTicketId(''); stopCamera(); loadCheckIns(ev.id);
   };
- 
+
   const stopCamera = () => {
     if (codeReaderRef.current) { try { codeReaderRef.current.reset(); } catch {} codeReaderRef.current = null; }
     setCameraActive(false);
   };
- 
+
   const startCamera = async () => {
     if (!videoRef.current) {
       setCameraActive(true);
@@ -461,7 +461,7 @@ function CheckInTab() {
     }
     await initCamera();
   };
- 
+
   const initCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -483,7 +483,7 @@ function CheckInTab() {
       });
     } catch (err: any) { setCameraActive(false); setResult({ success: false, message: `Camera error: ${err?.message ?? String(err)}` }); }
   };
- 
+
   const processCheckIn = async (id: string) => {
     if (!selectedEvent || !id.trim()) return;
     setScanning(true); setResult(null);
@@ -494,13 +494,13 @@ function CheckInTab() {
     } catch (err: any) { setResult({ success: false, message: err.message || 'Check-in failed' }); }
     finally { setScanning(false); }
   };
- 
+
   const handleManualScan = async (e: React.FormEvent) => { e.preventDefault(); await processCheckIn(ticketId); };
- 
+
   return (
     <div>
       <SectionHeader title="Check-In" />
- 
+
       {/* Event selector */}
       <div style={{ marginBottom: 32 }}>
         <label style={S.label}>Event</label>
@@ -509,11 +509,11 @@ function CheckInTab() {
           {events.filter(ev => ev.status === 'PUBLISHED').map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
         </select>
       </div>
- 
+
       {selectedEvent && (
         <>
           <hr style={S.divider} />
- 
+
           {/* Scanner section */}
           <div style={{ padding: '24px 0' }}>
             {/* Camera area */}
@@ -539,7 +539,7 @@ function CheckInTab() {
                 <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Mono',monospace" }}>Open on mobile to use camera scanning</span>
               </div>
             )}
- 
+
             {/* Result */}
             {result && (
               <div style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 8, background: result.success ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)', borderLeft: `3px solid ${result.success ? '#22c55e' : '#ef4444'}` }}>
@@ -553,7 +553,7 @@ function CheckInTab() {
                 )}
               </div>
             )}
- 
+
             {/* Manual entry */}
             <form onSubmit={handleManualScan} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <label style={{ ...S.label, margin: 0, flexShrink: 0, alignSelf: 'center' }}>Ticket ID</label>
@@ -568,9 +568,9 @@ function CheckInTab() {
               </button>
             </form>
           </div>
- 
+
           <hr style={S.divider} />
- 
+
           {/* Check-ins list */}
           <div style={{ paddingTop: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -581,7 +581,7 @@ function CheckInTab() {
                 <Icon.refresh /><span>Refresh</span>
               </button>
             </div>
- 
+
             {loadingCheckIns ? (
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontFamily: "'DM Mono',monospace" }}>Loading…</p>
             ) : (
@@ -608,7 +608,7 @@ function CheckInTab() {
     </div>
   );
 }
- 
+
 // ── Payouts Tab ───────────────────────────────────────────────
 function PayoutsTab() {
   const [payouts, setPayouts]           = useState<Payout[]>([]);
@@ -620,15 +620,15 @@ function PayoutsTab() {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentForm, setPaymentForm]   = useState({ mpesaPhone: '', paybillNumber: '', accountNumber: '' });
   const [savingPayment, setSavingPayment] = useState(false);
- 
+
   useEffect(() => {
     Promise.all([organizerService.getOrganizerPayouts(), organizerService.getOrganizerEvents()])
       .then(([p, e]) => { setPayouts(p?.data ?? []); setEvents((e?.data ?? e) || []); })
       .catch(() => {}).finally(() => setLoading(false));
   }, []);
- 
+
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
- 
+
   const handleRequest = async () => {
     if (!selectedEventId) return;
     try {
@@ -641,7 +641,7 @@ function PayoutsTab() {
     } catch {}
     await submitPayoutRequest();
   };
- 
+
   const savePaymentAndRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!paymentForm.mpesaPhone && !paymentForm.paybillNumber) { showToast('Provide a phone or bank details'); return; }
@@ -650,7 +650,7 @@ function PayoutsTab() {
     catch { showToast('Failed to save payment details'); }
     finally { setSavingPayment(false); }
   };
- 
+
   const submitPayoutRequest = async () => {
     setRequesting(true);
     try {
@@ -661,14 +661,14 @@ function PayoutsTab() {
     } catch (err: any) { showToast(err.message || 'Failed to request payout'); }
     finally { setRequesting(false); }
   };
- 
+
   const STATUS_COLOR: any = { PENDING: '#f0c040', RELEASED: '#22c55e', REJECTED: '#ef4444' };
- 
+
   return (
     <div>
       <Toast msg={toast} />
       <SectionHeader title="Payouts" />
- 
+
       {/* Request row */}
       <div style={{ marginBottom: 32 }}>
         <label style={S.label}>Request payout</label>
@@ -683,9 +683,9 @@ function PayoutsTab() {
           </button>
         </div>
       </div>
- 
+
       <hr style={S.divider} />
- 
+
       {/* Payouts list */}
       <div style={{ paddingTop: 4 }}>
         {loading ? (
@@ -725,7 +725,7 @@ function PayoutsTab() {
           </div>
         )}
       </div>
- 
+
       {/* Payment details modal */}
       {showPaymentForm && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }} onClick={() => setShowPaymentForm(false)}>
@@ -755,7 +755,7 @@ function PayoutsTab() {
     </div>
   );
 }
- 
+
 // ── Profile Tab (unchanged) ───────────────────────────────────
 function ProfileTab() {
   const [_profile, setProfile] = useState<OrganizerProfile | null>(null);
@@ -763,7 +763,7 @@ function ProfileTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
- 
+
   useEffect(() => {
     organizerService.getOrganizerProfile()
       .then(resp => {
@@ -772,16 +772,16 @@ function ProfileTab() {
         setForm({ organizationName: p.organizationName ?? '', bio: p.bio ?? '', mpesaPhone: p.mpesaPhone ?? '' });
       }).catch(() => {}).finally(() => setLoading(false));
   }, []);
- 
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true);
     try { await organizerService.updateOrganizerProfile(form); setToast('Profile updated'); setTimeout(() => setToast(''), 3000); }
     catch { setToast('Failed to save'); }
     finally { setSaving(false); }
   };
- 
+
   if (loading) return <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Loading profile…</p>;
- 
+
   return (
     <div>
       <Toast msg={toast} />
@@ -799,19 +799,19 @@ function ProfileTab() {
     </div>
   );
 }
- 
+
 // ── Analytics Tab (unchanged) ─────────────────────────────────
 function AnalyticsTab() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
- 
+
   useEffect(() => {
     organizerService.getOrganizerAnalytics().then(resp => setData(resp?.data ?? null)).catch(() => {}).finally(() => setLoading(false));
   }, []);
- 
+
   if (loading) return <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Loading analytics…</p>;
   if (!data) return <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>No analytics available yet.</p>;
- 
+
   const { totals, events } = data;
   const statCards = [
     { label: 'Total Revenue',   value: `KSH ${(totals.totalRevenue ?? 0).toLocaleString()}`,  color: '#f0c040' },
@@ -821,7 +821,7 @@ function AnalyticsTab() {
     { label: 'Total Views',     value: (totals.totalViews ?? 0).toLocaleString(),              color: '#fb923c' },
     { label: 'Total Events',    value: (totals.totalEvents ?? 0).toLocaleString(),             color: 'rgba(255,255,255,0.6)' },
   ];
- 
+
   return (
     <div>
       <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 700, marginBottom: 24, letterSpacing: -0.3 }}>Analytics</h2>
@@ -867,12 +867,12 @@ function AnalyticsTab() {
     </div>
   );
 }
- 
+
 // ── Main ──────────────────────────────────────────────────────
 export default function OrganizerDashboard() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('events');
- 
+
   const tabs: { id: Tab; label: string }[] = [
     { id: 'events',    label: 'Events'    },
     { id: 'checkin',   label: 'Check-In'  },
@@ -880,7 +880,7 @@ export default function OrganizerDashboard() {
     { id: 'analytics', label: 'Analytics' },
     { id: 'profile',   label: 'Profile'   },
   ];
- 
+
   return (
     <div style={S.page}>
       <style>{`
@@ -893,13 +893,13 @@ export default function OrganizerDashboard() {
         textarea { box-sizing: border-box; }
         button:focus-visible { outline: 2px solid rgba(240,192,64,0.5); outline-offset: 2px; }
       `}</style>
- 
+
       {/* Nav */}
       <header style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,11,18,0.97)', backdropFilter: 'blur(14px)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 820, margin: '0 auto', padding: '0 20px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <Link to="/" style={{ fontSize: 16, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display',serif", textDecoration: 'none', letterSpacing: -0.3, flexShrink: 0 }}>✦ Eventify</Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(240,192,64,0.6)', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase' }}>Organizer</span>
+        <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 16px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <Link to="/" style={{ fontSize: 17, fontWeight: 700, color: '#f0c040', fontFamily: "'Playfair Display',serif", textDecoration: 'none', letterSpacing: -0.3, flexShrink: 0 }}>✦ Eventify</Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 9, letterSpacing: 2, color: '#f0c040', background: 'rgba(240,192,64,0.1)', border: '1px solid rgba(240,192,64,0.2)', borderRadius: 20, padding: '3px 10px', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase' as const }}>ORGANIZER</span>
             <button onClick={logout} title="Sign out" style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4, transition: 'color 0.15s' }}
               onMouseOver={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
               onMouseOut={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
@@ -907,9 +907,9 @@ export default function OrganizerDashboard() {
           </div>
         </div>
       </header>
- 
-      <main style={{ maxWidth: 820, margin: '0 auto', padding: '32px 20px 80px' }}>
- 
+
+      <main style={{ maxWidth: 1060, margin: '0 auto', padding: '28px 16px 80px' }}>
+
         {/* Tab bar */}
         <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', marginBottom: 36, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', gap: 0, width: 'max-content', minWidth: '100%' }}>
@@ -937,7 +937,7 @@ export default function OrganizerDashboard() {
             ))}
           </div>
         </div>
- 
+
         {activeTab === 'events'    && <EventsTab />}
         {activeTab === 'checkin'   && <CheckInTab />}
         {activeTab === 'payouts'   && <PayoutsTab />}
