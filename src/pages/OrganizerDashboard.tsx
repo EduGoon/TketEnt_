@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
 import * as organizerService from '../services/organizerService';
 import { Event, Payout, OrganizerProfile } from '../utilities/types';
-import { TicketIcon, QrCodeIcon, BanknotesIcon, Cog6ToothIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 
 type Tab = 'events' | 'checkin' | 'payouts' | 'profile' | 'analytics';
@@ -42,7 +41,6 @@ const BANK_OPTIONS = [
 const S = {
   page:   { minHeight: '100vh', background: '#0a0d14', color: '#fff', fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: 'hidden' as const },
   card:   { background: 'linear-gradient(160deg,#141927,#0f1521)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 20 } as React.CSSProperties,
-  section:{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: 18 } as React.CSSProperties,
   label:  { fontSize: 9, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase' as const, fontFamily: "'DM Mono',monospace", marginBottom: 6, display: 'block' },
   input:  { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#fff', fontFamily: "'DM Sans',sans-serif", outline: 'none', width: '100%', boxSizing: 'border-box' as const } as React.CSSProperties,
   btn:    { background: '#f0c040', color: '#0a0d14', border: 'none', borderRadius: 9, padding: '11px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", transition: 'opacity 0.2s', whiteSpace: 'nowrap' as const } as React.CSSProperties,
@@ -278,48 +276,44 @@ function EventsTab() {
   return (
     <div>
       <Toast msg={toast} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <p style={S.label}>Events</p>
-          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 26, fontWeight: 700, margin: 0 }}>My events</h2>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, fontWeight: 700 }}>My Events</h2>
         <button style={S.btn} onClick={() => { setEditing(null); setShowForm(true); }}>+ New Event</button>
       </div>
  
       {showForm && (
-        <div style={{ ...S.section, marginBottom: 20, padding: 20, background: 'rgba(255,255,255,0.03)' }}>
-          <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, marginBottom: 16 }}>{editing ? 'Edit event' : 'Create a new event'}</h3>
+        <div style={{ ...S.card, marginBottom: 24 }}>
+          <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, marginBottom: 20 }}>{editing ? 'Edit Event' : 'Create New Event'}</h3>
           <EventForm initial={editing ?? undefined} onSave={handleSave} onCancel={() => { setShowForm(false); setEditing(null); }} saving={saving} />
         </div>
       )}
  
       {loading ? (
-        <div style={{ display: 'grid', gap: 12 }}>
-          {[1,2,3].map(i => <div key={i} style={{ height: 72, borderRadius: 16, background: 'rgba(255,255,255,0.03)' }} />)}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[1,2,3].map(i => <div key={i} style={{ height: 80, background: 'linear-gradient(160deg,#141927,#0f1521)', borderRadius: 14, opacity: 0.6 }} />)}
         </div>
       ) : events.length === 0 ? (
-        <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.35)', marginTop: 12 }}>No events yet. Create your first event above and they’ll appear here.</p>
+        <div style={{ ...S.card, textAlign: 'center', padding: '48px 24px' }}>
+          <p style={{ fontFamily: "'Playfair Display',serif", fontStyle: 'italic', color: 'rgba(255,255,255,0.3)' }}>No events yet. Create your first event above.</p>
+        </div>
       ) : (
-        <div style={{ borderRadius: 20, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-          {events.map((ev, index) => (
-            <div key={ev.id} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 16, alignItems: 'center', padding: '16px 18px', borderBottom: index < events.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-              {ev.imageUrl ? (
-                <img src={ev.imageUrl} alt={ev.title} style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 14, flexShrink: 0, filter: 'brightness(0.85)' }} />
-              ) : (
-                <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(240,192,64,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f0c040' }}>
-                  <TicketIcon style={{ width: 22, height: 22 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {events.map(ev => (
+            <div key={ev.id} style={{ ...S.card, padding: '14px 16px' }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                {ev.imageUrl && <img src={ev.imageUrl} alt={ev.title} style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 8, flexShrink: 0, filter: 'brightness(0.8)' }} />}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontFamily: "'Playfair Display',serif", fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono',monospace" }}>
+                    {ev.startTime ? new Date(ev.startTime).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date TBD'}
+                    {ev.venue ? ` · ${ev.venue}` : ''}
+                  </p>
+                  <span style={{ fontSize: 9, letterSpacing: 1.5, color: STATUS_COLOR[ev.status] ?? '#fff', background: `${STATUS_COLOR[ev.status]}18`, border: `1px solid ${STATUS_COLOR[ev.status]}44`, borderRadius: 20, padding: '2px 8px', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', display: 'inline-block', marginTop: 6 }}>{ev.status}</span>
                 </div>
-              )}
-              <div style={{ minWidth: 0 }}>
-                <p style={{ fontFamily: "'Playfair Display',serif", fontSize: 15, fontWeight: 700, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</p>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: '6px 0 0', fontFamily: "'DM Mono',monospace" }}>
-                  {ev.startTime ? new Date(ev.startTime).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date TBD'}{ev.venue ? ` · ${ev.venue}` : ''}
-                </p>
-                <span style={{ fontSize: 10, letterSpacing: 1.3, color: STATUS_COLOR[ev.status] ?? '#fff', background: `${STATUS_COLOR[ev.status]}18`, border: `1px solid ${STATUS_COLOR[ev.status]}44`, borderRadius: 999, padding: '4px 10px', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', display: 'inline-flex', marginTop: 10 }}>{ev.status}</span>
               </div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                <button style={{ ...S.ghost, padding: '8px 14px', fontSize: 12 }} onClick={() => { setEditing(ev); setShowForm(true); }}>Edit</button>
-                <button style={{ ...S.danger, padding: '8px 14px', fontSize: 12 }} onClick={() => handleDelete(ev.id)}>Delete</button>
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <button style={{ ...S.ghost, padding: '7px 14px', fontSize: 12, flex: 1, textAlign: 'center' as const }} onClick={() => { setEditing(ev); setShowForm(true); }}>Edit</button>
+                <button style={{ ...S.danger, padding: '7px 14px', fontSize: 12, flex: 1, textAlign: 'center' as const }} onClick={() => handleDelete(ev.id)}>Delete</button>
               </div>
             </div>
           ))}
@@ -462,76 +456,66 @@ const initCamera = async () => {
     <div>
       <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Check-In</h2>
 
-      <div style={{ ...S.section, marginBottom: 16, padding: 18, background: 'rgba(255,255,255,0.03)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <p style={S.label}>Select Event</p>
-            <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Choose an event to check in attendees.</p>
-          </div>
-          <select style={{ ...S.input, background: '#0f1521', minWidth: 240, flex: '1 1 260px' }} value={selectedEvent?.id ?? ''} onChange={e => { const ev = events.find(x => x.id === e.target.value); if (ev) handleSelectEvent(ev); }}>
-            <option value="">— Choose an event —</option>
-            {events.filter(ev => ev.status === 'PUBLISHED').map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
-          </select>
-        </div>
+      {/* Event selector */}
+      <div style={{ ...S.card, marginBottom: 16 }}>
+        <label style={S.label}>Select Event</label>
+        <select style={{ ...S.input, background: '#0f1521' }} value={selectedEvent?.id ?? ''} onChange={e => { const ev = events.find(x => x.id === e.target.value); if (ev) handleSelectEvent(ev); }}>
+          <option value="">— Choose an event —</option>
+          {events.filter(ev => ev.status === 'PUBLISHED').map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+        </select>
       </div>
 
       {selectedEvent && (
         <>
           {/* QR Scanner */}
-          <div style={{ ...S.section, marginBottom: 16, padding: 18, background: 'rgba(255,255,255,0.03)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
-              <div>
-                <p style={S.label}>QR Code Scanner</p>
-                <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Scan tickets directly from your phone camera.</p>
-              </div>
-              {!isMobile && (
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', background: 'rgba(240,192,64,0.08)', border: '1px solid rgba(240,192,64,0.16)', borderRadius: 14, padding: '8px 12px' }}>
-                  Mobile only scanner
-                </span>
-              )}
-            </div>
+          <div style={{ ...S.card, marginBottom: 16 }}>
+            <label style={S.label}>QR Code Scanner</label>
+
             {isMobile ? (
-              !cameraActive ? (
-                <button
-                  style={{ ...S.btn, width: '100%', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                  onClick={startCamera}
-                >
-                  Start camera scanner
-                </button>
-              ) : (
-                <div style={{ marginBottom: 12 }}>
-                  <video
-                    ref={videoRef}
-                    style={{ width: '100%', borderRadius: 16, background: '#000', display: 'block', maxHeight: 280, objectFit: 'cover' }}
-                    autoPlay
-                    playsInline
-                    muted
-                  />
+              <>
+                {!cameraActive ? (
                   <button
-                    style={{ ...S.ghost, width: '100%', marginTop: 10, textAlign: 'center' as const }}
-                    onClick={stopCamera}
+                    style={{ ...S.btn, width: '100%', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                    onClick={startCamera}
                   >
-                    Stop camera
+                    📷 Start Camera Scanner
                   </button>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono',monospace" }}>
-                    Point the camera at a ticket QR code to check in in seconds.
-                  </p>
-                </div>
-              )
+                ) : (
+                  <div style={{ marginBottom: 12 }}>
+                    <video
+                      ref={videoRef}
+                      style={{ width: '100%', borderRadius: 12, background: '#000', display: 'block', maxHeight: 280, objectFit: 'cover' }}
+                      autoPlay
+                      playsInline
+                      muted
+                    />
+                    <button
+                      style={{ ...S.ghost, width: '100%', marginTop: 10, textAlign: 'center' as const }}
+                      onClick={stopCamera}
+                    >
+                      Stop Camera
+                    </button>
+                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 8, fontFamily: "'DM Mono',monospace" }}>
+                      Point camera at a ticket QR code
+                    </p>
+                  </div>
+                )}
+              </>
             ) : (
-              <div style={{ background: 'rgba(240,192,64,0.06)', border: '1px solid rgba(240,192,64,0.15)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ background: 'rgba(240,192,64,0.06)', border: '1px solid rgba(240,192,64,0.15)', borderRadius: 10, padding: '14px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span style={{ fontSize: 20, flexShrink: 0 }}>📱</span>
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#f0c040', marginBottom: 2 }}>Use your phone to scan</p>
                   <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono',monospace", lineHeight: 1.5 }}>
-                    Open the organizer dashboard on a mobile browser for camera scanning. Manual entry is available below.
+                    Open the organizer dashboard on your mobile browser for camera scanning. Manual entry works here.
                   </p>
                 </div>
               </div>
             )}
 
+            {/* Result feedback */}
             {result && (
-              <div style={{ marginTop: 12, padding: '14px 16px', borderRadius: 14, background: result.success ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${result.success ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
+              <div style={{ marginBottom: 12, padding: '13px 16px', borderRadius: 10, background: result.success ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${result.success ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
                 <p style={{ fontSize: 13, fontWeight: 600, color: result.success ? '#22c55e' : '#ef4444', marginBottom: result.attendee ? 8 : 0 }}>
                   {result.success ? '✓' : '✕'} {result.message}
                 </p>
@@ -547,32 +531,28 @@ const initCamera = async () => {
           </div>
 
           {/* Manual entry — always visible */}
-          <div style={{ ...S.section, marginBottom: 16, padding: 18, background: 'rgba(255,255,255,0.03)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
-              <div>
-                <p style={S.label}>Manual Ticket ID Entry</p>
-                <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>Paste or type the ticket ID if scanning is unavailable.</p>
-              </div>
-              <button type="submit" form="manual-checkin" style={{ ...S.btn, flex: '0 0 auto' }} disabled={scanning || !ticketId.trim()}>
-                {scanning ? 'Checking…' : 'Check In'}
-              </button>
-            </div>
-            <form id="manual-checkin" onSubmit={handleManualScan} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ ...S.card, marginBottom: 16 }}>
+            <label style={S.label}>Manual Ticket ID Entry</label>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 14, lineHeight: 1.6 }}>
+              Paste or type the ticket ID manually.
+            </p>
+            <form onSubmit={handleManualScan} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <input
                 style={{ ...S.input, flex: '1 1 160px', minWidth: 0 }}
                 value={ticketId}
                 onChange={e => setTicketId(e.target.value)}
                 placeholder="Paste ticket ID…"
               />
+              <button type="submit" style={{ ...S.btn, flex: '0 0 auto' }} disabled={scanning || !ticketId.trim()}>
+                {scanning ? 'Checking…' : 'Check In'}
+              </button>
             </form>
           </div>
 
           {/* Check-ins list */}
-          <div style={{ ...S.section, padding: 18, background: 'rgba(255,255,255,0.03)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
-              <div>
-                <p style={{ ...S.label, marginBottom: 0 }}>Checked In — {checkIns.length}</p>
-              </div>
+          <div style={S.card}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+              <p style={{ ...S.label, marginBottom: 0 }}>Checked In — {checkIns.length}</p>
               <button style={{ ...S.ghost, padding: '6px 12px', fontSize: 11 }} onClick={() => loadCheckIns(selectedEvent.id)}>↻ Refresh</button>
             </div>
             {loadingCheckIns ? (
@@ -580,14 +560,14 @@ const initCamera = async () => {
             ) : checkIns.length === 0 ? (
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)', textAlign: 'center', padding: '16px 0', fontStyle: 'italic' }}>No check-ins yet</p>
             ) : (
-              <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {checkIns.map((ci: any) => (
-                  <div key={ci.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', fontSize: 12, flexWrap: 'wrap' }}>
+                  <div key={ci.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, fontSize: 12, flexWrap: 'wrap', gap: 6 }}>
                     <div>
-                      <p style={{ margin: 0, color: '#fff', fontWeight: 600 }}>{ci.ticket?.user?.firstName} {ci.ticket?.user?.lastName}</p>
-                      <p style={{ margin: '6px 0 0', color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>{ci.ticket?.ticketTypeName}</p>
+                      <span style={{ color: '#fff', fontWeight: 600 }}>{ci.ticket?.user?.firstName} {ci.ticket?.user?.lastName}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.35)', marginLeft: 8 }}>{ci.ticket?.ticketTypeName}</span>
                     </div>
-                    <span style={{ color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono',monospace" }}>
+                    <span style={{ color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Mono',monospace" }}>
                       {new Date(ci.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -666,46 +646,47 @@ function PayoutsTab() {
       <Toast msg={toast} />
       <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Payouts</h2>
  
-      <div style={{ ...S.section, marginBottom: 24, padding: 20, background: 'rgba(255,255,255,0.03)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-          <div>
-            <p style={S.label}>Request Payout</p>
-            <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>Choose a completed event and submit your payout request.</p>
-          </div>
+      <div style={{ ...S.card, marginBottom: 24 }}>
+        <p style={S.label}>Request Payout</p>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 14, lineHeight: 1.6 }}>
+          Select a completed event to request a payout. A 5% platform fee applies.
+        </p>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <select style={{ ...S.input, flex: '1 1 160px', background: '#0f1521', minWidth: 0 }} value={selectedEventId} onChange={e => setSelectedEventId(e.target.value)}>
+            <option value="">— Select event —</option>
+            {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+          </select>
           <button style={{ ...S.btn, flex: '0 0 auto' }} onClick={handleRequest} disabled={requesting || !selectedEventId}>
             {requesting ? 'Requesting…' : 'Request Payout'}
           </button>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <select style={{ ...S.input, flex: '1 1 220px', background: '#0f1521', minWidth: 0 }} value={selectedEventId} onChange={e => setSelectedEventId(e.target.value)}>
-            <option value="">— Select event —</option>
-            {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
-          </select>
-        </div>
       </div>
  
       {loading ? (
-        <div style={{ display: 'grid', gap: 10 }}>
-          {[1,2].map(i => <div key={i} style={{ height: 70, borderRadius: 16, background: 'rgba(255,255,255,0.03)' }} />)}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[1,2].map(i => <div key={i} style={{ height: 70, background: 'linear-gradient(160deg,#141927,#0f1521)', borderRadius: 14, opacity: 0.6 }} />)}
         </div>
       ) : payouts.length === 0 ? (
-        <p style={{ fontStyle: 'italic', color: 'rgba(255,255,255,0.35)', fontSize: 14, marginTop: 8 }}>No payout requests yet.</p>
+        <div style={{ ...S.card, textAlign: 'center', padding: '40px 24px' }}>
+          <p style={{ fontStyle: 'italic', color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No payout requests yet.</p>
+        </div>
       ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {payouts.map(p => (
-            <div key={p.id} style={{ display: 'grid', gap: 10, padding: '16px 18px', borderRadius: 18, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.event?.title ?? 'Event'}</p>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontFamily: "'DM Mono',monospace" }}>
-                    {new Date(p.requestedAt).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' })}{p.releasedAt ? ` · Released ${new Date(p.releasedAt).toLocaleDateString()}` : ''}
+            <div key={p.id} style={{ ...S.card, padding: '14px 16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.event?.title ?? 'Event'}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Mono',monospace" }}>
+                    {new Date(p.requestedAt).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {p.releasedAt ? ` · Released ${new Date(p.releasedAt).toLocaleDateString()}` : ''}
                   </p>
-                  {p.adminNote && <p style={{ fontSize: 11, color: 'rgba(239,68,68,0.7)', marginTop: 6 }}>Note: {p.adminNote}</p>}
+                  {p.adminNote && <p style={{ fontSize: 11, color: 'rgba(239,68,68,0.7)', marginTop: 4 }}>Note: {p.adminNote}</p>}
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <p style={{ fontSize: 18, fontWeight: 700, color: STATUS_COLOR[p.status], fontFamily: "'DM Mono',monospace", marginBottom: 4 }}>KSH {p.netAmount.toLocaleString()}</p>
-                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono',monospace", marginBottom: 6 }}>Fee KSH {p.platformFee.toLocaleString()}</p>
-                  <span style={{ fontSize: 10, letterSpacing: 1.5, color: STATUS_COLOR[p.status], background: `${STATUS_COLOR[p.status]}18`, border: `1px solid ${STATUS_COLOR[p.status]}44`, borderRadius: 999, padding: '4px 10px', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', display: 'inline-flex' }}>{p.status}</span>
+                  <p style={{ fontSize: 18, fontWeight: 700, color: STATUS_COLOR[p.status], fontFamily: "'DM Mono',monospace" }}>KSH {p.netAmount.toLocaleString()}</p>
+                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Mono',monospace" }}>Fee KSH {p.platformFee.toLocaleString()}</p>
+                  <span style={{ fontSize: 9, letterSpacing: 1.5, color: STATUS_COLOR[p.status], background: `${STATUS_COLOR[p.status]}18`, border: `1px solid ${STATUS_COLOR[p.status]}44`, borderRadius: 20, padding: '2px 8px', fontFamily: "'DM Mono',monospace", textTransform: 'uppercase', display: 'inline-block', marginTop: 4 }}>{p.status}</span>
                 </div>
               </div>
             </div>
@@ -877,15 +858,15 @@ function AnalyticsTab() {
 
 // ── Main ──────────────────────────────────────────────────────
 export default function OrganizerDashboard() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('events');
  
-  const tabs: { id: Tab; label: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; accent: string }[] = [
-    { id: 'events',  label: 'Events',    Icon: TicketIcon,    accent: '#f59e0b' },
-    { id: 'checkin', label: 'Check-In',  Icon: QrCodeIcon,    accent: '#22c55e' },
-    { id: 'payouts', label: 'Payouts',   Icon: BanknotesIcon, accent: '#a855f7' },
-    { id: 'analytics', label: 'Analytics', Icon: ChartBarIcon, accent: '#38bdf8' },
-    { id: 'profile', label: 'Profile',    Icon: Cog6ToothIcon, accent: '#f0c040' },
+  const tabs: { id: Tab; label: string; icon: string }[] = [
+    { id: 'events',  label: 'My Events', icon: '🎪' },
+    { id: 'checkin', label: 'Check-In',  icon: '✅' },
+    { id: 'payouts', label: 'Payouts',   icon: '💰' },
+    { id: 'profile', label: 'Profile',   icon: '⚙️' },
+    { id: 'analytics', label: 'Analytics', icon: '📊' },
   ];
  
   return (
@@ -915,45 +896,20 @@ export default function OrganizerDashboard() {
         {/* Hero */}
         <div style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 10, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 6 }}>Organizer Portal</p>
-          <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(22px,5vw,32px)', fontWeight: 700, lineHeight: 1.1, marginBottom: 8 }}>
-            Organizer dashboard
+          <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(22px,5vw,32px)', fontWeight: 700, lineHeight: 1.1, marginBottom: 4 }}>
+            Welcome back, {user?.firstName}<span style={{ color: '#f0c040' }}>.</span>
           </h1>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', maxWidth: 620 }}>A streamlined control center for your events, ticket check-ins, payouts, and performance analytics.</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>Manage your events, check in attendees, and track payouts.</p>
         </div>
  
         {/* Tabs */}
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10 }}>
-            {tabs.map(tab => {
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 10,
-                    padding: '18px 14px',
-                    borderRadius: 18,
-                    border: active ? `1px solid ${tab.accent}` : '1px solid rgba(255,255,255,0.08)',
-                    background: active ? 'rgba(240,192,64,0.14)' : 'rgba(255,255,255,0.02)',
-                    color: active ? '#fff' : 'rgba(255,255,255,0.7)',
-                    cursor: 'pointer',
-                    textAlign: 'center' as const,
-                    transition: 'all 0.2s',
-                    minHeight: 110,
-                    width: '100%',
-                  }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 46, height: 46, borderRadius: 14, background: active ? tab.accent : 'rgba(255,255,255,0.06)', color: active ? '#0a0d14' : '#f0c040' }}>
-                    <tab.Icon style={{ width: 22, height: 22 }} />
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.3 }}>{tab.label}</span>
-                </button>
-              );
-            })}
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', marginBottom: 28, paddingBottom: 2 }}>
+          <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: 5, width: 'max-content', minWidth: '100%' }}>
+            {tabs.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ background: activeTab === tab.id ? '#f0c040' : 'none', color: activeTab === tab.id ? '#0a0d14' : 'rgba(255,255,255,0.45)', border: 'none', borderRadius: 9, padding: '9px 16px', fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 500, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+                <span>{tab.icon}</span>{tab.label}
+              </button>
+            ))}
           </div>
         </div>
  
