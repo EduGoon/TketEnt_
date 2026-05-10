@@ -870,7 +870,7 @@ function AnalyticsTab() {
  
 // ── Main ──────────────────────────────────────────────────────
 export default function OrganizerDashboard() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('events');
  
   const tabs: { id: Tab; label: string }[] = [
