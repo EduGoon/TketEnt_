@@ -573,33 +573,60 @@ function CheckInTab() {
 
           {/* Check-ins list */}
           <div style={{ paddingTop: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
-                {checkIns.length > 0 ? <><strong style={{ color: '#fff' }}>{checkIns.length}</strong> checked in</> : 'No check-ins yet'}
-              </span>
-              <button style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }} onClick={() => loadCheckIns(selectedEvent.id)}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div>
+                <span style={{ fontSize: 22, fontWeight: 700, color: '#fff', fontFamily: "'Playfair Display',serif" }}>{checkIns.length}</span>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginLeft: 8 }}>checked in</span>
+              </div>
+              <button style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, padding: '6px 10px', borderRadius: 6, transition: 'color 0.15s' }}
+                onMouseOver={e => (e.currentTarget.style.color = '#fff')}
+                onMouseOut={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+                onClick={() => loadCheckIns(selectedEvent.id)}>
                 <Icon.refresh /><span>Refresh</span>
               </button>
             </div>
 
             {loadingCheckIns ? (
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontFamily: "'DM Mono',monospace" }}>Loading…</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[1,2,3].map(i => <div key={i} style={{ height: 56, borderRadius: 10, background: 'rgba(255,255,255,0.03)', opacity: 0.5 }} />)}
+              </div>
+            ) : checkIns.length === 0 ? (
+              <div style={{ padding: '32px 0', textAlign: 'center' as const }}>
+                <p style={{ color: 'rgba(255,255,255,0.18)', fontSize: 14, fontStyle: 'italic' }}>No check-ins yet</p>
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {checkIns.map((ci: any, idx: number) => (
-                  <div key={ci.id}>
-                    {idx > 0 && <hr style={S.divider} />}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', fontSize: 13 }}>
-                      <div>
-                        <span style={{ color: '#fff', fontWeight: 500 }}>{ci.ticket?.user?.firstName} {ci.ticket?.user?.lastName}</span>
-                        <span style={{ color: 'rgba(255,255,255,0.3)', marginLeft: 10, fontSize: 12 }}>{ci.ticket?.ticketTypeName}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {checkIns.map((ci: any, idx: number) => {
+                  const first = ci.ticket?.user?.firstName ?? '';
+                  const last  = ci.ticket?.user?.lastName  ?? '';
+                  const initials = `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase() || '?';
+                  const hue = (first.charCodeAt(0) + last.charCodeAt(0)) % 360;
+                  return (
+                    <div key={ci.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: idx % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)', borderRadius: 10, transition: 'background 0.15s' }}
+                      onMouseOver={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.055)')}
+                      onMouseOut={e => (e.currentTarget.style.background = idx % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)')}
+                    >
+                      {/* Avatar */}
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: `hsl(${hue},40%,25%)`, border: `1px solid hsl(${hue},50%,40%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: `hsl(${hue},70%,75%)`, fontFamily: "'DM Mono',monospace", letterSpacing: 0.5 }}>{initials}</span>
                       </div>
-                      <span style={{ color: 'rgba(255,255,255,0.25)', fontFamily: "'DM Mono',monospace", fontSize: 11 }}>
-                        {new Date(ci.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                      {/* Name + ticket type */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 2 }}>{first} {last}</p>
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Mono',monospace", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ci.ticket?.ticketTypeName ?? '—'}</p>
+                      </div>
+                      {/* Check-in time */}
+                      <div style={{ textAlign: 'right' as const, flexShrink: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#22c55e', fontFamily: "'DM Mono',monospace" }}>
+                          {new Date(ci.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', fontFamily: "'DM Mono',monospace", marginTop: 1 }}>
+                          {new Date(ci.scannedAt).toLocaleDateString([], { day: 'numeric', month: 'short' })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -892,6 +919,7 @@ export default function OrganizerDashboard() {
         select option { background: #141927; }
         textarea { box-sizing: border-box; }
         button:focus-visible { outline: 2px solid rgba(240,192,64,0.5); outline-offset: 2px; }
+        .tab-scroller::-webkit-scrollbar { display: none; }
       `}</style>
 
       {/* Nav */}
@@ -911,7 +939,7 @@ export default function OrganizerDashboard() {
       <main style={{ maxWidth: 1060, margin: '0 auto', padding: '28px 16px 80px' }}>
 
         {/* Tab bar */}
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', marginBottom: 36, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="tab-scroller" style={{ overflowX: 'auto', overflowY: 'hidden', WebkitOverflowScrolling: 'touch', marginBottom: 36, borderBottom: '1px solid rgba(255,255,255,0.06)', scrollbarWidth: 'none' as any }}>
           <div style={{ display: 'flex', gap: 0, width: 'max-content', minWidth: '100%' }}>
             {tabs.map(tab => (
               <button
@@ -922,7 +950,7 @@ export default function OrganizerDashboard() {
                   border: 'none',
                   borderBottom: activeTab === tab.id ? '2px solid #f0c040' : '2px solid transparent',
                   color: activeTab === tab.id ? '#fff' : 'rgba(255,255,255,0.35)',
-                  padding: '10px 18px',
+                  padding: '12px 20px',
                   fontSize: 13,
                   fontWeight: activeTab === tab.id ? 600 : 400,
                   cursor: 'pointer',
@@ -930,6 +958,7 @@ export default function OrganizerDashboard() {
                   whiteSpace: 'nowrap',
                   transition: 'all 0.15s',
                   marginBottom: -1,
+                  lineHeight: 1,
                 }}
               >
                 {tab.label}
