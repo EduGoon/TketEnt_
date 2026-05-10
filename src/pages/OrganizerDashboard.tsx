@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../utilities/AuthContext';
 import * as organizerService from '../services/organizerService';
 import { Event, Payout, OrganizerProfile } from '../utilities/types';
+import { TicketIcon, QrCodeIcon, BanknotesIcon, Cog6ToothIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 
 type Tab = 'events' | 'checkin' | 'payouts' | 'profile' | 'analytics';
@@ -858,15 +859,15 @@ function AnalyticsTab() {
 
 // ── Main ──────────────────────────────────────────────────────
 export default function OrganizerDashboard() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('events');
  
-  const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: 'events',  label: 'My Events', icon: '🎪' },
-    { id: 'checkin', label: 'Check-In',  icon: '✅' },
-    { id: 'payouts', label: 'Payouts',   icon: '💰' },
-    { id: 'profile', label: 'Profile',   icon: '⚙️' },
-    { id: 'analytics', label: 'Analytics', icon: '📊' },
+  const tabs: { id: Tab; label: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; accent: string }[] = [
+    { id: 'events',  label: 'Events',    Icon: TicketIcon,    accent: '#f59e0b' },
+    { id: 'checkin', label: 'Check-In',  Icon: QrCodeIcon,    accent: '#22c55e' },
+    { id: 'payouts', label: 'Payouts',   Icon: BanknotesIcon, accent: '#a855f7' },
+    { id: 'analytics', label: 'Analytics', Icon: ChartBarIcon, accent: '#38bdf8' },
+    { id: 'profile', label: 'Profile',    Icon: Cog6ToothIcon, accent: '#f0c040' },
   ];
  
   return (
@@ -896,20 +897,45 @@ export default function OrganizerDashboard() {
         {/* Hero */}
         <div style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 10, letterSpacing: 3, color: 'rgba(240,192,64,0.6)', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace", marginBottom: 6 }}>Organizer Portal</p>
-          <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(22px,5vw,32px)', fontWeight: 700, lineHeight: 1.1, marginBottom: 4 }}>
-            Welcome back, {user?.firstName}<span style={{ color: '#f0c040' }}>.</span>
+          <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 'clamp(22px,5vw,32px)', fontWeight: 700, lineHeight: 1.1, marginBottom: 8 }}>
+            Organizer dashboard
           </h1>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>Manage your events, check in attendees, and track payouts.</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', maxWidth: 620 }}>A streamlined control center for your events, ticket check-ins, payouts, and performance analytics.</p>
         </div>
  
         {/* Tabs */}
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', marginBottom: 28, paddingBottom: 2 }}>
-          <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: 5, width: 'max-content', minWidth: '100%' }}>
-            {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ background: activeTab === tab.id ? '#f0c040' : 'none', color: activeTab === tab.id ? '#0a0d14' : 'rgba(255,255,255,0.45)', border: 'none', borderRadius: 9, padding: '9px 16px', fontSize: 13, fontWeight: activeTab === tab.id ? 700 : 500, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
-                <span>{tab.icon}</span>{tab.label}
-              </button>
-            ))}
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10 }}>
+            {tabs.map(tab => {
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 10,
+                    padding: '18px 14px',
+                    borderRadius: 18,
+                    border: active ? `1px solid ${tab.accent}` : '1px solid rgba(255,255,255,0.08)',
+                    background: active ? 'rgba(240,192,64,0.14)' : 'rgba(255,255,255,0.02)',
+                    color: active ? '#fff' : 'rgba(255,255,255,0.7)',
+                    cursor: 'pointer',
+                    textAlign: 'center' as const,
+                    transition: 'all 0.2s',
+                    minHeight: 110,
+                    width: '100%',
+                  }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 46, height: 46, borderRadius: 14, background: active ? tab.accent : 'rgba(255,255,255,0.06)', color: active ? '#0a0d14' : '#f0c040' }}>
+                    <tab.Icon style={{ width: 22, height: 22 }} />
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.3 }}>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
  
